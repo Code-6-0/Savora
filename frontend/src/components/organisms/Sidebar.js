@@ -1,15 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, BarChart2, Lightbulb, Bell, Settings } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { 
+  LayoutDashboard, Package, ShoppingCart, BarChart2, Lightbulb, Bell, Settings,
+  Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft
+} from "lucide-react";
 
 export default function Sidebar({ onClose }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'bantuan';
 
   if (pathname === "/marketplace") return null;
 
-  const menus = [
+  const isProfilPage = pathname.startsWith("/profil");
+
+  const dashboardMenus = [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { name: "Produk", href: "/produk", icon: <Package size={20} /> },
     { name: "Pesanan", href: "/pesanan", icon: <ShoppingCart size={20} /> },
@@ -17,13 +24,67 @@ export default function Sidebar({ onClose }) {
     { name: "Insight", href: "/insight", icon: <Lightbulb size={20} /> },
   ];
 
+  const profilMenus = [
+    { id: 'profil', label: 'Profil Toko', icon: <Store size={20} /> },
+    { id: 'informasi', label: 'Informasi UMKM', icon: <Building size={20} /> },
+    { id: 'dampak', label: 'Dampak Food Rescue', icon: <Leaf size={20} /> },
+    { id: 'preferensi', label: 'Preferensi', icon: <Globe size={20} /> },
+    { id: 'keamanan', label: 'Keamanan Akun', icon: <Shield size={20} /> },
+    { id: 'pembayaran', label: 'Pembayaran', icon: <CreditCard size={20} /> },
+    { id: 'dokumen', label: 'Dokumen Usaha', icon: <FileText size={20} /> },
+    { id: 'bantuan', label: 'Bantuan', icon: <LifeBuoy size={20} /> },
+  ];
+
+  if (isProfilPage) {
+    return (
+      <div className="sidebar">
+        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '16px' }}>
+          <Link href="/dashboard" onClick={onClose} style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
+            <ArrowLeft size={20} style={{ marginRight: '8px' }} />
+            <span>Kembali</span>
+          </Link>
+        </div>
+        <div style={{ padding: '0 20px', marginBottom: '15px', fontSize: '11px', fontWeight: 700, color: '#9CA3AF', letterSpacing: '1px' }}>
+          NAVIGASI PROFIL
+        </div>
+        <ul className="sidebar-menu" style={{ flexGrow: 1 }}>
+          {profilMenus.map((menu) => (
+            <li key={menu.id}>
+              <Link 
+                href={`/profil?tab=${menu.id}`} 
+                className={currentTab === menu.id ? "active" : ""} 
+                onClick={onClose}
+                style={currentTab === menu.id ? { backgroundColor: '#ECFDF5', color: '#10B981' } : {}}
+              >
+                <span style={{ marginRight: '10px' }}>{menu.icon}</span> {menu.label}
+              </Link>
+            </li>
+          ))}
+          <li style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '10px' }}>
+            <button 
+              onClick={onClose}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 15px', width: '100%', 
+                border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left',
+                backgroundColor: 'transparent', color: '#EF4444', fontWeight: 500, fontSize: '1rem'
+              }}
+            >
+              <AlertTriangle size={20} />
+              Hapus Akun
+            </button>
+          </li>
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
         <span style={{ color: "var(--primary-color)", fontSize: "24px" }}>⚲</span> Savora
       </div>
       <ul className="sidebar-menu" style={{ flexGrow: 1 }}>
-        {menus.map((menu) => (
+        {dashboardMenus.map((menu) => (
           <li key={menu.name}>
             <Link href={menu.href} className={pathname === menu.href ? "active" : ""} onClick={onClose}>
               <span style={{ marginRight: '10px' }}>{menu.icon}</span> {menu.name}
@@ -41,9 +102,9 @@ export default function Sidebar({ onClose }) {
         </div>
         <ul className="sidebar-footer-menu">
           <li>
-            <a href="#">
+            <Link href="/profil" onClick={onClose}>
               <span style={{ marginRight: '10px' }}><Settings size={20} /></span> Profil
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" style={{ color: '#EF4444' }}>

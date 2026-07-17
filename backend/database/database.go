@@ -7,7 +7,6 @@ import (
 
 	"github.com/savora/backend/models"
 	"gorm.io/driver/postgres"
-	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -17,9 +16,13 @@ func ConnectDB() {
 	var db *gorm.DB
 	var err error
 
+	dbUrl := os.Getenv("DATABASE_URL")
 	host := os.Getenv("DB_HOST")
-	if host != "" && host != "localhost" {
-		// Use Postgres
+	
+	if dbUrl != "" {
+		db, err = gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
+	} else if host != "" && host != "localhost" {
+		// Use Postgres with individual variables
 		port := os.Getenv("DB_PORT")
 		user := os.Getenv("DB_USER")
 		password := os.Getenv("DB_PASSWORD")
@@ -27,15 +30,14 @@ func ConnectDB() {
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", host, user, password, dbname, port)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	} else {
-		// Fallback to SQLite for local development MVP
-		db, err = gorm.Open(sqlite.Open("savora.db"), &gorm.Config{})
+		log.Fatal("Database configuration is missing. Please set DATABASE_URL or DB_HOST.")
 	}
 
 	if err != nil {
 		log.Fatal("Failed to connect to database. \n", err)
 	}
 
-	log.Println("Connected to Database")
+	log.Println("Connected to Database (Cloud/Postgres)")
 	db.Logger = db.Logger.LogMode(1)
 
 	log.Println("Running Migrations")
