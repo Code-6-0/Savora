@@ -4,12 +4,13 @@ import { useState } from "react";
 import Sidebar from "../organisms/Sidebar";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { isMarketplaceRoute } from "@/lib/routes";
 
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname === "/marketplace") {
+  if (isMarketplaceRoute(pathname)) {
     return <>{children}</>;
   }
 
