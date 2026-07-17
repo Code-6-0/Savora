@@ -1,0 +1,17 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database (lokal/dev)
+*.db
+*.sqlite
+*.sqlite3
+
+# Go build output
+/tmp/
+*.exe
+main
+
+# Misc
+.DS_Store
