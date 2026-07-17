@@ -7,9 +7,13 @@ import {
   ArrowRight,
   ArrowUpDown,
   Clock3,
+  Flame,
+  Gauge,
   Leaf,
-  MapPin,
+  Megaphone,
   Search,
+  ShieldAlert,
+  ShieldCheck,
   ShoppingBag,
   SlidersHorizontal,
   Sun,
@@ -20,6 +24,9 @@ import {
   filterMarketplaceProducts,
   normalizeMarketplaceProduct,
 } from "@/lib/marketplace";
+import { computeFoodScore, foodScoreBand, rescueTimeLabel } from "@/lib/foodScore";
+import { deriveRestaurantSafety } from "@/lib/reviews";
+import { fallbackAds, fetchAds } from "@/lib/ads";
 
 const categories = ["Semua", "Nasi", "Bakery", "Snack", "Catering"];
 const trustOptions = ["Semua", "Fresh", "Layak Dijual", "Segera Dijual"];
@@ -32,16 +39,22 @@ function formatRupiah(value) {
   }).format(value);
 }
 
-function timerLabel(minutes) {
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return hours > 0 ? `${hours}j ${remainingMinutes}m` : `${remainingMinutes}m`;
+// Ticker bersama: satu interval untuk seluruh halaman menghitung detik sejak
+// mount, sehingga semua kartu meluruh (Food Score + rescue time) serempak
+// tanpa banyak timer dan tanpa memanggil Date.now() saat render.
+function useElapsedSeconds() {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const interval = window.setInterval(() => setElapsed((value) => value + 1), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+  return elapsed;
 }
 
-function trustClass(status) {
-  if (status === "Fresh") return "is-fresh";
-  if (status === "Segera Dijual") return "is-urgent";
-  return "is-eligible";
+function safetyIcon(levelKey) {
+  if (levelKey === "gawat") return <Flame size={11} aria-hidden="true" />;
+  if (levelKey === "warning") return <ShieldAlert size={11} aria-hidden="true" />;
+  return <ShieldCheck size={11} aria-hidden="true" />;
 }
 
 function MarketplaceHeader({ search, onSearchChange }) {
@@ -77,26 +90,75 @@ function MarketplaceHeader({ search, onSearchChange }) {
   );
 }
 
-function FoodCard({ product }) {
+function AdRail({ ads }) {
+  if (!ads.length) return null;
+  return (
+    <aside className="savora-ad-rail" aria-label="Iklan dan promosi">
+      {ads.map((ad) => {
+        const linkProps = ad.external
+          ? { href: ad.href, target: "_blank", rel: "nofollow sponsored noopener" }
+          : { href: ad.href };
+        const Wrapper = ad.external ? "a" : Link;
+        return (
+          <Wrapper key={ad.id} className={`savora-ad-card is-${ad.type}`} {...linkProps}>
+            <div className="savora-ad-media">
+              <Image src={ad.photo_url} alt={ad.sponsor} fill sizes="(max-width: 900px) 100vw, 33vw" />
+              <span className="savora-ad-flag"><Megaphone size={11} aria-hidden="true" /> {ad.type === "umkm" ? "Promoted" : "Iklan"}</span>
+            </div>
+            <div className="savora-ad-body">
+              <b>{ad.sponsor}</b>
+              <p>{ad.headline}</p>
+              <span className="savora-ad-cta">{ad.cta} <ArrowRight size={13} aria-hidden="true" /></span>
+            </div>
+          </Wrapper>
+        );
+      })}
+    </aside>
+  );
+}
+
+function FoodCard({ product, elapsed }) {
   const savings = product.original_price - product.rescue_price;
+  const remainingSeconds = Math.max(0, product.rescueWindowSeconds - elapsed);
+  const score = computeFoodScore(remainingSeconds, product.rescueWindowSeconds, product.trustScore);
+  const band = foodScoreBand(score);
+  const expired = remainingSeconds <= 0;
+  const safety = product.safety;
+  const showSafety = safety.level.key !== "aman" || safety.keywords.length > 0;
+
   return (
     <Link href={`/marketplace/${product.id}`} className="savora-food-card" aria-label={`Buka detail ${product.name}`}>
       <div className="savora-food-image">
         <Image src={product.photo_url} alt={product.name} fill sizes="(max-width: 570px) 100vw, (max-width: 900px) 50vw, 33vw" />
-        <span className={`savora-trust ${trustClass(product.food_trust_status)}`}>{product.food_trust_status}</span>
+        <span className={`savora-score-badge ${band.className}`} title={`Food Score ${score}/100 — ${band.label}`}>
+          <Gauge size={12} aria-hidden="true" /> {expired ? "Habis" : `${score}`}<small>{expired ? "" : "/100"}</small>
+        </span>
         {product.discountPercent > 0 && <span className="savora-discount">-{product.discountPercent}%</span>}
-        <span className="savora-timer"><Clock3 size={12} /> {timerLabel(product.timerMinutes)}</span>
+        <span className={`savora-timer${remainingSeconds <= 900 && !expired ? " is-hot" : ""}`}>
+          <Clock3 size={12} aria-hidden="true" /> {expired ? "Waktu habis" : rescueTimeLabel(remainingSeconds)}
+        </span>
       </div>
       <div className="savora-food-content">
-        <p className="savora-vendor">{product.vendor}<span>•</span>{product.distanceKm.toFixed(1)} km</p>
+        <p className="savora-vendor">
+          {product.vendor}<span>•</span>{product.distanceKm.toFixed(1)} km
+          {showSafety && (
+            <span className={`savora-safety-pill ${safety.level.className}`} title={`Ulasan keyword: ${safety.level.label}`}>
+              {safetyIcon(safety.level.key)} {safety.level.label}
+            </span>
+          )}
+        </p>
         <h3>{product.name}</h3>
+        <div className={`savora-score-meter ${band.className}`} role="img" aria-label={`Food Score ${score} dari 100, ${band.label}`}>
+          <span style={{ width: `${score}%` }} />
+        </div>
+        <div className="savora-score-caption"><b>{band.label}</b> <span>Food Score {score}/100</span></div>
         <div className="savora-prices">
           <strong>{formatRupiah(product.rescue_price)}</strong>
           {product.original_price > product.rescue_price && <s>{formatRupiah(product.original_price)}</s>}
         </div>
         <div className="savora-card-bottom">
           <span>Sisa {product.stock} porsi</span>
-          <span className="savora-rescue-link">Selamatkan <ArrowRight size={15} /></span>
+          <span className="savora-rescue-link">Selamatkan <ArrowRight size={15} aria-hidden="true" /></span>
         </div>
         {savings > 0 && <p className="savora-saving">Hemat {formatRupiah(savings)}</p>}
       </div>
@@ -104,15 +166,35 @@ function FoodCard({ product }) {
   );
 }
 
+// Lekatkan data turunan yang stabil: jendela rescue (detik) + status keamanan
+// dari ulasan. Sisa waktu dihitung dari ticker `elapsed` bersama saat render.
+function attachRuntimeFields(product) {
+  return {
+    ...product,
+    rescueWindowSeconds: Math.max(1, Math.round((Number(product.timerMinutes) || 0) * 60)),
+    safety: deriveRestaurantSafety(product.reviews, product.safety_level),
+  };
+}
+
 export default function MarketplacePage() {
-  const [products, setProducts] = useState(() => fallbackMarketplaceProducts.map(normalizeMarketplaceProduct));
+  const [products, setProducts] = useState(() =>
+    fallbackMarketplaceProducts.map(normalizeMarketplaceProduct).map(attachRuntimeFields),
+  );
+  const [ads, setAds] = useState(() => fallbackAds.slice(0, 3).map((ad) => ({ ...ad, external: /^https?:\/\//i.test(ad.href) })));
   const [filters, setFilters] = useState({ search: "", category: "Semua", trustStatus: "Semua", sort: "default" });
+  const elapsed = useElapsedSeconds();
 
   useEffect(() => {
     let alive = true;
     fetchMarketplaceProducts().then((items) => {
-      if (alive) setProducts(items);
+      if (alive) setProducts(items.map(attachRuntimeFields));
     });
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    fetchAds(3).then((items) => { if (alive) setAds(items); });
     return () => { alive = false; };
   }, []);
 
@@ -133,7 +215,7 @@ export default function MarketplacePage() {
           <div className="savora-hero-copy">
             <p className="savora-eyebrow"><Leaf size={14} /> Selamatkan makanan surplus dari UMKM lokal</p>
             <h1 id="savora-title">Makan enak.<br /><em>Selamatkan bumi.</em></h1>
-            <p className="savora-hero-description">Temukan makanan surplus berkualitas dari UMKM terdekat. Lebih hemat, lebih bermakna, dengan Food Trust Index yang transparan.</p>
+            <p className="savora-hero-description">Temukan makanan surplus berkualitas dari UMKM terdekat. Lebih hemat, lebih bermakna, dengan Food Score yang menurun mengikuti Rescue Time secara transparan.</p>
             <div className="savora-hero-actions">
               <a className="savora-primary-action" href="#rescue-deals">Jelajahi Rescue Deals <ArrowRight size={17} /></a>
               <a className="savora-secondary-action" href="#untuk-umkm">Daftar sebagai UMKM</a>
@@ -146,9 +228,9 @@ export default function MarketplacePage() {
           </div>
           <div className="savora-hero-media" aria-label="Contoh rescue deal Savora">
             <Image src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=90" alt="Aneka makanan dari UMKM lokal" fill priority sizes="(max-width: 900px) 100vw, 55vw" />
-            <div className="savora-image-trust"><span>✓</span><div><b>Food Trust Index: Fresh</b><small>Diproduksi 2 jam lalu • Warung Bu Ratih</small></div></div>
+            <div className="savora-image-trust"><span>✓</span><div><b>Food Score: 92 / Sangat Layak</b><small>Diproduksi 2 jam lalu • Warung Bu Ratih</small></div></div>
             <div className="savora-image-saving"><b>-52%</b><span>Hemat Rp13.000</span></div>
-            <div className="savora-image-timer"><Clock3 size={13} /> Pickup dalam 2j 15m</div>
+            <div className="savora-image-timer"><Clock3 size={13} /> Rescue Time 2j 15m</div>
           </div>
         </section>
 
@@ -157,7 +239,7 @@ export default function MarketplacePage() {
             <div>
               <p className="savora-eyebrow savora-green">RESCUE DEALS HARI INI</p>
               <h2 id="rescue-deals-title">Makanan yang butuh diselamatkan</h2>
-              <p>Semua dengan Food Trust Index transparan. Pickup langsung, bayar COD atau via Midtrans.</p>
+              <p>Food Score menurun seiring Rescue Time berkurang menuju batas layak. Pickup langsung, bayar cashless via Midtrans.</p>
             </div>
             <div className="savora-selects">
               <label><SlidersHorizontal size={14} /><select value={filters.trustStatus} onChange={(event) => updateFilter("trustStatus", event.target.value)} aria-label="Filter Food Trust Index">
@@ -175,14 +257,15 @@ export default function MarketplacePage() {
               {category === "Semua" ? "🍽" : category === "Nasi" ? "🍚" : category === "Bakery" ? "🥐" : category === "Snack" ? "🥟" : "🍱"} {category}
             </button>)}
           </div>
+          <AdRail ads={ads} />
           <div className="savora-product-grid">
-            {visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} />) : (
+            {visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} elapsed={elapsed} />) : (
               <div className="savora-empty"><b>Belum ada rescue deal yang cocok.</b><span>Coba ubah kata kunci atau filter-mu.</span></div>
             )}
           </div>
         </section>
 
-        <section id="cara-kerja" className="savora-how-it-works"><p className="savora-eyebrow savora-green">CARA KERJA</p><h2>Pilih. Selamatkan. Ambil.</h2><div><span>1</span><p><b>Temukan deal</b>Filter makanan surplus yang dekat dan sesuai kebutuhanmu.</p><span>2</span><p><b>Periksa Food Trust Index</b>Lihat info kelayakan, harga, dan batas pickup dengan transparan.</p><span>3</span><p><b>Ambil pesanan</b>Pilih COD atau Midtrans Sandbox lalu ambil langsung di UMKM.</p></div></section>
+        <section id="cara-kerja" className="savora-how-it-works"><p className="savora-eyebrow savora-green">CARA KERJA</p><h2>Pilih. Selamatkan. Ambil.</h2><div><span>1</span><p><b>Temukan deal</b>Filter makanan surplus yang dekat dan sesuai kebutuhanmu.</p><span>2</span><p><b>Periksa Food Score</b>Lihat skor kelayakan yang menurun mengikuti Rescue Time dan status keyword ulasan.</p><span>3</span><p><b>Ambil pesanan</b>Bayar cashless via Midtrans Sandbox lalu ambil langsung di UMKM.</p></div></section>
       </main>
       <footer id="untuk-umkm" className="savora-footer"><div className="savora-brand"><span className="savora-brand-mark">S</span><span>Savora <small>FOOD RESCUE</small></span></div><p>Selamatkan makanan, hemat biaya, kurangi limbah.<br />Marketplace food rescue untuk UMKM kuliner lokal.</p><span>© 2026 Savora. Karya CODE 6.0.</span></footer>
     </div>

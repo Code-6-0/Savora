@@ -781,12 +781,70 @@ body {
 .savora-not-found h1 { margin: 0; }
 .savora-not-found p { margin: 0 0 8px; color: var(--savora-muted); }
 
+/* Batch 2 — Food Score, Rescue Time, keyword safety, iklan (Richard Firmansyah) */
+/* Food Score badge di kartu (menggantikan label trust statis) */
+.savora-score-badge { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+.savora-score-badge small { font-size: 8px; font-weight: 700; opacity: 0.75; }
+.savora-score-badge.is-fresh { background: #def8b0; color: #31500f; }
+.savora-score-badge.is-eligible { background: #d4e2ff; color: #27426d; }
+.savora-score-badge.is-urgent { background: #ffe2a8; color: #704e03; }
+.savora-score-badge.is-critical { background: #ffd0c4; color: #7a2a12; }
+.savora-score-badge.is-expired { background: #d8dad4; color: #4a4f47; }
+/* Timer chip "panas" saat mendekati batas */
+.savora-timer.is-hot { background: rgba(122, 42, 18, 0.9); color: #ffd9cb; }
+/* Meter Food Score pada kartu & detail */
+.savora-score-meter { position: relative; height: 6px; margin: 12px 0 6px; border-radius: 999px; background: #2a3123; overflow: hidden; }
+.savora-score-meter > span { display: block; height: 100%; border-radius: 999px; background: var(--savora-lime); transition: width 900ms linear; }
+.savora-score-meter.is-eligible > span { background: #93c0ff; }
+.savora-score-meter.is-urgent > span { background: #ffc451; }
+.savora-score-meter.is-critical > span { background: #ff8a65; }
+.savora-score-meter.is-expired > span { background: #8b9083; }
+.savora-score-caption { display: flex; align-items: baseline; gap: 7px; font-size: 10px; color: #9ba599; }
+.savora-score-caption b { color: #eef2e8; font-size: 11px; }
+/* Badge keamanan keyword */
+.savora-safety-pill { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; padding: 3px 8px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: 0.2px; }
+.savora-safety-pill.is-aman { background: #e0f7c7; color: #35560f; }
+.savora-safety-pill.is-warning { background: #ffe6ad; color: #6f4d05; }
+.savora-safety-pill.is-gawat { background: #ffc9ba; color: #7c2712; }
+/* Panel Food Score di kolom beli (detail) */
+.savora-score-panel { margin: 20px 0 6px; padding: 14px 15px; border: 1px solid #35402f; border-radius: 15px; background: #202819; }
+.savora-score-panel-head { display: flex; align-items: center; justify-content: space-between; }
+.savora-score-panel-head > span { display: flex; align-items: center; gap: 6px; color: #d8f6a5; font-size: 12px; font-weight: 700; }
+.savora-score-panel-head b { color: var(--savora-lime); font-size: 22px; }
+.savora-score-panel-head small { color: #a7b29d; font-size: 11px; font-weight: 700; }
+.savora-score-panel .savora-score-meter { margin: 11px 0 9px; height: 8px; }
+.savora-score-panel p { margin: 0; color: #aab4a0; font-size: 10px; line-height: 1.5; }
+/* Catatan keamanan keyword di bagian ulasan */
+.savora-safety-note { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin: 0 0 14px; padding: 9px 12px; border-radius: 11px; font-size: 11px; }
+.savora-safety-note b { font-weight: 800; }
+.savora-safety-note.is-aman { background: #233019; color: #cfe8ac; }
+.savora-safety-note.is-warning { background: #322a15; color: #ffdf9e; }
+.savora-safety-note.is-gawat { background: #331c15; color: #ffc3b0; }
+/* Highlight keyword di dalam teks ulasan */
+.savora-kw { padding: 0 3px; border-radius: 4px; font-style: normal; font-weight: 700; }
+.savora-kw.is-aman { background: #cdeea6; color: #2f4d0d; }
+.savora-kw.is-warning { background: #ffdf9e; color: #6a4a05; }
+.savora-kw.is-gawat { background: #ffc0ad; color: #7c2712; }
+/* Rail iklan / slot sponsor */
+.savora-ad-rail { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 26px; }
+.savora-ad-card { display: flex; overflow: hidden; border: 1px solid #33402a; border-radius: 18px; background: var(--savora-surface); transition: border-color 160ms ease, transform 160ms ease; }
+.savora-ad-card:hover, .savora-ad-card:focus-visible { border-color: #71825d; outline: none; transform: translateY(-3px); }
+.savora-ad-media { position: relative; flex: 0 0 96px; min-height: 96px; }
+.savora-ad-media img { object-fit: cover; }
+.savora-ad-flag { position: absolute; top: 7px; left: 7px; display: flex; align-items: center; gap: 3px; padding: 3px 7px; border-radius: 999px; background: rgba(16, 19, 15, 0.85); color: #d8f6a5; font-size: 8px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; }
+.savora-ad-card.is-eksternal .savora-ad-flag { color: #e7ecff; }
+.savora-ad-body { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px; }
+.savora-ad-body b { color: #f4f7ef; font-size: 12px; }
+.savora-ad-body p { margin: 0; color: var(--savora-muted); font-size: 10px; line-height: 1.45; }
+.savora-ad-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; color: var(--savora-lime); font-size: 10px; font-weight: 800; }
+
 @media (max-width: 900px) {
   .savora-main-nav, .savora-login, .savora-signup { display: none; }
   .savora-search { max-width: none; }
   .savora-hero { grid-template-columns: 1fr; gap: 38px; padding-top: 42px; }
   .savora-hero-media { height: 340px; }
   .savora-product-grid { grid-template-columns: repeat(2, 1fr); }
+  .savora-ad-rail { grid-template-columns: repeat(2, 1fr); }
   .savora-detail-layout { grid-template-columns: 1fr; }
   .savora-buy-panel { position: static; }
 }
@@ -809,6 +867,7 @@ body {
   .savora-section-heading { display: block; }
   .savora-selects { margin-top: 18px; }
   .savora-product-grid { grid-template-columns: 1fr; gap: 13px; }
+  .savora-ad-rail { grid-template-columns: 1fr; }
   .savora-food-image { height: 200px; }
   .savora-deals { padding-top: 52px; }
   .savora-how-it-works > div { grid-template-columns: auto 1fr; gap: 13px; }

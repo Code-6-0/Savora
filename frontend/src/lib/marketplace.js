@@ -44,7 +44,10 @@ export const fallbackMarketplaceProducts = [
     shelfLife: "4 jam sejak produksi",
     storage: "Wadah tertutup, suhu ruang",
     packaging: "Kertas food-grade",
-    reviews: [],
+    reviews: [
+      { name: "Yoga S.", rating: 4, comment: "Gorengan masih enak, tapi yang tahu baunya agak asam sedikit." },
+      { name: "Putri N.", rating: 5, comment: "Renyah dan segar, porsinya banyak." },
+    ],
   },
   {
     id: "roti-sourdough",
@@ -128,7 +131,10 @@ export const fallbackMarketplaceProducts = [
     shelfLife: "5 jam sejak produksi",
     storage: "Tertutup, suhu ruang",
     packaging: "Kotak food-grade, baru",
-    reviews: [],
+    reviews: [
+      { name: "Bagus W.", rating: 2, comment: "Sayurnya sudah basi waktu saya buka, sayang sekali." },
+      { name: "Sinta L.", rating: 4, comment: "Nasinya enak dan masih hangat." },
+    ],
   },
 ];
 
