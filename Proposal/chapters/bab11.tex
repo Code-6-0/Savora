@@ -1,0 +1,265 @@
+\section{RENCANA STRATEGI PENGUJIAN}
+
+\subsection{Strategi Pengujian}
+
+Savora akan menjalani berbagai jenis pengujian untuk memastikan kualitas aplikasi. Berikut adalah rencana testing yang akan diimplementasikan:
+
+\begin{table}[htbp]
+\centering
+\caption{Jenis Pengujian yang Akan Dilakukan}
+\label{tab:testing}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Jenis Testing} & \textbf{Deskripsi} & \textbf{Tools yang Akan Digunakan} \\
+\hline
+Unit Testing & Pengujian fungsi individual & Jest atau Vitest \\
+\hline
+Integration Testing & Pengujian integrasi antar modul & Jest + Supertest \\
+\hline
+API Testing & Pengujian endpoint API & Postman atau Supertest \\
+\hline
+UI Testing & Pengujian antarmuka pengguna & Cypress atau Playwright \\
+\hline
+Usability Testing & Pengujian kemudahan penggunaan & Manual testing \\
+\hline
+Performance Testing & Pengujian performa dan beban & Artillery atau k6 \\
+\hline
+Security Testing & Pengujian keamanan & OWASP ZAP \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{STATUS}: Semua jenis testing di atas adalah RENCANA. Belum ada test yang sudah dibuat atau dijalankan saat ini.
+
+\subsection{Unit Testing (Rencana)}
+
+\subsubsection{Area yang Akan Ditest}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Food Trust Index} : Testing pemetaan input UMKM ke lima status kelayakan
+    \item \textbf{Food Score Decay} : Testing perhitungan skor peluruhan untuk berbagai sisa waktu
+    \item \textbf{Keyword Classification} : Testing pemetaan keyword ulasan ke level Aman/Warning/Gawat dan agregasi \textit{worst-case}
+    \item \textbf{Dynamic Discount \& Service Fee} : Testing perhitungan diskon, penghematan, dan \textit{service fee} 5\%
+    \item \textbf{Authentication Logic} : Testing login, register, password hashing, RBAC 4 role
+    \item \textbf{Data Validation} : Testing validasi input form
+\end{itemize}
+
+\subsubsection{Test Coverage Target}
+\begin{itemize}[leftmargin=*]
+    \item Backend Core Logic (Go): target >80\% coverage
+    \item API Routes (Fiber): target >70\% coverage
+    \item Logika Food Score \& Pricing (JavaScript): target >75\% coverage
+    \item Frontend Components: target >60\% coverage
+    \item Overall Project: target >70\% coverage
+\end{itemize}
+
+\subsection{Integration Testing (Rencana)}
+
+Akan memastikan komunikasi antar modul berjalan dengan baik:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Frontend-Backend Integration} : Memastikan API calls dari frontend berhasil
+    \item \textbf{Backend-Database Integration} : Memastikan operasi CRUD via GORM ke PostgreSQL bekerja
+    \item \textbf{Food Score Consistency} : Memastikan perhitungan Food Score \& diskon konsisten dengan data produk
+    \item \textbf{Payment Integration (Midtrans Sandbox)} : Memastikan pembuatan token, verifikasi \textit{webhook}/\textit{signature}, dan transisi status order (Paid, Failed/Expired) berjalan benar
+\end{itemize}
+
+\subsection{API Testing (Rencana)}
+
+Endpoint API akan diuji untuk memastikan response code dan response time optimal:
+
+\begin{table}[htbp]
+\centering
+\caption{Target API Performance}
+\label{tab:api_testing}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Endpoint} & \textbf{Expected Status} & \textbf{Target Response Time} \\
+\hline
+POST /api/auth/register & 201 Created & < 300ms \\
+\hline
+POST /api/auth/login & 200 OK & < 200ms \\
+\hline
+GET /api/products & 200 OK & < 150ms \\
+\hline
+POST /api/products & 201 Created & < 300ms \\
+\hline
+POST /api/orders & 201 Created & < 400ms \\
+\hline
+POST /api/payments/midtrans-token & 201 Created & < 500ms \\
+\hline
+POST /api/payments/midtrans-webhook & 200 OK & < 300ms \\
+\hline
+PUT /api/orders/:id/status & 200 OK & < 200ms \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Usability Testing (Rencana)}
+
+Akan dilakukan dengan partisipan yang mewakili target pengguna untuk mengevaluasi:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Learnability} : Seberapa mudah pengguna baru memahami antarmuka
+    \item \textbf{Efficiency} : Seberapa cepat pengguna menyelesaikan task
+    \item \textbf{Memorability} : Seberapa mudah pengguna mengingat cara penggunaan
+    \item \textbf{Errors} : Seberapa sering pengguna melakukan kesalahan
+    \item \textbf{Satisfaction} : Seberapa puas pengguna dengan aplikasi
+\end{enumerate}
+
+\textbf{Skenario Testing yang Akan Diuji:}
+
+Untuk Customer:
+\begin{itemize}[leftmargin=*]
+    \item Registrasi akun baru
+    \item Mencari produk berdasarkan lokasi
+    \item Melihat detail produk, Food Score, dan badge keamanan keyword
+    \item Melakukan checkout \textit{cashless} via Midtrans (sandbox) dengan \textit{service fee} 5\%
+    \item Memantau status pesanan dan menunjukkan \textit{pickup code}
+    \item Memberikan rating dan review (termasuk keyword)
+    \item Membuat tiket di Help Center
+\end{itemize}
+
+Untuk UMKM:
+\begin{itemize}[leftmargin=*]
+    \item Registrasi dan verifikasi akun
+    \item Menambahkan produk surplus, mengisi Food Trust Index, dan menetapkan harga rescue
+    \item Memantau Food Score produk
+    \item Memvalidasi \textit{pickup code} dan memproses pesanan
+    \item Mencatat Waste Log dan melihat analitik/insight
+\end{itemize}
+
+Untuk Admin dan Mitra Donasi:
+\begin{itemize}[leftmargin=*]
+    \item Admin memverifikasi UMKM dan Mitra Donasi (approve/reject)
+    \item Admin memoderasi iklan dan menangani Help Ticket
+    \item Admin melihat dashboard keuangan dan meng-\textit{export} laporan
+    \item Mitra Donasi mendaftar dan memantau status verifikasi
+\end{itemize}
+
+\subsection{Performance Testing (Rencana)}
+
+Akan mensimulasikan beban pengguna untuk memastikan aplikasi dapat handle traffic tinggi:
+
+\begin{table}[htbp]
+\centering
+\caption{Target Metrik Performa}
+\label{tab:performance}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Metrik} & \textbf{Target} & \textbf{Kondisi} \\
+\hline
+Response Time (rata-rata) & < 500ms & Load normal \\
+\hline
+Response Time (p95) & < 1000ms & Load normal \\
+\hline
+Concurrent Users & 100+ & Tanpa degradasi performa \\
+\hline
+Throughput & 50+ req/sec & Per endpoint \\
+\hline
+Error Rate & < 1\% & Semua kondisi \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{Load Testing Scenarios yang Akan Dilakukan:}
+\begin{itemize}[leftmargin=*]
+    \item Normal Load: 50 concurrent users selama 10 menit
+    \item Peak Load: 100 concurrent users selama 5 menit
+    \item Stress Test: Gradually increase users hingga sistem menunjukkan degradasi
+    \item Spike Test: Sudden increase dari 10 ke 100 users dalam 30 detik
+\end{itemize}
+
+\subsection{Security Testing (Rencana)}
+
+Akan fokus pada OWASP Top 10 vulnerabilities:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{SQL Injection} : Memastikan input user di-sanitize dengan ORM
+    \item \textbf{Authentication} : Memastikan password di-hash, token JWT secure
+    \item \textbf{XSS Protection} : Memastikan user input di-escape
+    \item \textbf{CSRF Protection} : Implementasi CSRF token untuk forms
+    \item \textbf{Sensitive Data} : Memastikan password tidak di-log atau exposed
+    \item \textbf{API Security} : Implementasi rate limiting dan CORS policy
+\end{enumerate}
+
+\subsection{Kriteria Penerimaan (Acceptance Criteria)}
+
+Tabel~\ref{tab:acceptance} merangkum kriteria penerimaan fitur inti MVP yang menjadi dasar
+verifikasi \textit{end-to-end} saat demo.
+
+\begin{table}[htbp]
+\centering
+\caption{Kriteria Penerimaan Fitur Inti MVP}
+\label{tab:acceptance}
+\small
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Fitur} & \textbf{Kriteria Penerimaan} \\
+\hline
+Food Trust Index & Input UMKM menghasilkan salah satu dari 5 status; produk berstatus tidak layak tidak tampil di marketplace \\
+\hline
+Food Score Decay & Skor menurun mengikuti sisa waktu dan mencapai 0 saat kedaluwarsa; label band sesuai ambang \\
+\hline
+Keyword Classification & Ulasan dengan keyword gawat menaikkan badge UMKM ke level terburuk (worst-case) \\
+\hline
+Checkout Cashless & Total = subtotal + service fee 5\%; status menjadi Paid hanya setelah verifikasi notifikasi Midtrans \\
+\hline
+Pickup Code & Kode unik terbentuk setelah Paid; order menjadi Completed hanya jika kode valid \\
+\hline
+Help Center & Tiket customer tersimpan dan tampil di konsol admin untuk ditindaklanjuti \\
+\hline
+Waste Log & Catatan makanan tidak terjual tersimpan dan terlihat pada dashboard UMKM \\
+\hline
+Mitra Donasi & Registrasi berstatus pending; berubah aktif hanya setelah admin melakukan approve \\
+\hline
+Keuangan Admin & Total service fee + iklan tercatat dan dapat di-export (CSV/Excel/PDF) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Testing Timeline}
+
+\begin{table}[htbp]
+\centering
+\caption{Rencana Timeline Pengujian}
+\label{tab:testing_timeline}
+\begin{tabularx}{\textwidth}{|l|X|l|}
+\hline
+\textbf{Fase} & \textbf{Aktivitas} & \textbf{Durasi} \\
+\hline
+Development & Unit testing parallel dengan development & Ongoing \\
+\hline
+Integration & Integration testing setelah modul selesai & 1 minggu \\
+\hline
+System Testing & API, UI, performance testing & 1-2 minggu \\
+\hline
+User Acceptance & Usability testing dengan target user & 1 minggu \\
+\hline
+Security & Security audit dan penetration testing & 1 minggu \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Bug Tracking dan Issue Management}
+
+Untuk mengelola bug dan issue yang ditemukan:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Platform} : GitHub Issues untuk tracking
+    \item \textbf{Priority Levels} : Critical, High, Medium, Low
+    \item \textbf{Bug Report Template} : Steps to reproduce, expected vs actual behavior
+    \item \textbf{Definition of Done} : Bug fix must include test case
+\end{itemize}
+
+\subsection{Continuous Integration (Rencana)}
+
+Testing akan diintegrasikan dengan CI/CD pipeline:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Pre-commit Hooks} : Linting dan formatting check
+    \item \textbf{Pull Request Checks} : Unit tests dan integration tests otomatis
+    \item \textbf{Code Coverage Report} : Automated coverage report di setiap PR
+    \item \textbf{Security Scan} : Dependency vulnerability check
+\end{itemize}
+
+\textbf{CATATAN PENTING}: Semua rencana testing di atas akan diimplementasikan pada fase development. Saat ini belum ada test yang sudah ditulis atau dijalankan. Aplikasi belum dibangun sehingga tidak ada hasil testing yang dapat dilaporkan.

@@ -1,0 +1,178 @@
+\section{ANALISIS KOMPETITOR}
+
+\subsection{Analisis Kompetitor}
+
+Berikut adalah perbandingan Savora dengan platform serupa yang beroperasi di Indonesia berdasarkan data aktual per 2025--2026 \cite{mobilefoodwaste2024review}\cite{kusumawati2025mobile}:
+
+\begin{longtable}{|>{\RaggedRight}p{0.22\textwidth}|>{\RaggedRight}p{0.26\textwidth}|>{\RaggedRight}p{0.26\textwidth}|>{\RaggedRight}p{0.26\textwidth}|}
+\caption{Perbandingan Fitur dengan Kompetitor}
+\label{tab:kompetitor} \\
+\hline
+\textbf{Aspek / Fitur}
+  & \textbf{Savora}
+  & \textbf{Surplus Indonesia}
+  & \textbf{Garda Pangan} \\
+\hline
+\endfirsthead
+\multicolumn{4}{l}{\small\textit{(Tabel \ref{tab:kompetitor} dilanjutkan)}} \\
+\hline
+\textbf{Aspek / Fitur}
+  & \textbf{Savora}
+  & \textbf{Surplus Indonesia}
+  & \textbf{Garda Pangan} \\
+\hline
+\endhead
+\hline
+\multicolumn{4}{r}{\small\textit{(bersambung ke halaman berikutnya)}} \\
+\endfoot
+\hline
+\endlastfoot
+Jenis platform
+  & Marketplace food rescue UMKM (MVP)
+  & Clearance sale app (recommerce)
+  & Food bank sosial / nirlaba \\
+\hline
+Tersedia di Indonesia
+  & \checkmark\ (MVP)
+  & \checkmark\ (aktif)
+  & \checkmark\ (Surabaya \& sekitar) \\
+\hline
+Fokus UMKM lokal kuliner
+  & \checkmark
+  & \checkmark\ (UMKM, horeka)
+  & \checkmark\ (distribusi gratis) \\
+\hline
+Transparansi produk
+  & Tinggi (foto, deskripsi, kelayakan)
+  & Sedang (nama \& foto)
+  & Tinggi (SOP seleksi ketat) \\
+\hline
+Food Trust Index / info kelayakan
+  & \checkmark\ (rule-based, tampil ke user)
+  & \ding{55}
+  & Seleksi internal (tidak ke user) \\
+\hline
+Metode pembayaran
+  & Cashless via Midtrans sandbox + service fee 5\%
+  & Digital saja (OVO, GoPay, DANA)
+  & Tidak ada (donasi) \\
+\hline
+Klasifikasi keyword ulasan
+  & \checkmark\ (Aman/Warning/Gawat)
+  & \ding{55}
+  & \ding{55} \\
+\hline
+Dynamic discount berbasis kelayakan
+  & \checkmark\ (rule-based, 10--50\%)
+  & \checkmark\ (hingga 80\%, tidak berbasis kelayakan)
+  & \ding{55} \\
+\hline
+Pickup code \& batas waktu
+  & \checkmark\ (pickup code + deadline)
+  & Window waktu
+  & \ding{55} \\
+\hline
+Waste Log untuk mitra UMKM
+  & \checkmark
+  & \ding{55}
+  & \ding{55} \\
+\hline
+Impact tracking ke pengguna
+  & \checkmark\ (estimatif, bukan klaim resmi)
+  & \checkmark\ (estimasi CO\textsubscript{2}/CH\textsubscript{4})
+  & \ding{55} \\
+\hline
+Rating \& ulasan
+  & \checkmark
+  & \checkmark
+  & \ding{55} \\
+\hline
+Skala (2025--2026)
+  & MVP lomba
+  & Ratusan ribu user, Jawa/Bali/Sulsel
+  & Lokal Surabaya \\
+\hline
+\end{longtable}
+
+\subsection{Analisis SWOT}
+
+\begin{table}[htbp]
+\centering
+\caption{Analisis SWOT Savora}
+\label{tab:swot}
+\begin{tabular}{|>{\RaggedRight\arraybackslash}p{0.46\textwidth}|>{\RaggedRight\arraybackslash}p{0.46\textwidth}|}
+\hline
+\textbf{Strengths (Kekuatan)} & \textbf{Weaknesses (Kelemahan)} \\
+\hline
+\begin{minipage}[t]{\linewidth}
+\begin{itemize}[leftmargin=*,nosep]
+    \item Fokus masalah jelas dan lokal (UMKM kuliner)
+    \item Food Trust Index transparan dan mudah dijelaskan
+    \item Food Score Decay memberikan urgensi visual \textit{real-time}
+    \item Keyword classification dari ulasan (\textit{crowdsourced safety})
+    \item Model pendapatan jelas: \textit{service fee} 5\% + iklan
+    \item Cashless via Midtrans sandbox menunjukkan kesiapan integrasi
+\end{itemize}
+\end{minipage} &
+\begin{minipage}[t]{\linewidth}
+\begin{itemize}[leftmargin=*,nosep]
+    \item Bergantung pada kejujuran input data UMKM
+    \item Integrasi Midtrans masih \textit{sandbox}
+    \item Validasi data \textit{real} terbatas pada demo/pilot
+    \item Butuh waktu untuk adopsi awal
+\end{itemize}
+\end{minipage} \\
+\hline
+\textbf{Opportunities (Peluang)} & \textbf{Threats (Ancaman)} \\
+\hline
+\begin{minipage}[t]{\linewidth}
+\begin{itemize}[leftmargin=*,nosep]
+    \item Kesadaran \textit{food waste} dan belanja hemat meningkat
+    \item Banyak UMKM belum punya kanal khusus makanan surplus
+    \item Dapat dikembangkan menjadi PWA tanpa instalasi \textit{native}
+    \item Mitra donasi membuka peluang kerja sama sosial
+\end{itemize}
+\end{minipage} &
+\begin{minipage}[t]{\linewidth}
+\begin{itemize}[leftmargin=*,nosep]
+    \item Marketplace besar dapat menambahkan fitur serupa
+    \item \textit{Trust issue} terhadap makanan surplus menghambat adopsi
+    \item Customer \textit{no-show} dapat merugikan UMKM
+\end{itemize}
+\end{minipage} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Model Bisnis}
+
+Savora mengadopsi model bisnis yang realistis dan dapat didemonstrasikan pada MVP, dengan dua
+sumber pendapatan utama:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Service Fee 5\%} : Biaya layanan 5\% yang otomatis ditambahkan pada setiap transaksi
+    produk dan ditampilkan transparan di halaman checkout. Total pendapatan \textit{service fee}
+    tercatat pada dashboard keuangan admin.
+    \item \textbf{Pendapatan Iklan} : Slot iklan \textit{premium listing} untuk UMKM dan iklan pihak
+    ketiga (brand luar), yang seluruhnya melalui \textit{approval} admin sebelum tayang.
+\end{enumerate}
+
+Model ini sengaja dijaga sederhana agar dapat diuji dalam durasi lomba tanpa \textit{overclaim}.
+Sumber pendapatan lanjutan seperti langganan premium UMKM, program CSR korporat, dan kerja sama
+kelembagaan diposisikan sebagai \textit{roadmap} setelah MVP tervalidasi.
+
+\subsection{Rencana Keberlanjutan}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Tahap MVP (Lomba)} : Membuktikan kelayakan alur \textit{end-to-end} (listing, cashless
+    Midtrans sandbox, pickup, review) dengan data demo/pilot yang realistis.
+
+    \item \textbf{Tahun Pertama} : Fokus akuisisi UMKM dan pengguna di satu kota, mengaktifkan mode
+    \textit{production} Midtrans, dan mencapai \textit{break even} dari \textit{service fee} + iklan.
+
+    \item \textbf{Tahun Kedua} : Ekspansi ke beberapa kota besar, memperkuat mitra donasi, serta
+    menambah paket langganan premium dan program CSR.
+
+    \item \textbf{Jangka Panjang} : Menjadi platform referensi \textit{food rescue} UMKM di Indonesia
+    dengan potensi pengembangan produk turunan (pelatihan UMKM, konsultasi \textit{sustainability}).
+\end{enumerate}

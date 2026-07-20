@@ -1,0 +1,1382 @@
+                                SAVORA
+
+                     Platform Manajemen Food Waste Berbasis Web
+                                     untuk UMKM Kuliner
+                                    Kelompok: AmbaTeam
+
+Wa Ode Nur Alia, Richard Firmansyah, Muhammad Rifaidi, Ridwan Hakim Ramadhan, Nadi
+                                                Azzada Akbar
+
+                   714240035, 714240047, 714240044, 714240050, 714240002
+
+                             Program Studi Teknik Informatika
+                       Universitas Logistik dan Bisnis Internasional
+
+                                         2026
+                         DAFTAR ISI
+
+DAFTAR ISI                               i
+
+DAFTAR TABEL                             v
+
+DAFTAR GAMBAR                            vi
+
+ABSTRAK                                  1
+
+BAB I       PENDAHULUAN                  2
+
+1.1 Konteks Masalah . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+
+1.2 Akar Masalah . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+
+1.3 Dampak jika Tidak Diselesaikan . . . . . . . . . . . . . . . . . . . . . . . 3
+
+1.4 Mengapa Sekarang? . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+BAB II      TUJUAN DAN MANFAAT           4
+
+2.1 Tujuan . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+
+2.2 Manfaat . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+
+        2.2.1 Manfaat bagi UMKM Kuliner . . . . . . . . . . . . . . . . . . . . 4
+
+        2.2.2 Manfaat bagi Konsumen . . . . . . . . . . . . . . . . . . . . . . . 4
+
+        2.2.3 Manfaat bagi Lingkungan . . . . . . . . . . . . . . . . . . . . . . . 5
+
+2.3 Dampak Jangka Panjang . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+        2.3.1 Dampak Ekonomi . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+        2.3.2 Dampak Sosial . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+        2.3.3 Dampak Lingkungan . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+2.4 Metrik Dampak . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+
+BAB III DIFERENSIASI DAN ANALISIS PASAR  7
+
+3.1 Diferensiasi Solusi . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+
+3.2 Keunggulan Teknis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+
+        3.2.1 Food Eligibility Score . . . . . . . . . . . . . . . . . . . . . . . . . 7
+
+        3.2.2 Dynamic Pricing Engine . . . . . . . . . . . . . . . . . . . . . . . 7
+
+3.3 Technology Stack yang Unik . . . . . . . . . . . . . . . . . . . . . . . . . 8
+
+3.4 Moat (Penghalang Kompetisi) . . . . . . . . . . . . . . . . . . . . . . . . 8
+
+BAB IV ANALISIS KOMPETITOR               9
+
+4.1 Analisis Kompetitor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+
+4.2 Analisis SWOT . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+
+4.3 Model Bisnis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+
+4.4 Rencana Keberlanjutan . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+
+                                i
+BAB V  TEKNOLOGI                 12
+
+5.1 Daftar Teknologi . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+5.2 Alasan Pemilihan Teknologi . . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+       5.2.1 React.js untuk Frontend . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+       5.2.2 Node.js + Express untuk Backend . . . . . . . . . . . . . . . . . . 12
+
+       5.2.3 PostgreSQL + Redis . . . . . . . . . . . . . . . . . . . . . . . . . 13
+
+       5.2.4 Python + scikit-learn untuk Machine Learning . . . . . . . . . . . . 13
+
+5.3 Arsitektur Teknologi . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+
+BAB VI BATASAN PERANGKAT LUNAK   15
+
+BAB VII METODOLOGI PENGEMBANGAN  16
+
+7.1 Metodologi yang Dipilih . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+
+7.2 Alasan Pemilihan Scrum . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+
+7.3 Tahapan dan Timeline Pengembangan . . . . . . . . . . . . . . . . . . . . 16
+
+7.4 Peran Anggota Tim . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+
+7.5 Tools Pendukung . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+
+BAB VIII ARSITEKTUR SISTEM       18
+
+8.1 Diagram Arsitektur Sistem . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+
+8.2 ERD (Entity Relationship Diagram) . . . . . . . . . . . . . . . . . . . . . 19
+
+       8.2.1 Tabel Utama . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+
+8.3 API Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+
+8.4 Alur Data . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+
+BAB IX RENCANA IMPLEMENTASI      21
+
+9.1 Rencana Implementasi Fitur . . . . . . . . . . . . . . . . . . . . . . . . . 21
+
+9.2 Desain Antarmuka (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . . 21
+
+       9.2.1 Halaman Marketplace (Customer) . . . . . . . . . . . . . . . . . . 21
+
+       9.2.2 Halaman Food Eligibility Assessment (UMKM) . . . . . . . . . . . 22
+
+       9.2.3 Halaman Dashboard Admin . . . . . . . . . . . . . . . . . . . . . 22
+
+9.3 Spesifikasi Teknis Fitur Utama . . . . . . . . . . . . . . . . . . . . . . . . 22
+
+       9.3.1 Food Eligibility Score (FES) . . . . . . . . . . . . . . . . . . . . . 22
+
+       9.3.2 Dynamic Pricing Engine . . . . . . . . . . . . . . . . . . . . . . . 22
+
+9.4 Arsitektur Sistem . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+
+       9.4.1 Integrasi Antar Komponen . . . . . . . . . . . . . . . . . . . . . . 23
+
+       9.4.2 API Endpoints (Rencana) . . . . . . . . . . . . . . . . . . . . . . . 23
+
+9.5 Technology Stack . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+
+BAB X  RENCANA DESAIN UI/UX      24
+
+10.1 Pendekatan User Research yang Akan Dilakukan . . . . . . . . . . . . . . 24
+
+                             ii
+10.2 Target User Persona (Draft) . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+      10.2.1 Persona 1: UMKM Kuliner (Draft) . . . . . . . . . . . . . . . . . . 24
+      10.2.2 Persona 2: Customer (Draft) . . . . . . . . . . . . . . . . . . . . . 24
+      10.2.3 Persona 3: Admin Platform (Draft) . . . . . . . . . . . . . . . . . . 25
+
+10.3 Desain UI/UX dan Mockup . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+
+BAB XI RENCANA STRATEGI PENGUJIAN           26
+
+11.1 Strategi Pengujian . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+
+11.2 Unit Testing (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+
+11.2.1 Area yang Akan Ditest . . . . . . . . . . . . . . . . . . . . . . . . 26
+
+11.2.2 Test Coverage Target . . . . . . . . . . . . . . . . . . . . . . . . . 26
+
+11.3 Integration Testing (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . . 27
+
+11.4 API Testing (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+
+11.5 Usability Testing (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+
+11.6 Performance Testing (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . 28
+
+11.7 Security Testing (Rencana) . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+
+11.8 Testing Timeline . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+
+11.9 Bug Tracking dan Issue Management . . . . . . . . . . . . . . . . . . . . . 29
+
+11.10Continuous Integration (Rencana) . . . . . . . . . . . . . . . . . . . . . . 29
+
+BAB XII RENCANA DOKUMENTASI DAN DEPLOYMENT  30
+
+12.1 Rencana Deployment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+
+12.2 Rencana Dokumentasi Pengguna . . . . . . . . . . . . . . . . . . . . . . . 30
+
+12.2.1 User Guide untuk Customer . . . . . . . . . . . . . . . . . . . . . 30
+
+12.2.2 User Guide untuk UMKM . . . . . . . . . . . . . . . . . . . . . . 30
+
+12.2.3 User Guide untuk Admin . . . . . . . . . . . . . . . . . . . . . . . 31
+
+12.3 Rencana Akun Demo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+
+12.4 Requirement Sistem . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+
+12.5 Rencana FAQ dan Troubleshooting . . . . . . . . . . . . . . . . . . . . . . 32
+
+12.5.1 Common Issues yang Akan Didokumentasikan . . . . . . . . . . . 32
+
+12.6 Rencana Support dan Kontak . . . . . . . . . . . . . . . . . . . . . . . . . 32
+
+12.7 Dokumentasi Teknis untuk Developer . . . . . . . . . . . . . . . . . . . . 32
+
+12.7.1 API Documentation . . . . . . . . . . . . . . . . . . . . . . . . . . 33
+
+12.7.2 Database Schema Documentation . . . . . . . . . . . . . . . . . . 33
+
+12.7.3 Deployment Guide . . . . . . . . . . . . . . . . . . . . . . . . . . 33
+
+12.8 Rencana Maintenance Documentation . . . . . . . . . . . . . . . . . . . . 33
+
+12.9 Timeline Dokumentasi . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+
+DAFTAR PUSTAKA & REFERENSI                  35
+
+                            iii
+LAMPIRAN      36
+
+Lampiran A: Database Schema . . . . . . . . . . . . . . . . . . . . . . . . . . . 36
+
+          iv
+                                DAFTAR TABEL
+
+1 Data Sampah Makanan di Indonesia . . . . . . . . . . . . . . . . . . . . . 2
+2 Metrik Dampak Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+3 Technology Stack Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+4 Perbandingan Fitur dengan Kompetitor . . . . . . . . . . . . . . . . . . . . 9
+5 Analisis SWOT Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+6 Daftar Teknologi Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+7 Tahapan Pengembangan Savora . . . . . . . . . . . . . . . . . . . . . . . . 16
+8 Pembagian Tugas Anggota Tim . . . . . . . . . . . . . . . . . . . . . . . . 17
+9 Struktur Database Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+10 Endpoint API Utama . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+11 Rencana Implementasi Fitur . . . . . . . . . . . . . . . . . . . . . . . . . 21
+12 Daftar API Endpoints . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+13 Technology Stack Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+14 Jenis Pengujian yang Akan Dilakukan . . . . . . . . . . . . . . . . . . . . 26
+15 Target API Performance . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+16 Target Metrik Performa . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+17 Rencana Timeline Pengujian . . . . . . . . . . . . . . . . . . . . . . . . . 29
+18 Rencana Akun Demo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+19 Minimum System Requirements . . . . . . . . . . . . . . . . . . . . . . . 32
+20 Rencana Timeline Dokumentasi . . . . . . . . . . . . . . . . . . . . . . . 34
+21 Schema Tabel Users . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 36
+22 Schema Tabel Products . . . . . . . . . . . . . . . . . . . . . . . . . . . . 36
+
+                                                  v
+                              DAFTAR GAMBAR
+
+1 Arsitektur High-Level Savora . . . . . . . . . . . . . . . . . . . . . . . . . 13
+2 Timeline Pengembangan Savora . . . . . . . . . . . . . . . . . . . . . . . 17
+3 Use Case Diagram Savora . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+4 Entity Relationship Diagram Savora . . . . . . . . . . . . . . . . . . . . . 19
+
+                                                  vi
+                                        ABSTRAK
+
+Indonesia menghasilkan sekitar 23-48 juta ton sampah makanan per tahun [1][2], dengan
+proporsi terbesar berasal dari sektor UMKM kuliner yang kehilangan 10-30% produk akibat
+surplus yang tidak terjual. Masalah ini tidak hanya menimbulkan kerugian ekonomi ba-
+gi pelaku UMKM, tetapi juga berkontribusi signifikan terhadap emisi gas rumah kaca dan
+pemborosan sumber daya alam. Belum ada solusi terpadu yang secara efektif menjemba-
+tani UMKM kuliner dengan konsumen untuk menyalurkan makanan surplus yang masih
+layak konsumsi dengan harga terjangkau. Savora hadir sebagai platform manajemen food
+waste berbasis web yang menghubungkan UMKM kuliner dengan konsumen yang peduli
+lingkungan. Platform ini menawarkan serangkaian fitur inovatif meliputi Food Eligibility
+Assessment untuk menilai kelayakan makanan secara objektif menggunakan algoritma we-
+ighted scoring, Dynamic Pricing Engine [3] untuk mengoptimalkan harga jual berdasarkan
+sisa waktu kelayakan dan kondisi pasar, serta Food Trust Index yang membangun transpa-
+ransi dan kepercayaan antara UMKM dengan konsumen. Dengan memanfaatkan teknologi
+machine learning [4] untuk perhitungan kelayakan makanan dan rekomendasi harga dinamis,
+Savora bertujuan mengurangi food waste di sektor UMKM kuliner sekaligus memberikan ak-
+ses makanan berkualitas dengan harga terjangkau bagi konsumen. Platform ini memberikan
+dampak positif bagi tiga pihak utama: UMKM mendapatkan pendapatan tambahan dari ma-
+kanan surplus yang sebelumnya terbuang, konsumen memperoleh akses terhadap makanan
+berkualitas dengan harga diskon 30-50%, serta lingkungan mendapat manfaat dari pengu-
+rangan emisi gas rumah kaca dan volume sampah organik [5]. Fitur tambahan seperti Food
+Rescue Score untuk pelacakan kinerja UMKM, Carbon Impact Dashboard untuk visualisasi
+dampak lingkungan, dan pilihan donasi manual untuk produk mendekati masa kedaluwarsa
+melengkapi ekosistem platform. Dengan target implementasi bertahap dimulai dari pengem-
+bangan MVP (Minimum Viable Product), Savora berpotensi menjadi solusi scalable yang
+dapat diterapkan di berbagai kota di Indonesia untuk mendukung target SDG 12.3 [6] meng-
+urangi food waste hingga 50% pada tahun 2030.
+
+                                                      1
+                     BAB I PENDAHULUAN
+
+1.1 Konteks Masalah
+
+Indonesia merupakan salah satu negara penghasil sampah makanan terbesar di dunia. Berda-
+sarkan data dari Badan Pusat Statistik (BPS) tahun 2024 [1], Indonesia menghasilkan sekitar
+23-48 juta ton sampah makanan per tahun [2], yang setara dengan 115-237 kg per kapi-
+ta. Angka ini menjadikan Indonesia peringkat kedua di dunia setelah Arab Saudi dalam hal
+pemborosan makanan per kapita.
+
+Sektor UMKM kuliner menjadi salah satu kontributor terbesar terhadap food waste. Data
+Kementerian Koperasi dan Usaha Kecil dan Menengah [7] menunjukkan bahwa UMKM
+kuliner di Indonesia mencapai lebih dari 5 juta unit usaha, dengan tingkat kerugian akibat
+makanan surplus yang tidak terjual berkisar antara 10-30% dari total produksi harian [8].
+Kerugian ini tidak hanya berdampak pada aspek finansial UMKM, tetapi juga menciptakan
+masalah lingkungan yang serius.
+
+                     Tabel 1: Data Sampah Makanan di Indonesia
+
+Indikator                       Data
+Total sampah makanan per tahun  23-48 juta ton
+Sampah per kapita per tahun     115-237 kg
+Kontribusi UMKM kuliner         10-30% dari produksi
+Persentase sampah organik       50-70% total sampah
+Emisi CO2 dari food waste       50 juta ton per tahun
+
+1.2 Akar Masalah
+
+Berdasarkan analisis yang telah dilakukan, terdapat beberapa akar masalah utama yang me-
+nyebabkan tingginya food waste di sektor UMKM kuliner:
+
+1. Minimnya Kesadaran Lingkungan : Banyak pelaku UMKM yang belum menyada-
+   ri dampak lingkungan dari pembuangan makanan berlebih, sehingga kurang termotivasi
+   untuk mengurangi food waste.
+
+2. Ketidakpastian Permintaan : UMKM kuliner sering kali kesulitan memprediksi jum-
+   lah permintaan konsumen dari hari ke hari, sehingga cenderung memproduksi makanan
+   dalam jumlah berlebih untuk mengantisipasi lonjakan permintaan.
+
+3. Keterbatasan Infrastruktur Penyimpanan : Banyak UMKM kuliner yang tidak memi-
+   liki fasilitas penyimpanan yang memadai untuk menjaga kesegaran makanan, sehingga
+   makanan yang tidak terjual harus segera dibuang.
+
+4. Kurangnya Akses ke Pasar Alternatif : Tidak adanya platform yang menghubungkan
+
+                                                      2
+   UMKM dengan konsumen potensial untuk menjual makanan surplus dengan harga diskon
+   menjadi hambatan utama.
+
+1.3 Dampak jika Tidak Diselesaikan
+Jika masalah food waste di sektor UMKM kuliner tidak segera ditangani, konsekuensi yang
+akan terjadi dalam 1-2 tahun ke depan meliputi:
+· Kerugian Ekonomi yang Meningkat : UMKM akan terus kehilangan pendapatan akibat
+
+  makanan yang terbuang, yang diperkirakan mencapai Rp 500 ribu hingga Rp 2 juta per
+  hari untuk satu unit UMKM kuliner.
+· Peningkatan Emisi Gas Rumah Kaca : Sampah makanan yang terurai di Tempat Pem-
+  buangan Akhir (TPA) menghasilkan metana, gas rumah kaca yang 25 kali lebih potensial
+  dari CO2 dalam mempercepat perubahan iklim.
+· Beban Lingkungan yang Semakin Berat : Volume sampah organik yang terus meningkat
+  akan mempercepat kerusakan TPA dan meningkatkan risiko pencemaran tanah serta air
+  tanah.
+
+1.4 Mengapa Sekarang?
+Beberapa faktor yang membuat penyelesaian masalah ini menjadi sangat mendesak saat ini:
+1. Kebijakan Pemerintah : Pemerintah Indonesia telah menetapkan target pengurangan
+
+   sampah makanan sebesar 50% pada tahun 2030 [6], sejalan dengan Sustainable Develo-
+   pment Goals (SDG) 12.3 [5].
+2. Kesadaran Konsumen yang Meningkat : Generasi milenial dan Gen Z menunjukkan
+   peningkatan kesadaran terhadap isu lingkungan, termasuk food waste, sehingga membuka
+   peluang pasar untuk solusi yang ramah lingkungan.
+3. Perkembangan Teknologi : Kemajuan teknologi web dan mobile application memung-
+   kinkan pengembangan platform yang mudah diakses oleh UMKM dengan biaya yang
+   terjangkau.
+
+                                                      3
+                        BAB II TUJUAN DAN MANFAAT
+
+2.1 Tujuan
+Savora dirancang dengan tujuan yang spesifik, terukur, dapat dicapai, relevan, dan berbatas
+waktu (SMART) sebagai berikut:
+1. Specific (Spesifik) : Mengembangkan platform manajemen food waste berbasis web yang
+
+   menghubungkan UMKM kuliner dengan konsumen dan mitra donasi untuk menyalurkan
+   makanan surplus yang masih layak konsumsi.
+2. Measurable (Terukur) : Mengurangi volume food waste pada UMKM kuliner mitra
+   sebesar 40% dalam 6 bulan pertama operasional, serta meningkatkan pendapatan UMKM
+   dari penjualan makanan surplus sebesar 25%.
+3. Achievable (Dapat Dicapai) : Menerapkan fitur Food Eligibility Assessment, Dynamic
+   Pricing, dan Food Trust Index yang telah terbukti efektif dalam studi literatur [4][3] dan
+   best practices platform serupa.
+4. Relevant (Relevan) : Menjawab kebutuhan mendesak akan solusi food waste yang ter-
+   integrasi [9], sesuai dengan target pengurangan sampah makanan nasional sebesar 50%
+   pada tahun 2030 [6].
+5. Time-bound (Berbatas Waktu) : Mencapai target implementasi di 100 UMKM kuliner
+   di Kota Bandung dalam 12 bulan pertama, dengan ekspansi ke kota lain pada tahun kedua.
+
+2.2 Manfaat
+Manfaat Savora dapat dilihat dari tiga perspektif utama:
+
+2.2.1 Manfaat bagi UMKM Kuliner
+· Mengurangi kerugian akibat makanan surplus yang tidak terjual
+· Mendapatkan pendapatan tambahan melalui penjualan makanan surplus dengan harga dis-
+
+  kon
+· Meningkatkan efisiensi operasional melalui prediksi produksi yang akurat
+· Meningkatkan reputasi sebagai UMKM yang peduli lingkungan
+· Mendapatkan akses ke jaringan donasi untuk makanan yang tidak terjual
+
+2.2.2 Manfaat bagi Konsumen
+· Memperoleh akses terhadap makanan berkualitas dengan harga yang lebih terjangkau
+· Berkontribusi langsung dalam pengurangan food waste dan emisi gas rumah kaca
+
+                                                      4
+· Mendapatkan informasi transparan mengenai kelayakan dan asal-usul makanan
+· Memperoleh penghargaan berupa reward dan badge atas kontribusi lingkungan
+2.2.3 Manfaat bagi Lingkungan
+· Mengurangi volume sampah organik yang berakhir di TPA
+· Menurunkan emisi gas rumah kaca dari pembusukan sampah makanan
+· Melestarikan sumber daya alam yang digunakan dalam produksi makanan
+· Mendorong terciptanya budaya pengurangan food waste di masyarakat
+2.3 Dampak Jangka Panjang
+2.3.1 Dampak Ekonomi
+Dalam jangka panjang, Savora berpotensi menciptakan ekosistem ekonomi sirkular di sek-
+tor kuliner, di mana setiap produk makanan memiliki nilai ekonomis hingga akhir siklus
+hidupnya. Hal ini tidak hanya menguntungkan UMKM dan konsumen, tetapi juga membuka
+peluang kerja baru di bidang logistik dan manajemen food waste.
+2.3.2 Dampak Sosial
+Platform ini berpotensi memperkuat hubungan antara UMKM dengan komunitas sekitar me-
+lalui mekanisme donasi. Makanan surplus yang didonasikan dapat membantu memenuhi
+kebutuhan pangan kelompok masyarakat yang membutuhkan, sehingga berkontribusi pada
+penurunan angka ketahanan pangan.
+2.3.3 Dampak Lingkungan
+Dengan target pengurangan food waste sebesar 40%, Savora berkontribusi pada pengurangan
+emisi gas rumah kaca dan pelestarian sumber daya alam. Skalabilitas platform ini memung-
+kinkan dampak lingkungan yang lebih luas saat diterapkan di berbagai kota di Indonesia.
+
+                                                      5
+2.4 Metrik Dampak
+
+                              Tabel 2: Metrik Dampak Savora
+
+Metrik                        Sebelum Penerapan              Sesudah Penerapan
+Jumlah UMKM mitra             0 UMKM                         Target 100 UMKM
+Volume food waste terkurangi  Baseline 0%                    Target 40%
+Pendapatan tambahan UMKM      Baseline 0%                    Target 25%
+Jumlah makanan diselamatkan   0 kg                           Target 15.000 kg
+Pengurangan emisi CO2         0 ton                          Target 30 ton
+Jumlah konsumen aktif         0                              Target 5.000
+Jumlah donasi tersalurkan     0 kg                           Target 5.000 kg
+
+                              6
+             BAB III DIFERENSIASI DAN ANALISIS PASAR
+
+3.1 Diferensiasi Solusi
+Savora memiliki beberapa keunggulan diferensiasi yang membedakannya dari solusi food
+waste yang sudah ada:
+1. Pendekatan Terpadu : Berbeda dengan platform yang hanya fokus pada satu aspek
+
+   (misalnya hanya penjualan diskon atau hanya donasi), Savora mengintegrasikan seluruh
+   rantai nilai food waste mulai dari penilaian kelayakan makanan, penjualan surplus dengan
+   harga dinamis, hingga pelacakan dampak lingkungan [4][9].
+2. Food Eligibility Assessment : Sistem penilaian kelayakan makanan yang objektif dan
+   transparan, memberikan kepastian bagi konsumen mengenai kualitas dan keamanan ma-
+   kanan yang dibeli. Menggunakan weighted scoring algorithm berbasis 4 parameter uta-
+   ma.
+3. Dynamic Pricing Engine : Mesin penetapan harga dinamis yang mengoptimalkan harga
+   berdasarkan sisa waktu kelayakan, permintaan pasar, dan margin UMKM [3][10], me-
+   maksimalkan peluang penjualan sebelum makanan kadaluarsa.
+4. Transparansi & Trust Building : Sistem Food Trust Index yang menampilkan rating dan
+   ulasan konsumen terhadap UMKM, serta Carbon Impact Tracking yang menunjukkan
+   dampak positif setiap pembelian terhadap lingkungan.
+
+3.2 Keunggulan Teknis
+3.2.1 Food Eligibility Score
+Sistem ini menggunakan model scoring berbasis aturan yang mempertimbangkan:
+· Waktu produksi dan estimasi masa simpan
+· Kondisi kemasan dan suhu penyimpanan
+· Riwayat penanganan makanan
+· Kategori makanan dan karakteristik spesifik
+
+3.2.2 Dynamic Pricing Engine
+Mesin penetapan harga dinamis yang mengoptimalkan:
+· Harga berdasarkan sisa waktu kelayakan
+· Elasticitas permintaan lokal
+· Harga kompetitor di area yang sama
+
+                                                      7
+· Margin minimum yang menguntungkan UMKM
+
+3.3 Technology Stack yang Unik
+
+Kombinasi teknologi yang digunakan dalam Savora memberikan keunggulan kompetitif:
+
+                    Tabel 3: Technology Stack Savora
+
+Komponen Teknologi                        Alasan Pemilihan
+Frontend React.js                         Komponen reusable, performa ting-
+                                          gi
+Backend Node.js + Express                 asynchronous, cocok untuk real-
+                                          time
+Database   PostgreSQL + Redis             ACID compliance + caching
+ML         Python + scikit-learn          Ekosistem ML yang mature
+Real-time  Socket.IO                      Komunikasi dua arah
+Hosting    AWS / GCP                      Skalabilitas dan reliability
+
+3.4 Moat (Penghalang Kompetisi)
+
+Savora memiliki beberapa moat yang melindungi posisi kompetitif:
+
+1. Data Lokal : Dataset penjualan UMKM kuliner Indonesia yang dikumpulkan dari mitra
+   merupakan aset berharga yang sulit ditiru oleh kompetitor baru atau perusahaan besar.
+
+2. Jaringan UMKM : Hubungan langsung dengan UMKM kuliner lokal memberikan ke-
+   unggulan dalam hal network effect dan switching cost.
+
+3. Algoritma yang Dioptimasi : Model machine learning yang dilatih dengan data lokal
+   memiliki akurasi yang lebih tinggi dibandingkan model generik.
+
+4. Mekanisme Donasi : Integrasi dengan jaringan donasi memberikan nilai tambah yang
+   sulit ditiru oleh platform yang hanya fokus pada penjualan.
+
+                                  8
+                     BAB IV ANALISIS KOMPETITOR
+
+4.1 Analisis Kompetitor
+
+Berikut adalah perbandingan Savora dengan platform serupa yang beroperasi di Indonesia
+berdasarkan data aktual per 2025-2026 [9][4]:
+
+                         Tabel 4: Perbandingan Fitur dengan Kompetitor
+
+Aspek / Fitur        Savora                    Surplus Indonesia        Garda Pangan
+Jenis platform       Marketplace food re-      Clearance sale app (re-  Food bank sosial / nir-
+                     scue UMKM (MVP)           commerce)                laba
+Tersedia di Indone-   (MVP)                     (aktif)                  (Surabaya & sekitar)
+sia
+Fokus UMKM lo-                                  (UMKM, horeka)           (distribusi gratis)
+kal kuliner
+Transparansi pro-    Tinggi (foto, deskripsi,  Sedang (nama & foto)     Tinggi (SOP seleksi
+duk                  kelayakan)                                         ketat)
+Food Trust Index /    (rule-based, tampil                               Seleksi internal (tidak
+info kelayakan       ke user)                                           ke user)
+Metode pembayar-     COD + payment gate-       Digital saja (OVO,       Tidak ada (donasi)
+an                   way (Midtrans)            GoPay, DANA; tanpa
+                                               COD)                     
+Dynamic discount      (rule-based, 10-          (hingga 80%, tidak
+berbasis kelayakan   50%)                      berbasis kelayakan)      
+Pickup code & ba-     (pickup code + dea-      Window waktu
+tas waktu            dline)                                             
+Waste Log untuk                                
+mitra UMKM                                                              
+Impact tracking ke    (estimatif, bukan         (estimasi CO2/CH4)
+pengguna             klaim resmi)                                       
+Rating & ulasan                                                         Lokal Surabaya
+Skala (2025-2026)    MVP lomba                 Ratusan ribu user, Ja-
+                                               wa/Bali/Sulsel
+
+                         9
+4.2 Analisis SWOT
+
+                   Tabel 5: Analisis SWOT Savora
+
+Strengths (Kekuatan)                          Weaknesses (Kelemahan)
+· Fitur lengkap terintegrasi (FES, Dyna-      · Butuh waktu untuk adopsi awal
+                                              · Bergantung pada jumlah UMKM mitra
+  mic Pricing, Trust Index)                   · Membutuhkan data historis yang cukup
+· Fokus pada UMKM lokal Indonesia
+· Transparansi kelayakan makanan              Threats (Ancaman)
+· Mekanisme donasi terintegrasi               · Masuknya pemain besar dari luar negeri
+Opportunities (Peluang)                       · Perubahan regulasi
+· Kebijakan pengurangan food waste            · Resistensi UMKM terhadap teknologi
+
+  nasional                                      baru
+· Peningkatan kesadaran lingkungan
+· Potensi ekspansi ke kota lain
+· Kolaborasi dengan pemerintah daerah
+
+4.3 Model Bisnis
+
+Savora mengadopsi model bisnis freemium dengan beberapa sumber pendapatan:
+1. Komisi Transaksi : Sebesar 5-10% dari setiap transaksi penjualan makanan surplus me-
+
+   lalui platform.
+2. Langganan Premium : Paket premium untuk UMKM dengan fitur analitik lanjutan,
+
+   prediksi produksi, dan laporan detail seharga Rp 99.000/bulan.
+3. Iklan dan Promosi : Layanan promosi produk untuk UMKM mitra yang ingin mening-
+
+   katkan visibilitas.
+4. Kerjasama Korporat : Program CSR perusahaan yang ingin berkontribusi pada pengu-
+
+   rangan food waste.
+
+4.4 Rencana Keberlanjutan
+1. Tahun Pertama : Fokus pada akuisisi UMKM dan pengguna di Kota Bandung. Target
+
+   mencapai break even dari komisi transaksi dalam 12 bulan.
+2. Tahun Kedua : Ekspansi ke 3-5 kota besar lainnya (Jakarta, Surabaya, Yogyakarta).
+
+   Meluncurkan paket premium dan program CSR.
+3. Tahun Ketiga : Menjadi platform referensi manajemen food waste di Indonesia. Potensi
+
+   pendanaan dari investor untuk percepatan pertumbuhan.
+
+                                          10
+4. Jangka Panjang : Ekspansi ke Asia Tenggara dan pengembangan produk turunan seperti
+   pelatihan UMKM dan konsultasi sustainability.
+
+                                                      11
+                      BAB V TEKNOLOGI
+
+5.1 Daftar Teknologi
+
+Berikut adalah daftar lengkap teknologi yang digunakan dalam pengembangan Savora:
+
+                      Tabel 6: Daftar Teknologi Savora
+
+Kategori              Teknologi               Versi
+Bahasa Pemrograman    JavaScript, TypeScript  ES2024, 5.x
+Frontend Framework    React.js                18.x
+Backend Framework     Node.js + Express       20 LTS, 4.x
+Database              PostgreSQL, Redis       16.x, 7.x
+ORM                   Prisma                  5.x
+Authentication        JWT, bcrypt             -
+Real-time             Socket.IO               4.x
+Machine Learning      Python, scikit-learn    3.12, 1.4
+API Design            RESTful API             -
+Version Control       Git, GitHub             -
+CI/CD                 GitHub Actions          -
+Hosting               AWS / Vercel            -
+
+5.2 Alasan Pemilihan Teknologi
+5.2.1 React.js untuk Frontend
+React.js dipilih sebagai frontend framework karena:
+· Komponen Reusable : Arsitektur berbasis komponen memungkinkan pembuatan UI yang
+
+  konsisten dan mudah dipelihara.
+· Performa Tinggi : Virtual DOM memberikan performa yang optimal untuk aplikasi de-
+
+  ngan banyak interaksi.
+· Ekosistem Kaya : Tersedia banyak library pendukung seperti React Router, Redux, dan
+
+  Material-UI.
+· Komunitas Besar : Mudah menemukan dokumentasi, tutorial, dan solusi untuk berbagai
+
+  masalah.
+
+5.2.2 Node.js + Express untuk Backend
+Node.js dan Express dipilih karena:
+· Asynchronous : Sangat cocok untuk aplikasi yang membutuhkan pemrosesan banyak
+
+  request secara simultan.
+
+                                                      12
+· JavaScript Full-stack : Penggunaan bahasa yang sama di frontend dan backend memper-
+  cepat pengembangan.
+
+· Ringan dan Cepat : Cocok untuk microservice dan API yang responsif.
+· NPM Ecosystem : Akses ke ribuan package yang sudah teruji.
+5.2.3 PostgreSQL + Redis
+· PostgreSQL : Database relasional yang robust, mendukung ACID, dan memiliki fitur
+
+  JSON untuk data semi-terstruktur.
+· Redis : In-memory database untuk caching, session management, dan real-time features.
+5.2.4 Python + scikit-learn untuk Machine Learning
+Python dipilih untuk komponen machine learning karena:
+· Ekosistem ML Terkaya : scikit-learn, pandas, dan numpy menyediakan tools yang komp-
+
+  rehensif untuk algoritma scoring dan analitik.
+· Integrasi Mudah : Dapat diintegrasikan dengan backend Node.js melalui API atau mi-
+
+  croservice.
+· Prototyping Cepat : Memungkinkan eksperimen dan iterasi model dengan cepat.
+5.3 Arsitektur Teknologi
+
+                                       Diagram Arsitektur Sistem
+                                (Akan diganti dengan diagram aktual)
+
+                                         Gambar 1: Arsitektur High-Level Savora
+
+Alur komunikasi sistem:
+1. Client Layer : Browser pengguna mengakses React.js application.
+
+                                                      13
+2. API Gateway : Request diteruskan ke Express.js backend.
+3. Application Layer : Backend memproses business logic, autentikasi, dan validasi data.
+4. Data Layer : PostgreSQL menyimpan data persisten, Redis menyimpan cache dan ses-
+
+   sion.
+5. ML Service : Python microservice menangani Food Eligibility Score calculation dan
+
+   analitik dashboard.
+6. Real-time Layer : Socket.IO menangani notifikasi dan update status secara real-time.
+
+                                                      14
+                  BAB VI BATASAN PERANGKAT LUNAK
+
+Bagian ini akan dilengkapi setelah aplikasi selesai dikembangkan dan siap dikumpulkan.
+
+                                                      15
+                BAB VII METODOLOGI PENGEMBANGAN
+
+7.1 Metodologi yang Dipilih
+Savora dikembangkan menggunakan metodologi Scrum dengan iterasi sprint 2 minggu. Me-
+todologi ini dipilih karena fleksibilitasnya dalam mengakomodasi perubahan kebutuhan dan
+kemampuannya untuk menghasilkan produk yang selaras dengan ekspektasi pengguna.
+
+7.2 Alasan Pemilihan Scrum
+
+1. Iterasi Cepat : Memungkinkan pengembangan dan pengujian fitur secara bertahap, se-
+   hingga bug dapat teridentifikasi lebih awal.
+
+2. Feedback Berkala : Stakeholder dapat memberikan masukan setiap akhir sprint untuk
+   perbaikan berkelanjutan.
+
+3. Transparansi : Daily standup dan sprint review memastikan seluruh tim memiliki pema-
+   haman yang sama tentang progres.
+
+4. Adaptif : Perubahan prioritas atau kebutuhan dapat diakomodasi tanpa mengganggu se-
+   luruh roadmap.
+
+7.3 Tahapan dan Timeline Pengembangan
+
+          Tabel 7: Tahapan Pengembangan Savora
+
+Fase      Aktivitas                            Durasi
+Sprint 0  Setup environment, Wireframe, Data-  1 minggu
+          base design
+Sprint 1  Autentikasi, Dashboard Admin         2 minggu
+Sprint 2  Manajemen Produk UMKM, Marke-        2 minggu
+          tplace
+Sprint 3  Food Eligibility, Dynamic Pricing    2 minggu
+Sprint 4  Checkout, Payment simulation         2 minggu
+Sprint 5  Tracking, Rating, Notifikasi         2 minggu
+Sprint 6  Integrasi, Testing, Deployment       2 minggu
+
+          16
+                         Gantt Chart Pengembangan
+                 (Akan diganti dengan Gantt chart aktual)
+
+                       Gambar 2: Timeline Pengembangan Savora
+
+7.4 Peran Anggota Tim
+
+                       Tabel 8: Pembagian Tugas Anggota Tim
+
+Role             Anggota                   Responsibilitas
+Project Manager  Wa Ode Nur Alia           Koordinasi, perencanaan, ko-
+                                           munikasi
+Frontend Developer Richard Firmansyah      Pengembangan UI/UX, Rea-
+                                           ct.js
+Backend Developer Muhammad Rifaidi         API, Database, Autentikasi
+                                           Food Eligibility Score, Dyna-
+ML Engineer      Ridwan Hakim Ramadhan     mic Pricing, Analitik
+                                           Testing, Deployment, CI/CD
+QA & DevOps      Nadi Azzada Akbar
+
+7.5 Tools Pendukung
+· Project Management : Notion atau Trello untuk sprint board dan task tracking
+· Communication : Discord atau WhatsApp Group untuk komunikasi harian
+· Design : Figma untuk wireframe dan UI design
+· Documentation : Google Docs untuk dokumentasi teknis
+· Version Control : Git dengan branch strategy (main, develop, feature branches)
+
+                                       17
+                       BAB VIII ARSITEKTUR SISTEM
+
+8.1 Diagram Arsitektur Sistem
+
+                                            Diagram Use Case
+                                (Akan diganti dengan diagram aktual)
+
+                                           Gambar 3: Use Case Diagram Savora
+
+Terdapat tiga aktor utama dalam sistem Savora:
+1. Customer : Pengguna yang membeli makanan surplus, memberikan rating, dan melacak
+
+   pesanan.
+2. UMKM : Pengelola produk yang mengelola stok, menentukan harga, dan memproses
+
+   pesanan.
+3. Admin : Pengelola sistem yang memantau aktivitas, mengelola user, dan memverifikasi
+
+   donasi.
+
+                                                      18
+8.2 ERD (Entity Relationship Diagram)
+
+                                ERD Savora
+                   (Akan diganti dengan ERD aktual)
+
+                   Gambar 4: Entity Relationship Diagram Savora
+
+8.2.1 Tabel Utama
+
+                   Tabel 9: Struktur Database Savora
+
+Tabel             Deskripsi
+users             Data pengguna (admin, UMKM, customer)
+products          Informasi produk makanan
+orders            Data transaksi pesanan
+order_items       Detail item dalam pesanan
+food_eligibility  Data kelayakan makanan
+reviews           Rating dan ulasan konsumen
+transactions      Log pembayaran
+donations         Data donasi makanan
+notifications     Notifikasi pengguna
+
+8.3 API Design
+Berikut adalah endpoint API utama yang digunakan dalam Savora:
+
+                                       19
+                                Tabel 10: Endpoint API Utama
+
+Method  Endpoint                Deskripsi
+POST    /api/auth/register      Registrasi pengguna baru
+POST    /api/auth/login         Login dan dapatkan token
+GET     /api/products           Dapatkan daftar produk
+POST    /api/products           Tambah produk baru (UMKM)
+PUT     /api/products/:id       Update produk
+DELETE  /api/products/:id       Hapus produk
+POST    /api/orders             Buat pesanan baru
+GET     /api/orders/:id         Dapatkan detail pesanan
+PUT     /api/orders/:id/status  Update status pesanan
+POST    /api/reviews            Tambah rating & ulasan
+GET     /api/admin/dashboard    Dapatkan data dashboard
+
+8.4 Alur Data
+
+Alur data utama dalam Savora:
+
+1. Alur Penjualan : UMKM  Upload Produk  Food Eligibility Assessment  Dyna-
+   mic Pricing  Customer Browse  Checkout  Payment  Tracking  Delivery 
+   Rating.
+
+2. Alur Donasi (Manual) : Food Rescue Score Menurun  Notifikasi ke UMKM 
+   UMKM Putuskan Donasi  Pilih Penerima  Koordinasi Pickup.
+
+3. Alur Monitoring : Admin  Dashboard  Lihat Statistik  Identifikasi Issue  Tin-
+   dak Lanjut (suspend, verifikasi, moderasi).
+
+                                20
+                     BAB IX RENCANA IMPLEMENTASI
+
+CATATAN PENTING: Bab ini berisi rencana implementasi yang akan dikerjakan pada fa-
+se development. Aplikasi belum dibangun, sehingga belum ada implementasi aktual, kode
+program, atau hasil deployment yang dapat dilaporkan. Dokumentasi implementasi aktual
+akan dilengkapi setelah aplikasi selesai dikembangkan.
+
+9.1 Rencana Implementasi Fitur
+
+Berikut adalah daftar fitur utama Savora yang akan diimplementasikan:
+
+                Tabel 11: Rencana Implementasi Fitur
+
+Modul           Fitur                        Prioritas
+Authentication  Registrasi                   High
+Admin           Login/Logout                 High
+UMKM            Forgot Password              Medium
+Customer        Role-based Access            High
+                Dashboard Statistik          High
+                Manajemen User               Medium
+                Monitoring Produk            High
+                Verifikasi Donasi            Medium
+                Kelola Produk                High
+                Food Eligibility Assessment  High
+                Food Eligibility Score       High
+                Dynamic Pricing              High
+                Riwayat Penjualan            Medium
+                Marketplace                  High
+                Checkout & Payment           High
+                Tracking Pesanan             Medium
+                Rating & Ulasan              Medium
+
+9.2 Desain Antarmuka (Rencana)
+9.2.1 Halaman Marketplace (Customer)
+Halaman marketplace akan menampilkan daftar makanan surplus dari UMKM terdekat de-
+ngan pengguna. Setiap produk akan menampilkan informasi:
+· Foto produk
+· Nama produk dan UMKM
+· Harga asli dan harga diskon
+
+                                                      21
+· Sisa waktu kelayakan (countdown timer)
+· Food Eligibility Score
+· Jarak dari lokasi pengguna
+
+9.2.2 Halaman Food Eligibility Assessment (UMKM)
+UMKM akan mengisi form penilaian kelayakan makanan yang mencakup:
+· Waktu produksi
+· Estimasi masa simpan
+· Kondisi kemasan (baik/sedang/buruk)
+· Suhu penyimpanan
+Sistem kemudian akan menghitung Food Eligibility Score secara otomatis menggunakan al-
+goritma weighted scoring.
+
+9.2.3 Halaman Dashboard Admin
+Dashboard admin akan menampilkan ringkasan aktivitas platform:
+· Jumlah UMKM aktif
+· Total transaksi (harian/mingguan/bulanan)
+· Volume food waste yang berhasil diselamatkan (kg)
+· Statistik donasi
+· Grafik tren penjualan
+
+9.3 Spesifikasi Teknis Fitur Utama
+9.3.1 Food Eligibility Score (FES)
+Sistem penilaian kelayakan makanan menggunakan model weighted scoring yang memper-
+timbangkan waktu produksi, sisa masa simpan, kondisi kemasan, dan suhu penyimpanan
+untuk menghasilkan skor 0-100.
+
+9.3.2 Dynamic Pricing Engine
+Algoritma penetapan harga dinamis yang mempertimbangkan sisa waktu kelayakan produk
+dan kondisi permintaan pasar untuk mengoptimalkan harga jual.
+
+                                                      22
+9.4 Arsitektur Sistem
+9.4.1 Integrasi Antar Komponen
+· Frontend-Backend : Komunikasi via RESTful API dengan format JSON
+· Backend-Database : Menggunakan Prisma ORM untuk akses PostgreSQL
+· Backend-ML Service : HTTP request ke Python microservice untuk Food Eligibility
+
+  Score calculation dan Dynamic Pricing recommendation
+· Real-time : Socket.IO untuk notifikasi dan update status pesanan
+
+9.4.2 API Endpoints (Rencana)
+
+                               Tabel 12: Daftar API Endpoints
+
+Method  Endpoint                       Fungsi
+POST    /api/auth/register             Registrasi user
+POST    /api/auth/login                Login user
+GET     /api/products                  List produk
+POST    /api/products                  Tambah produk (UMKM)
+POST    /api/products/:id/fes          Hitung Food Eligibility Score
+GET     /api/products/:id/pricing      Dynamic pricing recommendation
+POST    /api/orders                    Buat pesanan
+PUT     /api/orders/:id/status         Update status pesanan
+POST    /api/reviews                   Tambah review
+
+9.5 Technology Stack
+
+                      Tabel 13: Technology Stack Savora
+
+Komponen Teknologi                     Alasan Pemilihan
+Frontend React.js                      Komponen reusable, performa ting-
+                                       gi
+Backend Node.js + Express              Asynchronous, cocok untuk real-
+                                       time
+Database    PostgreSQL                 ACID compliance, relational data
+ORM         Prisma                     Type-safe, migration tool
+ML Service  Python + scikit-learn      Ecosystem ML yang matang
+Real-time   Socket.IO                  Notifikasi real-time
+
+                                   23
+                       BAB X RENCANA DESAIN UI/UX
+
+10.1 Pendekatan User Research yang Akan Dilakukan
+
+Untuk memahami kebutuhan pengguna sebelum mulai implementasi, akan dilakukan pene-
+litian sebagai berikut:
+1. Wawancara dengan UMKM Kuliner : Akan dilakukan wawancara mendalam untuk
+
+   memahami tantangan mereka dalam pengelolaan makanan surplus.
+2. Survei Online : Akan disebarkan kuesioner kepada konsumen potensial untuk mengeta-
+
+   hui preferensi pembelian makanan surplus.
+3. Observasi Lapangan : Akan dilakukan pengamatan langsung terhadap operasional
+
+   UMKM kuliner untuk mengidentifikasi pain points.
+CATATAN: Research ini akan dilakukan pada fase awal development, belum dilaksanakan
+saat ini.
+
+10.2 Target User Persona (Draft)
+10.2.1 Persona 1: UMKM Kuliner (Draft)
+
+Aspek       Karakteristik
+Usia        30-55 tahun
+Usaha       Warung makan, kafe, katering
+Teknologi   Cukup mahir menggunakan smartphone
+Kebutuhan   Mengurangi food waste, menambah pendapatan
+Pain Point  Kesulitan prediksi permintaan, tidak ada platform khusus
+
+10.2.2 Persona 2: Customer (Draft)
+
+Aspek       Karakteristik
+Usia        18-40 tahun (milenial dan Gen Z)
+Pekerjaan   Mahasiswa, karyawan swasta
+Kebutuhan   Makanan berkualitas dengan harga terjangkau
+Pain Point  Ketidakyakinan terhadap kelayakan makanan diskon
+
+                                        24
+10.2.3 Persona 3: Admin Platform (Draft)
+
+Aspek      Karakteristik
+Usia       25-45 tahun
+Peran      Operator platform, moderator
+Kebutuhan  Monitoring transaksi, verifikasi UMKM
+
+10.3 Desain UI/UX dan Mockup
+Placeholder untuk desain Figma dan mockup UI/UX yang akan disisipkan kemudian setelah
+fase design completion.
+Konten yang akan ditampilkan di sini:
+· Wireframes dan mockup aplikasi customer flow
+· Wireframes dan mockup aplikasi UMKM flow
+· Wireframes dan mockup aplikasi admin flow
+· Design system dan component library
+STATUS: Placeholder ini akan diisi dengan tangkapan layar desain Figma setelah fase
+UI/UX design selesai.
+
+                                          25
+BAB XI RENCANA STRATEGI PENGUJIAN
+
+11.1 Strategi Pengujian
+
+Savora akan menjalani berbagai jenis pengujian untuk memastikan kualitas aplikasi. Berikut
+adalah rencana testing yang akan diimplementasikan:
+
+                     Tabel 14: Jenis Pengujian yang Akan Dilakukan
+
+Jenis Testing        Deskripsi                        Tools yang Akan Digunakan
+Unit Testing         Pengujian fungsi individual      Jest atau Vitest
+Integration Testing  Pengujian integrasi antar modul  Jest + Supertest
+API Testing          Pengujian endpoint API           Postman atau Supertest
+UI Testing           Pengujian antarmuka pengguna     Cypress atau Playwright
+Usability Testing    Pengujian kemudahan penggu-      Manual testing
+                     naan
+Performance Testing  Pengujian performa dan beban     Artillery atau k6
+Security Testing     Pengujian keamanan               OWASP ZAP
+
+STATUS: Semua jenis testing di atas adalah RENCANA. Belum ada test yang sudah dibuat
+atau dijalankan saat ini.
+
+11.2 Unit Testing (Rencana)
+11.2.1 Area yang Akan Ditest
+· Food Eligibility Score Calculation : Testing algoritma FES dengan berbagai input para-
+
+  meter
+· Dynamic Pricing Calculation : Testing algoritma dynamic pricing untuk berbagai kondisi
+· Authentication Logic : Testing login, register, password hashing
+· Data Validation : Testing validasi input form
+
+11.2.2 Test Coverage Target
+· Backend Core Logic: target >80% coverage
+· API Routes: target >70% coverage
+· ML Service: target >75% coverage
+· Frontend Components: target >60% coverage
+· Overall Project: target >70% coverage
+
+                                                      26
+11.3 Integration Testing (Rencana)
+Akan memastikan komunikasi antar modul berjalan dengan baik:
+· Frontend-Backend Integration : Memastikan API calls dari frontend berhasil
+· Backend-Database Integration : Memastikan CRUD operations via ORM bekerja
+· Backend-ML Service Integration : Memastikan request ke Python microservice berhasil
+· Payment Gateway Integration : Memastikan flow pembayaran berjalan lancar (jika ada)
+
+11.4 API Testing (Rencana)
+
+Endpoint API akan diuji untuk memastikan response code dan response time optimal:
+
+                            Tabel 15: Target API Performance
+
+Endpoint                    Expected Status                   Target Response Time
+POST /api/auth/register     201 Created                       < 300ms
+POST /api/auth/login        200 OK                            < 200ms
+GET /api/products           200 OK                            < 150ms
+POST /api/products          201 Created                       < 300ms
+POST /api/orders            201 Created                       < 400ms
+PUT /api/orders/:id/status  200 OK                            < 200ms
+
+11.5 Usability Testing (Rencana)
+Akan dilakukan dengan partisipan yang mewakili target pengguna untuk mengevaluasi:
+1. Learnability : Seberapa mudah pengguna baru memahami antarmuka
+2. Efficiency : Seberapa cepat pengguna menyelesaikan task
+3. Memorability : Seberapa mudah pengguna mengingat cara penggunaan
+4. Errors : Seberapa sering pengguna melakukan kesalahan
+5. Satisfaction : Seberapa puas pengguna dengan aplikasi
+Skenario Testing yang Akan Diuji:
+Untuk Customer:
+· Registrasi akun baru
+· Mencari produk berdasarkan lokasi
+· Melihat detail produk dan Food Eligibility Score
+
+                            27
+· Melakukan pembelian dan checkout
+· Memberikan rating dan review
+Untuk UMKM:
+· Registrasi dan verifikasi akun
+· Menambahkan produk surplus
+· Mengisi Food Eligibility Assessment
+· Menerima dan memproses pesanan
+· Melihat Food Rescue Score
+
+11.6 Performance Testing (Rencana)
+
+Akan mensimulasikan beban pengguna untuk memastikan aplikasi dapat handle traffic ting-
+gi:
+
+                           Tabel 16: Target Metrik Performa
+
+Metrik                     Target                            Kondisi
+Response Time (rata-rata)  < 500ms                           Load normal
+Response Time (p95)        < 1000ms                          Load normal
+Concurrent Users           100+                              Tanpa degradasi performa
+Throughput                 50+ req/sec                       Per endpoint
+Error Rate                 < 1%                              Semua kondisi
+
+Load Testing Scenarios yang Akan Dilakukan:
+· Normal Load: 50 concurrent users selama 10 menit
+· Peak Load: 100 concurrent users selama 5 menit
+· Stress Test: Gradually increase users hingga sistem menunjukkan degradasi
+· Spike Test: Sudden increase dari 10 ke 100 users dalam 30 detik
+
+11.7 Security Testing (Rencana)
+Akan fokus pada OWASP Top 10 vulnerabilities:
+1. SQL Injection : Memastikan input user di-sanitize dengan ORM
+2. Authentication : Memastikan password di-hash, token JWT secure
+3. XSS Protection : Memastikan user input di-escape
+
+                                                      28
+4. CSRF Protection : Implementasi CSRF token untuk forms
+5. Sensitive Data : Memastikan password tidak di-log atau exposed
+6. API Security : Implementasi rate limiting dan CORS policy
+
+11.8 Testing Timeline
+
+                       Tabel 17: Rencana Timeline Pengujian
+
+Fase             Aktivitas                                         Durasi
+Development      Unit testing parallel dengan development          Ongoing
+Integration      Integration testing setelah modul selesai         1 minggu
+System Testing   API, UI, performance testing                      1-2 minggu
+User Acceptance  Usability testing dengan target user              1 minggu
+Security         Security audit dan penetration testing            1 minggu
+
+11.9 Bug Tracking dan Issue Management
+Untuk mengelola bug dan issue yang ditemukan:
+· Platform : GitHub Issues untuk tracking
+· Priority Levels : Critical, High, Medium, Low
+· Bug Report Template : Steps to reproduce, expected vs actual behavior
+· Definition of Done : Bug fix must include test case
+
+11.10 Continuous Integration (Rencana)
+Testing akan diintegrasikan dengan CI/CD pipeline:
+· Pre-commit Hooks : Linting dan formatting check
+· Pull Request Checks : Unit tests dan integration tests otomatis
+· Code Coverage Report : Automated coverage report di setiap PR
+· Security Scan : Dependency vulnerability check
+CATATAN PENTING: Semua rencana testing di atas akan diimplementasikan pada fase
+development. Saat ini belum ada test yang sudah ditulis atau dijalankan. Aplikasi belum
+dibangun sehingga tidak ada hasil testing yang dapat dilaporkan.
+
+                       29
+      BAB XII RENCANA DOKUMENTASI DAN DEPLOYMENT
+
+12.1 Rencana Deployment
+Savora akan di-deploy menggunakan strategi berikut setelah development selesai:
+1. Frontend : Deployment ke platform seperti Vercel atau Netlify dengan continuous de-
+
+   ployment dari GitHub
+2. Backend : Deployment ke cloud provider seperti Railway, Render, atau AWS dengan
+
+   auto-scaling capability
+3. Database : PostgreSQL managed instance (Supabase, Railway, atau AWS RDS)
+4. ML Service : Python microservice di Docker container
+STATUS: Deployment belum dilakukan. Aplikasi masih dalam tahap perencanaan dan akan
+di-deploy setelah development selesai.
+
+12.2 Rencana Dokumentasi Pengguna
+Dokumentasi akan dibuat untuk memudahkan pengguna menggunakan aplikasi setelah de-
+ployment:
+
+12.2.1 User Guide untuk Customer
+Akan mencakup:
+· Cara registrasi dan login
+· Cara mencari dan membeli produk
+· Cara memahami Food Eligibility Score
+· Cara tracking pesanan
+· Cara memberikan review
+· Cara melihat impact dashboard
+
+12.2.2 User Guide untuk UMKM
+Akan mencakup:
+· Cara registrasi dan verifikasi
+· Cara menambahkan produk
+· Cara mengisi Food Eligibility Assessment
+· Cara menggunakan Dynamic Pricing
+
+                                                      30
+· Cara mengelola pesanan
+· Cara membaca Food Rescue Score
+
+12.2.3 User Guide untuk Admin
+Akan mencakup:
+· Cara mengakses admin panel
+· Cara verifikasi UMKM baru
+· Cara monitoring platform
+· Cara moderasi konten
+· Cara mengelola user
+
+12.3 Rencana Akun Demo
+
+Untuk keperluan testing dan penilaian kompetisi, akan disediakan akun demo:
+
+                        Tabel 18: Rencana Akun Demo
+
+Role      Email                        Purpose
+Admin     admin@resqfood.demo          Testing admin features
+UMKM      umkm.demo@resqfood.demo      Testing UMKM workflow
+Customer  customer.demo@resqfood.demo  Testing customer flow
+
+Sample Data yang Akan Di-seed:
+· 10+ UMKM dengan profil lengkap
+· 30+ produk makanan surplus dengan berbagai kategori
+· 50+ transaksi historis untuk testing
+· Review dan rating dari customer
+· Statistik dashboard (food waste saved, carbon impact)
+CATATAN: Akun demo dan sample data di atas adalah RENCANA. Belum ada aplikasi
+yang di-deploy saat ini.
+
+12.4 Requirement Sistem
+Aplikasi Savora akan memiliki requirement minimum berikut:
+
+                                  31
+                   Tabel 19: Minimum System Requirements
+
+Komponen           Spesifikasi Minimum
+Browser            Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+Koneksi Internet   2 Mbps untuk pengalaman optimal
+Device             Desktop, laptop, tablet, atau smartphone
+Screen Resolution  360px width minimum (mobile-first)
+JavaScript         Enabled (required)
+
+12.5 Rencana FAQ dan Troubleshooting
+Dokumentasi FAQ dan troubleshooting akan dibuat mencakup:
+
+12.5.1 Common Issues yang Akan Didokumentasikan
+· Masalah login dan authentication
+· Masalah loading halaman
+· Masalah upload gambar
+· Masalah pembayaran (jika ada)
+· Masalah notifikasi
+· Masalah perhitungan FES
+Setiap issue akan didokumentasikan dengan:
+1. Deskripsi masalah
+2. Penyebab umum
+3. Langkah-langkah solusi
+4. Cara menghubungi support jika tidak terselesaikan
+
+12.6 Rencana Support dan Kontak
+Setelah deployment, akan tersedia channel support:
+· Email Support : Untuk pertanyaan dan issue teknis
+· GitHub Issues : Untuk bug reports dan feature requests
+· Documentation Website : Knowledge base dan tutorials
+
+12.7 Dokumentasi Teknis untuk Developer
+Akan dibuat dokumentasi teknis mencakup:
+
+                                                      32
+12.7.1 API Documentation
+· Daftar semua endpoints dengan method dan parameters
+· Request/response examples
+· Authentication requirements
+· Error codes dan handling
+· Rate limiting policies
+12.7.2 Database Schema Documentation
+· Entity Relationship Diagram (ERD)
+· Table descriptions
+· Field definitions dan constraints
+· Relationships dan foreign keys
+· Indexes dan performance considerations
+12.7.3 Deployment Guide
+· Environment setup instructions
+· Configuration requirements
+· Database migration steps
+· CI/CD pipeline setup
+· Monitoring dan logging setup
+
+12.8 Rencana Maintenance Documentation
+Dokumentasi maintenance akan mencakup:
+· Backup Strategy : Frequency, retention policy, restore procedures
+· Monitoring : Key metrics to track, alerting thresholds
+· Scaling Guidelines : When and how to scale infrastructure
+· Security Updates : Process for patching vulnerabilities
+· Performance Optimization : Common bottlenecks dan solutions
+
+                                                      33
+12.9 Timeline Dokumentasi
+
+                 Tabel 20: Rencana Timeline Dokumentasi
+
+Fase             Deliverable                             Timing
+Development      API documentation, code comments        Ongoing
+Pre-deployment   User guides, admin documentation        1-2 minggu
+Post-deployment  FAQ, troubleshooting guide              Iteratif
+Maintenance      Technical documentation updates         Ongoing
+
+CATATAN PENTING: Semua dokumentasi di atas adalah RENCANA yang akan dibuat
+setelah aplikasi selesai dibangun dan di-deploy. Saat ini aplikasi belum ada, sehingga belum
+ada user guide, FAQ, atau troubleshooting documentation yang dapat diberikan. Dokumenta-
+si akan dibuat bertahap seiring dengan progress development dan feedback dari user testing.
+
+                           34
+                       DAFTAR PUSTAKA & REFERENSI
+
+ [1] Badan Pusat Statistik. Statistik Lingkungan Hidup Indonesia 2024. Data timbulan
+        sampah makanan nasional dan komposisi sampah organik. Jakarta, 2024.
+
+ [2] "Kebijakan Hukum Pengelolaan Food Loss and Waste: Perbandingan USDA dan
+        Indonesia". Jurnal Ilmu Hukum, Sosial, dan Humaniora 2.6 (2025). Indonesia meng-
+        hasilkan 23-48 juta ton FLW per tahun; analisis GRASP2030 dan UU No. 32/2009,
+        25-41.
+
+ [3] "A Q-Learning Based Dynamic Pricing Model for Minimizing Food Waste in Su-
+        permarkets". International Journal of Innovative Research in Electrical, Electro-
+        nics, Instrumentation and Control Engineering 14.4 (2026). Markov Decision Pro-
+        cess framework for perishable goods pricing based on shelf life and demand. DOI:
+        10.17148/IJIREEICE.2026.14419.
+
+ [4] Y. A. Kusumawati dkk. "Mobile Application Development for Food Waste Redistri-
+        bution Using Design Thinking and GPS Technology". Procedia Computer Science
+        269 (2025). Design thinking approach for food donation mobile app connecting do-
+        nors and recipients, 749-761. DOI: 10.1016/j.procs.2025.026791.
+
+ [5] Food and Agriculture Organization. The State of Food and Agriculture 2024. Tech.
+        rep. Global food waste statistics: 1.3 billion tons annually. Rome: FAO, 2024.
+
+ [6] United Nations. Sustainable Development Goals Report 2024. Tech. rep. SDG 12.3:
+        Halve per capita global food waste by 2030. New York: UN DESA, 2024.
+
+ [7] Kementerian Koperasi dan UKM. Data Usaha Mikro, Kecil, dan Menengah Tahun
+        2024. Statistik UMKM sektor kuliner di Indonesia. Jakarta, 2024.
+
+ [8] "Analisis Dampak Limbah Makanan terhadap Efisiensi Biaya Operasional UMKM:
+        Studi Kasus Donat Fitri Palu". Jurnal Akuntansi dan Keuangan 11.1 (2026). Intuitive
+        cost control strategy dan dynamic production adjustment untuk meminimalkan food
+        waste, 1-8.
+
+ [9] "Mobile Applications to Reduce Food Waste in Supply Chains: A Systematic Li-
+        terature Review". British Food Journal (2024). Systematic review of 37 papers on
+        mobile apps for food waste, categorized by supply chain stage.
+
+[10] Y. Kayikci. "Data-Driven Optimal Dynamic Pricing Strategy Using Real-Time IoT
+        Sensor Data in Food Supply Chain". Journal of Cleaner Production (2024). Hypers-
+        pectral imaging sensors for produce quality inspection and real-time price adjus-
+        tment.
+
+                                                      35
+                             LAMPIRAN
+
+Lampiran A: Database Schema
+
+                     Tabel 21: Schema Tabel Users
+
+Kolom       Tipe             Keterangan
+id          UUID             Primary Key
+email       VARCHAR(255)     Unique, NOT NULL
+password    VARCHAR(255)     Hashed, NOT NULL
+name        VARCHAR(255)     NOT NULL
+role        ENUM             admin, umkm, customer
+phone       VARCHAR(20)      Nullable
+address     TEXT             Nullable
+created_at  TIMESTAMP        Default NOW()
+updated_at  TIMESTAMP        Auto-update
+
+                     Tabel 22: Schema Tabel Products
+
+Kolom                Tipe           Keterangan
+id                   UUID           Primary Key
+umkm_id              UUID           Foreign Key ke users
+name                 VARCHAR(255)   NOT NULL
+description          TEXT           Nullable
+original_price       DECIMAL(10,2)  NOT NULL
+discount_price       DECIMAL(10,2)  Nullable
+stock                INTEGER        NOT NULL
+unit                 ENUM           pcs, kg, portion
+production_time      TIMESTAMP      NOT NULL
+shelf_life           INTEGER        Jam, NOT NULL
+packaging_condition  ENUM           good, fair, poor
+storage_temp         DECIMAL        Celsius
+fes_score            INTEGER        0-100
+status               ENUM           available, sold, donated
+created_at           TIMESTAMP      Default NOW()
+
+                             36
+

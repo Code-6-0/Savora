@@ -1,0 +1,117 @@
+\section{DIFERENSIASI DAN ANALISIS PASAR}
+
+\subsection{Diferensiasi Solusi}
+
+Inovasi Savora terletak pada penggabungan beberapa fitur yang dapat didemonstrasikan secara
+realistis dalam konteks lomba mahasiswa menjadi satu alur \textit{food rescue} yang utuh. Berbeda
+dengan platform yang hanya fokus pada satu aspek (penjualan diskon atau donasi saja), Savora
+mengintegrasikan penilaian kelayakan makanan, transparansi informasi, pembayaran \textit{cashless},
+hingga evaluasi UMKM \cite{kusumawati2025mobile}\cite{mobilefoodwaste2024review}. Sepuluh pilar
+inovasi tersebut adalah:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Food Trust Index} : Indikator kelayakan makanan berbasis aturan yang transparan dan
+    \textit{explainable}, dihitung dari input UMKM (kategori, jam produksi, metode penyimpanan, kondisi
+    kemasan, ada/tidaknya kuah) dan dipetakan ke lima status: \textit{Fresh}, Layak Dijual, Segera
+    Dijual, Tidak Disarankan Dijual, dan Tidak Layak Konsumsi.
+
+    \item \textbf{Food Score Decay} : Skor kelayakan (0--100) yang menurun otomatis seiring sisa waktu
+    rescue mendekati \textit{expired}, memberikan urgensi visual \textit{real-time} kepada konsumen.
+    Mengacu pada konsep \textit{freshness index} makanan \textit{perishable} \cite{iotshelflife2025}.
+
+    \item \textbf{Keyword Classification dari Ulasan} : Sistem \textit{rule-based} mengklasifikasikan
+    keyword ulasan ke level Aman (mis. enak, segar), Warning (mis. bau, asam), dan Gawat (mis. basi,
+    berjamur), lalu mengakumulasikannya menjadi badge keamanan per UMKM.
+
+    \item \textbf{Smart Rescue Timer} : Hitung mundur sisa waktu makanan layak dijual dan batas waktu
+    pickup, dilengkapi \textit{color indicator} (merah $<$1 jam, kuning 1--3 jam, hijau $>$3 jam).
+
+    \item \textbf{Dynamic Discount Recommendation} : Sistem menyarankan rentang diskon berdasarkan status
+    Food Trust Index (mis. Segera Dijual 35--50\%), namun keputusan harga akhir tetap di tangan UMKM
+    dengan \textit{guardrail} harga minimum \cite{qlearning2026pricing}.
+
+    \item \textbf{Cashless Payment via Midtrans + Service Fee 5\%} : Seluruh transaksi bersifat
+    \textit{cashless} melalui Midtrans \textit{sandbox} dengan \textit{service fee} 5\% otomatis sebagai
+    model pendapatan platform, dilanjutkan \textit{self-pickup} dengan validasi \textit{pickup code}.
+
+    \item \textbf{Slot Iklan UMKM dan Pihak Ketiga} : UMKM dapat memasang \textit{premium listing} dan
+    pihak ketiga dapat beriklan; seluruh iklan melalui \textit{approval} admin.
+
+    \item \textbf{Analitik \& Insight UMKM} : Dashboard analitik penjualan, produk terlaris, metrik
+    pelacakan (views, CTR, \textit{conversion rate}), serta \textit{insight} rating dan keyword.
+
+    \item \textbf{Help Center dan Waste Log} : \textit{Help Center} melindungi customer saat terjadi
+    kendala pickup/pembayaran, sedangkan \textit{Waste Log} membantu UMKM mencatat makanan tidak
+    terjual sebagai bahan evaluasi produksi.
+
+    \item \textbf{Mitra Donasi} : Role khusus bagi yayasan/organisasi non-profit yang dapat mendaftar
+    dan diverifikasi admin untuk menerima makanan surplus.
+\end{enumerate}
+
+\subsection{Keunggulan Teknis}
+
+\subsubsection{Food Trust Index dan Food Score}
+Savora memisahkan dua indikator kelayakan berbasis aturan (\textit{rule-based}) yang saling
+melengkapi:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Food Trust Index} : Dihitung dari input UMKM (kategori, waktu produksi, penyimpanan,
+    kemasan) dan menghasilkan lima status kelayakan yang menentukan apakah produk dapat dipublikasikan.
+    \item \textbf{Food Score} : Skor 0--100 yang meluruh mengikuti sisa waktu rescue (kurva konveks),
+    berpangkal pada status Food Trust Index, dihitung \textit{real-time} di sisi klien sehingga
+    transparan dan dapat diaudit, serta dipetakan ke band kelayakan.
+\end{itemize}
+
+\subsubsection{Keyword Classification}
+Klasifikasi keyword ulasan secara \textit{rule-based} yang memetakan komentar customer ke level
+Aman/Warning/Gawat dan mengakumulasikannya menjadi badge keamanan per UMKM.
+
+\subsubsection{Dynamic Discount \& Service Fee}
+UMKM menetapkan harga rescue, sedangkan sistem:
+
+\begin{itemize}[leftmargin=*]
+    \item Merekomendasikan rentang diskon berdasarkan status Food Trust Index.
+    \item Menghitung diskon dan penghematan otomatis dari harga asli dan harga rescue.
+    \item Menambahkan \textit{service fee} 5\% transparan pada checkout \textit{cashless} (Midtrans).
+\end{itemize}
+
+\subsection{Technology Stack yang Unik}
+
+Kombinasi teknologi yang digunakan dalam Savora memberikan keunggulan kompetitif:
+
+\begin{table}[htbp]
+\centering
+\caption{Technology Stack Savora}
+\label{tab:tech_stack}
+\begin{tabularx}{\textwidth}{|l|Y|Y|}
+\hline
+\textbf{Komponen} & \textbf{Teknologi} & \textbf{Alasan Pemilihan} \\
+\hline
+Frontend & Next.js + React & Komponen reusable, mobile-first, SEO \\
+\hline
+Backend & Go + Fiber & Performa \& konkurensi tinggi, tipe statis \\
+\hline
+Database & PostgreSQL (GORM) & ACID compliance, data relasional \\
+\hline
+Food Trust Index \& Food Score & Rule-based (JavaScript) & Transparan, dapat diaudit, real-time \\
+\hline
+Pembayaran & Midtrans (Sandbox) & Cashless, service fee 5\%, alur dapat didemokan \\
+\hline
+Hosting & Vercel / Container & Skalabilitas dan reliability \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Moat (Penghalang Kompetisi)}
+
+Savora memiliki beberapa \textit{moat} yang melindungi posisi kompetitif:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Data Lokal} : Dataset penjualan UMKM kuliner Indonesia yang dikumpulkan dari mitra merupakan aset berharga yang sulit ditiru oleh kompetitor baru atau perusahaan besar.
+    
+    \item \textbf{Jaringan UMKM} : Hubungan langsung dengan UMKM kuliner lokal memberikan keunggulan dalam hal \textit{network effect} dan \textit{switching cost}.
+    
+    \item \textbf{Algoritma yang Dioptimasi} : Logika Food Score dan analitik yang disesuaikan dengan karakteristik makanan dan pola UMKM lokal; ke depan dapat diperkaya dengan model \textit{machine learning} berbasis data lokal.
+    
+    \item \textbf{Mekanisme Donasi} : Integrasi dengan jaringan donasi memberikan nilai tambah yang sulit ditiru oleh platform yang hanya fokus pada penjualan.
+\end{enumerate}

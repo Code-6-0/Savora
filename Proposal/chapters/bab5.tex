@@ -1,0 +1,141 @@
+\section{TEKNOLOGI}
+
+\subsection{Daftar Teknologi}
+
+Berikut adalah daftar teknologi yang digunakan dalam pengembangan Savora, sesuai dengan basis
+kode aplikasi:
+
+\begin{table}[htbp]
+\centering
+\caption{Daftar Teknologi Savora}
+\label{tab:daftar_teknologi}
+\small
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Kategori} & \textbf{Teknologi} & \textbf{Versi} \\
+\hline
+Bahasa Pemrograman & Go, JavaScript & 1.26, ES2024 \\
+\hline
+Frontend Framework & Next.js (App Router) + React & 16.x, 19.x \\
+\hline
+UI \& Styling & Tailwind CSS, lucide-react, Recharts & 4.x, 1.x, 3.x \\
+\hline
+Backend Framework & Go + Fiber & 1.26, v2.52 \\
+\hline
+Database & PostgreSQL & 16.x \\
+\hline
+ORM & GORM & 1.31 \\
+\hline
+Payment Gateway & Midtrans (mode Sandbox) & Snap \\
+\hline
+Food Trust Index \& Food Score & Rule-based (JavaScript) & - \\
+\hline
+Keyword Classification & Rule-based (JavaScript) & - \\
+\hline
+API Design & RESTful API (JSON) & - \\
+\hline
+Version Control & Git, GitHub & - \\
+\hline
+Hosting (rencana) & Vercel (frontend), Cloud/Container (backend) & - \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Alasan Pemilihan Teknologi}
+
+\subsubsection{Next.js + React untuk Frontend}
+Next.js (dengan \textit{App Router}) dan React dipilih sebagai \textit{frontend framework} karena:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Komponen Reusable} : Arsitektur berbasis komponen memudahkan pembuatan UI yang konsisten dan mudah dipelihara.
+    \item \textbf{Rendering Fleksibel} : Next.js mendukung \textit{server} dan \textit{client rendering} untuk performa dan SEO yang baik.
+    \item \textbf{Developer Experience} : \textit{Routing} berbasis folder, \textit{fast refresh}, dan integrasi Tailwind CSS mempercepat pengembangan antarmuka \textit{mobile-first}.
+    \item \textbf{Visualisasi Data} : Recharts digunakan untuk grafik pada dashboard analitik UMKM.
+\end{itemize}
+
+\subsubsection{Go + Fiber untuk Backend}
+Go dengan framework Fiber dipilih karena:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Performa \& Konkurensi} : Go dikompilasi menjadi biner \textit{native} dan menangani banyak \textit{request} secara efisien dengan \textit{goroutine}.
+    \item \textbf{Fiber yang Ringan} : Fiber menyediakan API bergaya Express di atas \textit{fasthttp}, cocok untuk REST API yang responsif.
+    \item \textbf{Tipe Statis} : Menekan kelas kesalahan tertentu saat kompilasi sehingga layanan lebih andal.
+\end{itemize}
+
+\subsubsection{PostgreSQL + GORM}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{PostgreSQL} : Database relasional yang robust dan mendukung ACID untuk data transaksional (produk, pesanan, ulasan, iklan).
+    \item \textbf{GORM} : ORM untuk Go yang menyederhanakan pemetaan model dan \textit{auto-migration} skema database.
+\end{itemize}
+
+\subsubsection{Food Trust Index dan Food Score Berbasis Aturan}
+Perhitungan Food Trust Index dan Food Score diimplementasikan sebagai fungsi \textit{rule-based} (deterministik)
+di sisi frontend, sehingga skor dapat dihitung dan diperbarui \textit{real-time} mengikuti sisa waktu
+rescue tanpa memerlukan layanan \textit{machine learning} terpisah. Rincian rumus dibahas pada bab
+Algoritma dan Logika Aplikasi. Pendekatan berbasis \textit{machine learning} (mis. prediksi permintaan
+dan \textit{dynamic pricing} otomatis) diposisikan sebagai \textit{roadmap} pengembangan lanjutan.
+
+\subsubsection{Midtrans Sandbox untuk Pembayaran Cashless}
+Savora menggunakan \textit{payment gateway} Midtrans pada mode \textit{sandbox} untuk mendemonstrasikan
+alur pembayaran \textit{cashless} \cite{midtrans2025docs} tanpa transaksi uang asli. Pilihan ini
+dipertimbangkan karena:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Realistis dan Dapat Diuji} : Mode \textit{sandbox} memungkinkan simulasi alur checkout,
+    status pembayaran, dan \textit{webhook} secara \textit{end-to-end} untuk kebutuhan demo juri.
+    \item \textbf{Model Pendapatan Jelas} : \textit{Service fee} 5\% otomatis ditambahkan per transaksi
+    sebagai sumber pendapatan platform yang transparan.
+    \item \textbf{Verifikasi Aman} : Status pembayaran hanya diperbarui setelah \textit{signature}/status
+    dari notifikasi Midtrans diverifikasi backend, sehingga integritas transaksi terjaga.
+\end{itemize}
+Pengambilan makanan tetap dilakukan \textit{self-pickup} ke lokasi UMKM dengan validasi \textit{pickup
+code} setelah pembayaran berstatus \textit{Paid}.
+
+\subsection{Arsitektur Teknologi}
+
+Savora menggunakan arsitektur \textit{client--server} tiga lapis: peramban pengguna menjalankan
+aplikasi Next.js, yang berkomunikasi dengan backend Go/Fiber melalui REST API berformat JSON, dan
+backend mengakses PostgreSQL melalui GORM. Gambar~\ref{fig:arsitektur} menunjukkan arsitektur
+tingkat tinggi tersebut.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    font=\footnotesize,
+    layer/.style={rounded corners, draw, thick, minimum width=3.1cm, minimum height=1cm, align=center},
+    node distance=0.9cm and 1.2cm,
+]
+% Client layer
+\node[layer, fill=blue!8] (browser) {Peramban Pengguna\\\scriptsize(Customer / UMKM / Admin)};
+\node[layer, fill=blue!14, below=of browser] (front) {Frontend\\\textbf{Next.js 16 + React 19}\\\scriptsize Tailwind CSS, Recharts};
+\node[layer, fill=green!12, below=of front] (api) {Backend API\\\textbf{Go 1.26 + Fiber v2}\\\scriptsize REST / JSON, \texttt{/api/*}};
+\node[layer, fill=orange!14, below=of api] (orm) {ORM\\\textbf{GORM}};
+\node[layer, fill=red!10, below=of orm] (db) {Database\\\textbf{PostgreSQL}};
+
+% Food Score annotation (client-side rule-based)
+\node[layer, fill=yellow!22, right=2.4cm of front, minimum width=3.4cm] (score) {Food Trust Index \& Food Score\\\scriptsize rule-based (client-side)\\\scriptsize meluruh terhadap waktu};
+
+% External payment gateway
+\node[layer, fill=purple!12, right=2.4cm of api, minimum width=3.4cm] (pay) {Midtrans Sandbox\\\scriptsize payment gateway\\\scriptsize service fee 5\%};
+
+\draw[-{Latex}] (browser) -- (front);
+\draw[-{Latex}] (front) -- node[right]{\scriptsize HTTPS} (api);
+\draw[-{Latex}] (api) -- node[right]{\scriptsize query} (orm);
+\draw[-{Latex}] (orm) -- (db);
+\draw[-{Latex}, dashed] (front) -- (score);
+\draw[{Latex}-{Latex}, dashed] (api) -- node[above, font=\scriptsize]{token/webhook} (pay);
+
+\begin{scope}[on background layer]
+    \node[draw, dashed, rounded corners, fit=(browser)(front)(score), inner sep=6pt, label={[font=\scriptsize]above:Client (Peramban)}] {};
+    \node[draw, dashed, rounded corners, fit=(api)(orm)(db), inner sep=6pt, label={[font=\scriptsize]below:Server}] {};
+\end{scope}
+\end{tikzpicture}
+\caption{Arsitektur High-Level Savora}
+\label{fig:arsitektur}
+\end{figure}
+
+Alur komunikasi sistem:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Client Layer} : Peramban pengguna menjalankan aplikasi Next.js/React. Food Score dihitung di sisi klien secara \textit{rule-based} dan diperbarui mengikuti sisa waktu rescue.
+    \item \textbf{Application Layer} : \textit{Request} diteruskan ke backend Go/Fiber melalui REST API (\texttt{/api/*}) yang memproses \textit{business logic} produk, pesanan, analitik, dan iklan.
+    \item \textbf{Payment Gateway} : Untuk pembayaran \textit{cashless}, backend membuat token transaksi ke Midtrans \textit{sandbox} dan memperbarui status order setelah memverifikasi notifikasi/\textit{webhook}.
+    \item \textbf{Data Access Layer} : GORM memetakan model ke tabel dan menjalankan kueri ke database.
+    \item \textbf{Data Layer} : PostgreSQL menyimpan data persisten (UMKM, produk, pesanan, ulasan, iklan, pembayaran).
+\end{enumerate}

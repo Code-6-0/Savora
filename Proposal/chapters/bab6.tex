@@ -1,0 +1,146 @@
+\section{RUANG LINGKUP DAN BATASAN PERANGKAT LUNAK}
+
+Bagian ini mendefinisikan ruang lingkup \textit{Minimum Viable Product} (MVP) Savora, yaitu
+batas fungsionalitas yang menjadi fokus pengembangan untuk lomba CODE 6.0. Ruang lingkup ini
+mengacu pada dokumen kebutuhan produk (PRD) Savora dan diposisikan sebagai rancangan MVP yang
+dapat diprototipekan dan diuji, bukan klaim bisnis yang sudah berjalan penuh.
+
+\subsection{Ruang Lingkup MVP (In-Scope)}
+
+Fungsionalitas berikut termasuk dalam ruang lingkup MVP Savora. Untuk transparansi, status
+implementasi ditandai sebagai \emph{sudah berjalan} (telah ada pada basis kode) atau
+\emph{direncanakan} (menjadi bagian MVP dan sedang/akan diimplementasikan).
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Autentikasi dan Manajemen Role} : Registrasi dan login untuk empat peran ---
+    Customer, UMKM, Admin, dan Mitra Donasi --- dengan \textit{role-based access control}.
+
+    \item \textbf{Manajemen Produk UMKM} : UMKM menambah, mengubah, dan menghapus produk makanan
+    surplus (produk reguler maupun \textit{mystery box}) lengkap dengan harga asli, harga rescue,
+    stok, foto, alamat pickup, dan batas waktu (\textit{expires\_at}).
+
+    \item \textbf{Food Trust Index} : Penilaian kelayakan berbasis aturan dari input UMKM
+    (kategori, jam produksi, metode penyimpanan, kondisi kemasan) yang menghasilkan lima status
+    kelayakan dan menentukan apakah produk dapat dipublikasikan.
+
+    \item \textbf{Food Score Decay} : Skor kelayakan (0--100) yang meluruh mengikuti sisa waktu
+    rescue menuju \textit{expired}, ditampilkan \textit{real-time} beserta \textit{rescue timer}.
+
+    \item \textbf{Keyword Classification dari Ulasan} : Klasifikasi keyword ulasan ke level
+    Aman/Warning/Gawat dan akumulasi menjadi badge keamanan per UMKM.
+
+    \item \textbf{Marketplace Customer} : Konsumen menelusuri produk rescue aktif, melihat Food
+    Score, harga rescue, persentase diskon, dan badge keyword, serta menyaring dan mengurutkan produk.
+
+    \item \textbf{Checkout Cashless via Midtrans} : Pembayaran \textit{cashless only} melalui Midtrans
+    \textit{sandbox} dengan \textit{service fee} 5\% otomatis, pembuatan \textit{pickup code} setelah
+    status \textit{Paid}, dan reservasi stok berbatas waktu.
+
+    \item \textbf{Manajemen Pesanan dan Pickup} : Pencatatan pesanan dan siklus status (Created,
+    Payment Pending, Paid, Ready for Pickup, Completed, No-Show, dll.) serta validasi \textit{pickup
+    code} oleh UMKM.
+
+    \item \textbf{Dashboard Analitik \& Insight UMKM} : Ringkasan penjualan, produk terlaris, tren,
+    metrik listing (views, CTR, \textit{conversion rate}), serta \textit{insight} rating dan keyword.
+
+    \item \textbf{Slot Iklan} : UMKM memasang iklan produk (paket berdurasi tetap) dan pihak ketiga
+    dapat beriklan; seluruhnya melalui \textit{approval} admin.
+
+    \item \textbf{Ulasan dan Rating} : Konsumen memberi rating dan ulasan dengan input keyword
+    setelah transaksi selesai.
+
+    \item \textbf{Help Center} : Customer melaporkan kendala (produk tidak tersedia/tidak sesuai,
+    UMKM tidak merespons, masalah pembayaran) untuk ditangani admin.
+
+    \item \textbf{Waste Log} : UMKM mencatat makanan tidak layak/tidak terjual sebagai bahan
+    evaluasi produksi.
+
+    \item \textbf{Konsol Admin} : Verifikasi UMKM, verifikasi Mitra Donasi (\textit{approve/reject}),
+    moderasi listing dan iklan, dashboard keuangan (\textit{service fee} + iklan), dan \textit{export}
+    laporan (CSV/Excel/PDF).
+
+    \item \textbf{Mitra Donasi} : Registrasi organisasi non-profit dan verifikasi oleh admin untuk
+    menerima makanan surplus.
+\end{enumerate}
+
+\subsection{Status Implementasi Fitur MVP}
+
+Tabel~\ref{tab:mvp_scope} merangkum ruang lingkup MVP beserta status implementasi saat proposal ini
+disusun. Fitur berstatus \emph{Sudah berjalan} telah tersedia pada basis kode (\textit{frontend}
+Next.js dan/atau \textit{backend} Go/Fiber), sedangkan \emph{Direncanakan} merupakan bagian MVP yang
+sedang/akan diselesaikan dalam \textit{sprint} berikutnya.
+
+\begin{table}[htbp]
+\centering
+\caption{Ringkasan Ruang Lingkup dan Status MVP}
+\label{tab:mvp_scope}
+\small
+\begin{tabularx}{\textwidth}{|>{\RaggedRight\arraybackslash}p{0.32\textwidth}|l|>{\RaggedRight\arraybackslash}X|}
+\hline
+\textbf{Fitur MVP} & \textbf{Status} & \textbf{Keterangan} \\
+\hline
+Manajemen produk UMKM & Sudah berjalan & CRUD produk reguler \& \textit{mystery box} \\
+\hline
+Food Score Decay & Sudah berjalan & Rule-based, meluruh terhadap waktu (\textit{frontend}) \\
+\hline
+Keyword classification ulasan & Sudah berjalan & Level Aman/Warning/Gawat (\textit{frontend}) \\
+\hline
+Marketplace customer & Sudah berjalan & Browse, filter, sort, Food Score live \\
+\hline
+Manajemen pesanan & Sudah berjalan & Pencatatan \& update status \\
+\hline
+Dashboard analitik \& insight UMKM & Sudah berjalan & Penjualan, tren, insight, metrik listing \\
+\hline
+Slot iklan UMKM & Sudah berjalan & Paket iklan berdurasi tetap \\
+\hline
+Ulasan \& rating & Sudah berjalan & Dengan input keyword \\
+\hline
+Autentikasi \& role (4 peran) & Direncanakan & JWT + \textit{password hashing}, RBAC \\
+\hline
+Food Trust Index (input UMKM) & Direncanakan & Form penilaian $\rightarrow$ 5 status kelayakan \\
+\hline
+Checkout cashless Midtrans + \textit{service fee} 5\% & Direncanakan & Midtrans \textit{sandbox}, \textit{webhook}, \textit{pickup code} \\
+\hline
+Help Center & Direncanakan & Tiket bantuan customer $\rightarrow$ admin \\
+\hline
+Waste Log & Direncanakan & Pencatatan makanan tidak terjual \\
+\hline
+Konsol admin \& keuangan & Direncanakan & Verifikasi, moderasi, revenue, \textit{export} \\
+\hline
+Mitra Donasi & Direncanakan & Registrasi + verifikasi admin \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Di Luar Ruang Lingkup MVP (Out-of-Scope)}
+
+Kapabilitas berikut secara sadar dikeluarkan dari MVP dan diposisikan sebagai \textit{roadmap}
+pengembangan lanjutan setelah MVP tervalidasi:
+
+\begin{itemize}[leftmargin=*]
+    \item Mode \textit{production} Midtrans dan perluasan kanal pembayaran (MVP menggunakan
+    \textit{sandbox} saja; tidak ada pembayaran tunai/COD).
+    \item Layanan \textit{delivery}/pengantaran (MVP hanya \textit{self-pickup}).
+    \item \textit{Dynamic pricing} otomatis dan prediksi permintaan berbasis \textit{machine learning}
+    (MVP menyediakan rekomendasi diskon \textit{rule-based}, harga akhir ditetapkan UMKM).
+    \item Pengelolaan limbah eksternal (MVP membatasi pada pencatatan internal via \textit{Waste Log}).
+    \item Komunikasi \textit{real-time} (\textit{push notification}, \textit{websocket}) dan aplikasi
+    \textit{native mobile}.
+    \item Voucher/promo dan integrasi POS UMKM.
+\end{itemize}
+
+\subsection{Asumsi dan Batasan}
+
+\begin{itemize}[leftmargin=*]
+    \item Aplikasi berbasis web \textit{responsive}/PWA-ready dan diakses melalui peramban modern
+    (\textit{mobile-first}), bukan aplikasi \textit{native}.
+    \item Food Trust Index dan Food Score merupakan indikator kelayakan berbasis aturan dan input
+    UMKM, bukan hasil uji laboratorium; keputusan akhir konsumsi tetap pada pengguna.
+    \item Integrasi Midtrans menggunakan mode \textit{sandbox} untuk demo dan pengujian, bukan
+    transaksi uang asli.
+    \item Estimasi dampak lingkungan (makanan terselamatkan, emisi) bersifat estimatif untuk edukasi,
+    bukan klaim terverifikasi pihak ketiga.
+    \item Data UMKM, customer, produk, dan transaksi dapat menggunakan \textit{dummy data} realistis
+    untuk keperluan demonstrasi dan pengujian.
+    \item Role Mitra Donasi pada MVP terbatas pada registrasi dan verifikasi oleh admin.
+\end{itemize}

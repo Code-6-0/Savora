@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(command -v pdftotext pdftoppm python python3)",
+      "Bash(pdftotext -layout bukped.pdf bukped.txt)"
+    ]
+  }
+}

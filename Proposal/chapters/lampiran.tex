@@ -1,0 +1,55 @@
+\section*{LAMPIRAN}
+\phantomsection
+\addcontentsline{toc}{section}{LAMPIRAN}
+
+\subsection*{Lampiran A: Database Schema}
+\phantomsection
+\addcontentsline{toc}{subsection}{Lampiran A: Database Schema}
+
+\begin{table}[H]
+\centering
+\caption{Schema Tabel Users}
+\label{tab:schema_users}
+\begin{tabular}{|l|l|p{0.4\textwidth}|}
+\hline
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Keterangan} \\
+\hline
+id & UUID & Primary Key \\
+email & VARCHAR(255) & Unique, NOT NULL \\
+password & VARCHAR(255) & Hashed, NOT NULL \\
+name & VARCHAR(255) & NOT NULL \\
+role & ENUM & admin, umkm, customer \\
+phone & VARCHAR(20) & Nullable \\
+address & TEXT & Nullable \\
+created\_at & TIMESTAMP & Default NOW() \\
+updated\_at & TIMESTAMP & Auto-update \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Schema Tabel Products}
+\label{tab:schema_products}
+\begin{tabular}{|l|l|p{0.4\textwidth}|}
+\hline
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Keterangan} \\
+\hline
+id & UUID & Primary Key \\
+umkm\_id & UUID & Foreign Key ke users \\
+name & VARCHAR(255) & NOT NULL \\
+description & TEXT & Nullable \\
+original\_price & DECIMAL(10,2) & NOT NULL \\
+discount\_price & DECIMAL(10,2) & Nullable \\
+stock & INTEGER & NOT NULL \\
+unit & ENUM & pcs, kg, portion \\
+production\_time & TIMESTAMP & NOT NULL \\
+shelf\_life & INTEGER & Jam, NOT NULL \\
+packaging\_condition & ENUM & good, fair, poor \\
+storage\_temp & DECIMAL & Celsius \\
+fes\_score & INTEGER & 0-100 \\
+status & ENUM & available, sold, donated \\
+created\_at & TIMESTAMP & Default NOW() \\
+\hline
+\end{tabular}
+\end{table}

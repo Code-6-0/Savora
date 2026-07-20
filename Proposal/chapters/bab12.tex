@@ -1,0 +1,235 @@
+\section{RENCANA DOKUMENTASI DAN DEPLOYMENT}
+
+\subsection{Rencana Deployment}
+
+Savora akan di-deploy menggunakan strategi berikut setelah development selesai:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Frontend} : Deployment ke platform seperti Vercel atau Netlify dengan continuous deployment dari GitHub
+    \item \textbf{Backend} : Deployment ke cloud provider seperti Railway, Render, atau AWS dengan auto-scaling capability
+    \item \textbf{Database} : PostgreSQL managed instance (Supabase, Railway, atau AWS RDS)
+    \item \textbf{Backend Runtime} : Biner Go dikemas dalam Docker container untuk portabilitas
+\end{enumerate}
+
+\textbf{STATUS}: Deployment belum dilakukan. Aplikasi masih dalam tahap perencanaan dan akan di-deploy setelah development selesai.
+
+\subsection{Rencana Dokumentasi Pengguna}
+
+Dokumentasi akan dibuat untuk memudahkan pengguna menggunakan aplikasi setelah deployment:
+
+\subsubsection{User Guide untuk Customer}
+Akan mencakup:
+\begin{itemize}[leftmargin=*]
+    \item Cara registrasi dan login
+    \item Cara mencari produk dan membaca badge keamanan keyword
+    \item Cara memahami Food Score dan rescue timer
+    \item Cara checkout \textit{cashless} via Midtrans dan menggunakan \textit{pickup code}
+    \item Cara tracking pesanan
+    \item Cara memberikan review dan membuat tiket Help Center
+    \item Cara melihat impact dashboard
+\end{itemize}
+
+\subsubsection{User Guide untuk UMKM}
+Akan mencakup:
+\begin{itemize}[leftmargin=*]
+    \item Cara registrasi dan verifikasi
+    \item Cara menambahkan produk dan mengisi Food Trust Index
+    \item Cara memahami Food Score produk
+    \item Cara menetapkan harga rescue (time-aware pricing)
+    \item Cara memvalidasi \textit{pickup code} dan mengelola pesanan
+    \item Cara mencatat Waste Log dan membaca analitik/insight
+\end{itemize}
+
+\subsubsection{User Guide untuk Admin}
+Akan mencakup:
+\begin{itemize}[leftmargin=*]
+    \item Cara mengakses admin panel
+    \item Cara verifikasi UMKM dan Mitra Donasi baru
+    \item Cara monitoring platform dan dashboard keuangan (service fee + iklan)
+    \item Cara moderasi konten/iklan dan menangani Help Ticket
+    \item Cara meng-\textit{export} laporan (CSV/Excel/PDF)
+\end{itemize}
+
+\subsubsection{User Guide untuk Mitra Donasi}
+Akan mencakup:
+\begin{itemize}[leftmargin=*]
+    \item Cara registrasi organisasi dan mengunggah dokumen legalitas
+    \item Cara memantau status verifikasi
+    \item Cara menerima informasi makanan surplus
+\end{itemize}
+
+\subsection{Rencana Akun Demo}
+
+Untuk keperluan testing dan penilaian kompetisi, akan disediakan akun demo:
+
+\begin{table}[htbp]
+\centering
+\caption{Rencana Akun Demo}
+\label{tab:akun_demo}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Role} & \textbf{Email} & \textbf{Purpose} \\
+\hline
+Admin & admin@savora.demo & Testing fitur admin, verifikasi, keuangan \\
+\hline
+UMKM & umkm@savora.demo & Testing workflow UMKM \& Food Trust Index \\
+\hline
+Customer & customer@savora.demo & Testing alur belanja \& checkout cashless \\
+\hline
+Mitra Donasi & mitra@savora.demo & Testing registrasi \& verifikasi mitra donasi \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{Sample Data yang Akan Di-seed:}
+\begin{itemize}[leftmargin=*]
+    \item 10+ UMKM dengan profil lengkap
+    \item 30+ produk makanan surplus dengan berbagai kategori
+    \item 50+ transaksi historis untuk testing
+    \item Review dan rating dari customer
+    \item Statistik dashboard (food waste saved, carbon impact)
+\end{itemize}
+
+\textbf{CATATAN}: Akun demo dan sample data di atas adalah RENCANA. Belum ada aplikasi yang di-deploy saat ini.
+
+\subsubsection{Pembayaran Demo (Midtrans Sandbox)}
+
+Karena pembayaran menggunakan Midtrans mode \textit{sandbox}, tidak ada uang asli yang berpindah.
+Untuk demo dan penilaian, checkout dapat diselesaikan menggunakan kredensial uji Midtrans (mis.
+kartu uji dan simulator \textit{e-wallet}/VA yang disediakan Midtrans). Alur demo pembayaran:
+
+\begin{enumerate}[leftmargin=*]
+    \item Customer memilih produk dan menekan \textit{checkout}; sistem menampilkan subtotal,
+    \textit{service fee} 5\%, dan total.
+    \item Sistem membuat transaksi ke Midtrans \textit{sandbox} dan menampilkan halaman pembayaran.
+    \item Penilai menyelesaikan pembayaran dengan kredensial uji Midtrans.
+    \item Midtrans mengirim notifikasi; setelah diverifikasi, status order menjadi \emph{Paid} dan
+    \textit{pickup code} dibuat.
+    \item UMKM memvalidasi \textit{pickup code} untuk menyelesaikan pesanan.
+\end{enumerate}
+
+\textbf{CATATAN}: Kredensial kartu/uji Midtrans akan disertakan pada README repositori, bukan
+dituliskan di proposal, dan hanya berlaku pada lingkungan \textit{sandbox}.
+
+\subsection{Requirement Sistem}
+
+Aplikasi Savora akan memiliki requirement minimum berikut:
+
+\begin{table}[htbp]
+\centering
+\caption{Minimum System Requirements}
+\label{tab:requirements}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Komponen} & \textbf{Spesifikasi Minimum} \\
+\hline
+Browser & Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ \\
+\hline
+Koneksi Internet & 2 Mbps untuk pengalaman optimal \\
+\hline
+Device & Desktop, laptop, tablet, atau smartphone \\
+\hline
+Screen Resolution & 360px width minimum (mobile-first) \\
+\hline
+JavaScript & Enabled (required) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Rencana FAQ dan Troubleshooting}
+
+Dokumentasi FAQ dan troubleshooting akan dibuat mencakup:
+
+\subsubsection{Common Issues yang Akan Didokumentasikan}
+\begin{itemize}[leftmargin=*]
+    \item Masalah login dan authentication
+    \item Masalah loading halaman
+    \item Masalah upload gambar
+    \item Masalah pembayaran Midtrans (sandbox) dan status order
+    \item Masalah notifikasi
+    \item Masalah perhitungan Food Trust Index / Food Score
+\end{itemize}
+
+Setiap issue akan didokumentasikan dengan:
+\begin{enumerate}[leftmargin=*]
+    \item Deskripsi masalah
+    \item Penyebab umum
+    \item Langkah-langkah solusi
+    \item Cara menghubungi support jika tidak terselesaikan
+\end{enumerate}
+
+\subsection{Rencana Support dan Kontak}
+
+Setelah deployment, akan tersedia channel support:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Email Support} : Untuk pertanyaan dan issue teknis
+    \item \textbf{GitHub Issues} : Untuk bug reports dan feature requests
+    \item \textbf{Documentation Website} : Knowledge base dan tutorials
+\end{itemize}
+
+\subsection{Dokumentasi Teknis untuk Developer}
+
+Akan dibuat dokumentasi teknis mencakup:
+
+\subsubsection{API Documentation}
+\begin{itemize}[leftmargin=*]
+    \item Daftar semua endpoints dengan method dan parameters
+    \item Request/response examples
+    \item Authentication requirements
+    \item Error codes dan handling
+    \item Rate limiting policies
+\end{itemize}
+
+\subsubsection{Database Schema Documentation}
+\begin{itemize}[leftmargin=*]
+    \item Entity Relationship Diagram (ERD)
+    \item Table descriptions
+    \item Field definitions dan constraints
+    \item Relationships dan foreign keys
+    \item Indexes dan performance considerations
+\end{itemize}
+
+\subsubsection{Deployment Guide}
+\begin{itemize}[leftmargin=*]
+    \item Environment setup instructions
+    \item Configuration requirements
+    \item Database migration steps
+    \item CI/CD pipeline setup
+    \item Monitoring dan logging setup
+\end{itemize}
+
+\subsection{Rencana Maintenance Documentation}
+
+Dokumentasi maintenance akan mencakup:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Backup Strategy} : Frequency, retention policy, restore procedures
+    \item \textbf{Monitoring} : Key metrics to track, alerting thresholds
+    \item \textbf{Scaling Guidelines} : When and how to scale infrastructure
+    \item \textbf{Security Updates} : Process for patching vulnerabilities
+    \item \textbf{Performance Optimization} : Common bottlenecks dan solutions
+\end{itemize}
+
+\subsection{Timeline Dokumentasi}
+
+\begin{table}[htbp]
+\centering
+\caption{Rencana Timeline Dokumentasi}
+\label{tab:doc_timeline}
+\begin{tabularx}{\textwidth}{|l|X|l|}
+\hline
+\textbf{Fase} & \textbf{Deliverable} & \textbf{Timing} \\
+\hline
+Development & API documentation, code comments & Ongoing \\
+\hline
+Pre-deployment & User guides, admin documentation & 1-2 minggu \\
+\hline
+Post-deployment & FAQ, troubleshooting guide & Iteratif \\
+\hline
+Maintenance & Technical documentation updates & Ongoing \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{CATATAN PENTING}: Semua dokumentasi di atas adalah RENCANA yang akan dibuat setelah aplikasi selesai dibangun dan di-deploy. Saat ini aplikasi belum ada, sehingga belum ada user guide, FAQ, atau troubleshooting documentation yang dapat diberikan. Dokumentasi akan dibuat bertahap seiring dengan progress development dan feedback dari user testing.

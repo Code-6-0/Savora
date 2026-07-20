@@ -1,0 +1,361 @@
+% Proposal CODE 6.0 - Software Development
+% Aplikasi Manajemen Food Waste
+
+% Document Class
+\documentclass[12pt,a4paper,indonesian]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx} % Times New Roman
+\usepackage{courier}  % Courier for monospace
+\usepackage{helvet}   % Helvetica for sans-serif
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage{babel}
+\babelprovide[import, main]{indonesian}
+\babelprovide[import]{english}
+\selectlanguage{indonesian}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{tocloft}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[format=hang,font=footnotesize,labelfont=bf]{caption}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{ragged2e}
+\usepackage{csquotes}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{pdflscape}
+
+% Diagram (arsitektur, use case, ERD, flowchart) & kurva algoritma
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, fit, backgrounds, chains}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\DeclareQuoteStyle{indonesian}
+  {\textquotedblleft}
+  {\textquotedblright}
+  [0.05em]
+  {\textquoteleft}
+  {\textquoteright}
+
+% Page Setup - sesuai template: minimal 2.5cm semua sisi
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=3cm,
+    right=2.5cm
+}
+
+% Title Formatting
+\titleformat{\section}
+    {\normalfont\fontsize{14}{17}\bfseries\centering}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+    {\normalfont\fontsize{12}{14}\bfseries}{\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+    {\normalfont\fontsize{11}{13}\bfseries}{\thesubsubsection}{1em}{}
+
+% Spacing - 1.15 (diizinkan ketentuan: 1.15 atau 1.5) untuk efisiensi halaman
+\setstretch{1.15}
+
+% --- Pemadatan ruang vertikal (tidak mengubah isi, hanya whitespace) ---
+% Jarak sebelum/sesudah judul dirapatkan
+\titlespacing*{\section}{0pt}{2.0ex plus 0.5ex minus .2ex}{1.2ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{1.6ex plus 0.4ex minus .2ex}{0.8ex plus .2ex}
+\titlespacing*{\subsubsection}{0pt}{1.2ex plus 0.3ex minus .2ex}{0.6ex plus .2ex}
+% Daftar (itemize/enumerate) dirapatkan
+\setlist{topsep=2pt, partopsep=0pt, itemsep=1pt, parsep=1pt}
+% Beri LaTeX kebebasan mengisi halaman agar tidak ada ruang kosong besar
+\setlength{\parskip}{0.2ex plus 0.2ex}
+\renewcommand{\arraystretch}{1.05}
+% Toleransi float lebih longgar supaya gambar/tabel memadat halaman
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.8}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=blue,
+    filecolor=black,
+    urlcolor=blue,
+}
+
+% Table of Contents customization
+\renewcommand{\contentsname}{DAFTAR ISI}
+\renewcommand{\cfttoctitlefont}{\hfill\fontsize{14}{17}\selectfont\bfseries}
+\renewcommand{\cftaftertoctitle}{\hfill}
+
+% List of Tables customization
+\renewcommand{\listtablename}{DAFTAR TABEL}
+\renewcommand{\cftlottitlefont}{\hfill\fontsize{14}{17}\selectfont\bfseries}
+\renewcommand{\cftafterlottitle}{\hfill}
+
+% List of Figures customization
+\renewcommand{\listfigurename}{DAFTAR GAMBAR}
+\renewcommand{\cftloftitlefont}{\hfill\fontsize{14}{17}\selectfont\bfseries}
+\renewcommand{\cftafterloftitle}{\hfill}
+
+% TOC spacing for Roman numerals (BAB I, II, III...)
+\setlength{\cftsecnumwidth}{6em}
+
+% Subsection numbering format
+% Format section numbering: BAB I, BAB II, BAB III...
+\renewcommand{\thesection}{BAB \Roman{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+
+% Bibliography Style - IEEE NUMERIC
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=none,
+    maxbibnames=99,
+    hyperref=true,
+    backref=false,
+    url=false,
+    doi=true,
+]{biblatex}
+
+\urlstyle{same}
+
+\addbibresource{references.bib}
+\addbibresource{include.bib}
+
+% DO NOT redefine \cite - let it use default numeric style
+
+% IEEE style does not need custom delimiters
+
+% Remove "In:" from bibliography
+\renewbibmacro{in:}{}
+
+% Ensure pages are not bold
+\DeclareFieldFormat{pages}{\normalfont #1}
+
+% Custom format untuk memastikan ada spasi setelah "in"
+\DeclareFieldFormat{booktitle}{\addspace\textit{#1}}
+\DeclareFieldFormat{journaltitle}{\addspace\textit{#1}}
+
+% Fix URL breaking untuk mencegah overflow
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+
+% Set bibliography to use ragged right alignment
+\emergencystretch=1em
+\appto{\bibsetup}{\sloppy\RaggedRight}
+
+% Custom Commands
+\makeatletter
+\newcommand{\myTitle}[1]{\def\@myTitle{#1}}
+\newcommand{\myName}[1]{\def\@myName{#1}}
+\newcommand{\myNIM}[1]{\def\@myNIM{#1}}
+\newcommand{\myTeam}[1]{\def\@myTeam{#1}}
+\newcommand{\myUniversity}[1]{\def\@myUniversity{#1}}
+\newcommand{\myStudyProgram}[1]{\def\@myStudyProgram{#1}}
+\newcommand{\myYear}[1]{\def\@myYear{#1}}
+
+% Initialize default values
+\def\@myTitle{Savora: Platform Manajemen Food Waste Berbasis Web untuk UMKM Kuliner}
+\def\@myTeam{AmbaTeam}
+\def\@myNIM{714240035, 714240047, 714240044, 714240050, 714240002}
+\def\@myName{Wa Ode Nur Alia, Richard Firmansyah, Muhammad Rifaidi, Ridwan Hakim Ramadhan, Nadi Azzada Akbar}
+\def\@myUniversity{Universitas Logistik dan Bisnis Internasional}
+\def\@myStudyProgram{Program Studi Teknik Informatika}
+\def\@myYear{2026}
+
+\renewcommand{\maketitle}{
+    \begin{titlepage}
+        \centering
+        \vspace*{1cm}
+        
+        % Judul Aplikasi
+        {\fontsize{16}{20}\selectfont
+        \textbf{SAVORA}\par}
+        
+        \vspace{0.5cm}
+        
+        {\fontsize{12}{14}\selectfont
+        \textbf{Platform Manajemen Food Waste Berbasis Web}\\[0.3cm]
+        \textbf{untuk UMKM Kuliner}\par}
+        
+        \vspace{2cm}
+        
+        % Nama Tim
+        {\fontsize{12}{14}\selectfont
+        \textbf{Kelompok: \@myTeam}\par}
+        
+        \vspace{1cm}
+        
+        % Anggota Tim
+        {\fontsize{11}{13}\selectfont
+        \@myName\par}
+        
+        \vspace{0.5cm}
+        
+        {\fontsize{11}{13}\selectfont
+        \@myNIM\par}
+        
+        \vspace{2cm}
+        
+        % Logo
+        \IfFileExists{logo.png}{
+            \includegraphics[width=0.3\textwidth]{logo.png}
+        }{
+            % Placeholder jika logo belum ada
+        }
+        
+        \vfill
+        
+        % Informasi Universitas
+        {\fontsize{12}{14}\selectfont
+        \textbf{\@myStudyProgram}\par
+        \textbf{\@myUniversity}\par}
+        
+        \vspace{0.5cm}
+        
+        {\fontsize{14}{17}\selectfont
+        \textbf{\@myYear}\par}
+        
+    \end{titlepage}
+    \newpage
+}
+\makeatother
+
+% Beginning of Document
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% Force TOC title to be uppercase
+\renewcommand{\contentsname}{DAFTAR ISI}
+\renewcommand{\listtablename}{DAFTAR TABEL}
+\renewcommand{\listfigurename}{DAFTAR GAMBAR}
+
+% Use Times New Roman as default font
+\rmfamily
+
+% Title Page
+\maketitle
+
+% Halaman Depan menggunakan angka Romawi
+\pagenumbering{roman}
+
+% DAFTAR ISI
+\phantomsection
+\addcontentsline{toc}{section}{DAFTAR ISI}
+\tableofcontents
+\clearpage
+
+% DAFTAR TABEL
+\phantomsection
+\addcontentsline{toc}{section}{DAFTAR TABEL}
+\listoftables
+\clearpage
+
+% DAFTAR GAMBAR
+\phantomsection
+\addcontentsline{toc}{section}{DAFTAR GAMBAR}
+\listoffigures
+\clearpage
+
+% ==================== BAGIAN 1: COVER ====================
+% (Cover sudah ditangani oleh \maketitle di atas)
+
+% ==================== BAGIAN 2: ABSTRAK ====================
+\clearpage
+\setcounter{section}{0}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\hypersetup{pageanchor=true}
+
+\section*{ABSTRAK}
+\phantomsection
+\addcontentsline{toc}{section}{ABSTRAK}
+\input{chapters/abstrak}
+\clearpage
+
+% ==================== BAGIAN 3: LATAR BELAKANG & URGENSI ====================
+% REMOVED: Section header "LATAR BELAKANG & URGENSI MASALAH" 
+% (redundant - content already in BAB I PENDAHULUAN)
+
+\input{chapters/bab1}
+\bigskip
+
+% ==================== BAGIAN 4: TUJUAN, MANFAAT, & DAMPAK ====================
+\input{chapters/bab2}
+\bigskip
+
+% ==================== BAGIAN 5: NILAI INOVASI & ORISINALITAS ====================
+\input{chapters/bab3}
+\bigskip
+
+% ==================== BAGIAN 6: ANALISIS KOMPETITOR & BUSINESS VIABILITY ====================
+\input{chapters/bab4}
+\bigskip
+
+% ==================== BAGIAN 7: TEKNOLOGI YANG DIGUNAKAN ====================
+\input{chapters/bab5}
+\bigskip
+
+% ==================== BAGIAN 8: BATASAN PERANGKAT LUNAK ====================
+\input{chapters/bab6}
+\bigskip
+
+% ==================== BAGIAN 9: METODOLOGI PENGEMBANGAN ====================
+\input{chapters/bab7}
+\bigskip
+
+% ==================== BAGIAN 10: ARSITEKTUR SISTEM & DESAIN ====================
+\input{chapters/bab8}
+\bigskip
+
+% ==================== BAGIAN 11: IMPLEMENTASI TEKNIS ====================
+\input{chapters/bab9}
+\bigskip
+
+% ==================== BAGIAN 12: ANALISIS UI/UX & ACCESSIBILITY ====================
+\input{chapters/bab10}
+\bigskip
+
+% ==================== BAGIAN 13: PENGUJIAN (TESTING) ====================
+\input{chapters/bab11}
+\bigskip
+
+% ==================== BAGIAN 14: DOKUMENTASI PENGGUNAAN ====================
+\input{chapters/bab12}
+\clearpage
+
+% ==================== BAGIAN 15: DAFTAR PUSTAKA & REFERENSI ====================
+\section*{DAFTAR PUSTAKA \& REFERENSI}
+\phantomsection
+\addcontentsline{toc}{section}{DAFTAR PUSTAKA \& REFERENSI}
+\input{chapters/daftar_pustaka}
+\clearpage
+
+% ==================== LAMPIRAN ====================
+% Lampiran A (skema DB kolom-per-kolom) dihapus: struktur data sudah dirangkum
+% pada Tabel "Struktur Data Model Savora" di BAB Arsitektur Sistem (bab8),
+% sekaligus menjaga konsistensi istilah (food_score, service_fee, rescue_price).
+
+\end{document}

@@ -1,0 +1,349 @@
+\section{ARSITEKTUR SISTEM}
+
+\subsection{Use Case Diagram}
+
+Terdapat empat aktor utama dalam sistem Savora, yaitu Customer, UMKM, Admin, dan Mitra Donasi.
+Gambar~\ref{fig:usecase} memetakan use case utama per aktor sesuai ruang lingkup MVP.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    font=\scriptsize,
+    actor/.style={align=center, font=\scriptsize\bfseries},
+    uc/.style={draw, ellipse, minimum width=3.0cm, minimum height=0.8cm, align=center, fill=blue!6},
+    node distance=0.3cm,
+]
+% Actors (left: customer/mitra, right: umkm/admin)
+\node[actor] (cust)  at (0,0.5) {Customer};
+\node[actor] (mitra) at (0,-6.0) {Mitra\\Donasi};
+\node[actor] (umkm)  at (12.4,1.0) {UMKM};
+\node[actor] (admin) at (12.4,-5.2) {Admin};
+
+% Customer use cases
+\node[uc] (uc1) at (4.6, 1.4) {Registrasi / Login};
+\node[uc] (uc2) at (4.6, 0.4) {Telusuri marketplace};
+\node[uc] (uc3) at (4.6,-0.6) {Checkout cashless (Midtrans)};
+\node[uc] (uc4) at (4.6,-1.6) {Lacak pesanan \& pickup code};
+\node[uc] (uc5) at (4.6,-2.6) {Review + keyword};
+\node[uc] (uc6) at (4.6,-3.6) {Buat Help Ticket};
+% UMKM use cases
+\node[uc] (uc7) at (7.8,-0.6) {Kelola produk \& Food Trust Index};
+\node[uc] (uc8) at (7.8,-1.6) {Validasi pickup code};
+\node[uc] (uc9) at (7.8,-2.6) {Analitik \& insight};
+\node[uc] (uc10) at (7.8,-3.6) {Pasang iklan};
+\node[uc] (uc11) at (7.8,-4.6) {Catat Waste Log};
+% Admin use cases
+\node[uc] (uc12) at (7.8,-5.6) {Verifikasi UMKM \& Mitra Donasi};
+\node[uc] (uc13) at (7.8,-6.6) {Kelola iklan \& keuangan};
+\node[uc] (uc14) at (4.6,-6.6) {Tangani Help Ticket};
+% Mitra donasi
+\node[uc] (uc15) at (4.6,-5.6) {Registrasi mitra donasi};
+
+% Customer links
+\foreach \u in {uc1,uc2,uc3,uc4,uc5,uc6} \draw (cust) -- (\u);
+% Mitra links
+\draw (mitra) -- (uc15);
+% UMKM links
+\foreach \u in {uc1,uc7,uc8,uc9,uc10,uc11} \draw (umkm) -- (\u);
+% Admin links
+\foreach \u in {uc1,uc12,uc13,uc14} \draw (admin) -- (\u);
+
+\begin{scope}[on background layer]
+    \node[draw, rounded corners, fit=(uc1)(uc2)(uc3)(uc4)(uc5)(uc6)(uc7)(uc8)(uc9)(uc10)(uc11)(uc12)(uc13)(uc14)(uc15), inner sep=10pt, label={above:\textbf{Sistem Savora}}] {};
+\end{scope}
+\end{tikzpicture}
+\caption{Use Case Diagram Savora (4 Aktor)}
+\label{fig:usecase}
+\end{figure}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Customer} : Registrasi/login, menelusuri marketplace (Food Score, rescue timer, badge keyword), checkout \textit{cashless} via Midtrans, melacak pesanan dan \textit{pickup code}, memberi review dengan keyword, dan membuat \textit{Help Ticket}.
+    \item \textbf{UMKM} : Mengelola produk beserta input Food Trust Index, memvalidasi \textit{pickup code}, memantau analitik dan \textit{insight}, memasang iklan, dan mencatat Waste Log.
+    \item \textbf{Admin} : Memverifikasi UMKM dan Mitra Donasi, mengelola iklan dan keuangan platform (\textit{service fee} + iklan), serta menangani \textit{Help Ticket}.
+    \item \textbf{Mitra Donasi} : Organisasi non-profit yang mendaftar dan menunggu verifikasi admin untuk menerima makanan surplus.
+\end{enumerate}
+
+\subsection{ERD (Entity Relationship Diagram)}
+
+ERD pada Gambar~\ref{fig:erd} menampilkan entitas inti model data Savora sesuai PRD. Untuk menjaga
+keterbacaan, diagram memuat entitas utama; daftar lengkap entitas beserta deskripsinya dirangkum
+pada Tabel~\ref{tab:database}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    font=\scriptsize,
+    entity/.style={draw, semithick, rounded corners, align=left, fill=blue!5,
+                   inner sep=4pt, minimum width=2.9cm},
+    ehead/.style={font=\scriptsize\bfseries},
+    rel/.style={-{Latex[length=2mm]}, semithick, rounded corners=3pt},
+    card/.style={font=\tiny, fill=white, inner sep=1pt},
+]
+% ---- Three tidy columns; rows aligned on a grid ----
+% Column x-positions
+\def\cxA{0}    % identitas / aktor
+\def\cxB{5.2}  % transaksi
+\def\cxC{10.6} % penilaian
+% Column A: users, umkm_profiles, mitra_donasi_profiles
+\node[entity] (user)  at (\cxA, 0)     {\ehead{users}\\ \underline{id}, name, email\\ password\_hash\\ role, status};
+\node[entity] (umkm)  at (\cxA,-4.3)   {\ehead{umkm\_profiles}\\ \underline{id}, user\_id (FK)\\ business\_name\\ verification\_status\\ rating\\ keyword\_safety\_level};
+\node[entity] (mitra) at (\cxA,-9.0)   {\ehead{mitra\_donasi\_profiles}\\ \underline{id}, user\_id (FK)\\ org\_name, document\_url\\ verification\_status};
+% Column B: products -> orders -> payments
+\node[entity] (prod)  at (\cxB, 0)     {\ehead{products}\\ \underline{id}, umkm\_id (FK)\\ name, category\\ original\_price\\ rescue\_price\\ stock, expires\_at\\ food\_trust\_status\\ food\_score};
+\node[entity] (order) at (\cxB,-4.6)   {\ehead{orders}\\ \underline{id}, product\_id (FK)\\ customer\_id (FK)\\ subtotal, service\_fee\\ total\_price\\ payment\_status\\ pickup\_code, status};
+\node[entity] (pay)   at (\cxB,-9.2)   {\ehead{payments}\\ \underline{id}, order\_id (FK)\\ provider, amount\\ service\_fee\_amount\\ payment\_status\\ signature\_verified};
+% Column C: logs / reviews / keywords / scores
+\node[entity] (ftl)   at (\cxC, 0.2)   {\ehead{food\_trust\_logs}\\ \underline{id}, product\_id (FK)\\ input\_payload\\ food\_trust\_status\\ food\_score};
+\node[entity] (review)at (\cxC,-4.0)   {\ehead{reviews}\\ \underline{id}, order\_id (FK)\\ reviewer\_id, target\_id\\ rating, comment\\ keywords};
+\node[entity] (kw)    at (\cxC,-7.0)   {\ehead{review\_keywords}\\ \underline{id}, review\_id (FK)\\ keyword, level};
+\node[entity] (ks)    at (\cxC,-9.6)   {\ehead{keyword\_scores}\\ \underline{id}, umkm\_id (FK)\\ total\_aman/warning/gawat\\ safety\_level};
+
+% ---- Orthogonal relationship routing (no crossing / sloped labels) ----
+% users --< umkm_profiles (1..1), straight vertical in column A
+\draw[rel] (user.south)  -- node[card,left]{1..1} (umkm.north);
+% users --< mitra_donasi_profiles (1..1): orthogonal route down the left margin
+\draw[rel] (user.west) -- ++(-0.7,0) |- node[card,pos=0.25,left]{1..1} (mitra.west);
+% umkm_profiles --< products (1..N): out-right into the column gap, then up to products' left side
+\draw[rel] (umkm.east) -- ++(0.85,0) |- node[card,pos=0.85,above]{1..N} (prod.west);
+% products --< orders (1..N), straight vertical in column B
+\draw[rel] (prod.south)  -- node[card,right]{1..N} (order.north);
+% orders --< payments (1..1), straight vertical in column B
+\draw[rel] (order.south) -- node[card,right]{1..1} (pay.north);
+% products --< food_trust_logs (1..N), horizontal B->C at top row
+\draw[rel] (prod.east)   -- node[card,above]{1..N} (ftl.west);
+% orders --< reviews (1..1), horizontal B->C
+\draw[rel] (order.east)  -- node[card,above]{1..1} (review.west);
+% reviews --< review_keywords (1..N), straight vertical in column C
+\draw[rel] (review.south)-- node[card,left]{1..N} (kw.north);
+% umkm_profiles --< keyword_scores (1..1): routed below all boxes, no overlap
+\draw[rel] (umkm.west) -- (-2.4,-4.3)
+           -- (-2.4,-11.6) node[card,pos=0.55,left]{1..1}
+           -- (\cxC,-11.6) -- (ks.south);
+\end{tikzpicture}
+\caption{Entity Relationship Diagram Savora (Entitas Inti)}
+\label{fig:erd}
+\end{figure}
+
+\subsubsection{Daftar Entitas Data}
+
+\begin{table}[htbp]
+\centering
+\caption{Struktur Data Model Savora}
+\label{tab:database}
+\small
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Entitas} & \textbf{Deskripsi} \\
+\hline
+users & Akun pengguna (role: Customer, UMKM, Admin, Mitra Donasi), status, kredensial \\
+\hline
+customer\_profiles & Profil customer: telepon, alamat, avatar \\
+\hline
+umkm\_profiles & Profil UMKM: nama usaha, lokasi, status verifikasi, rating, level keamanan keyword \\
+\hline
+mitra\_donasi\_profiles & Profil mitra donasi: nama organisasi, dokumen legalitas, status verifikasi \\
+\hline
+products & Produk surplus: harga asli/rescue, stok, batas waktu, status \& skor kelayakan \\
+\hline
+food\_trust\_logs & Riwayat perhitungan Food Trust Index per produk (input, status, skor) \\
+\hline
+orders & Pesanan: subtotal, service fee, total, metode \& status pembayaran, pickup code, status \\
+\hline
+payments & Transaksi Midtrans: provider, jumlah, service fee, status, verifikasi signature \\
+\hline
+reviews & Rating dan ulasan customer beserta keyword \\
+\hline
+review\_keywords & Keyword hasil klasifikasi ulasan dan level (Aman/Warning/Gawat) \\
+\hline
+keyword\_scores & Akumulasi keyword per UMKM dan level keamanan agregat \\
+\hline
+advertisements & Iklan UMKM/pihak ketiga: judul, durasi, harga, service fee, status approval \\
+\hline
+ad\_metrics / umkm\_analytics & Metrik iklan dan analitik UMKM (impressions, CTR, conversion, AOV) \\
+\hline
+platform\_revenue & Catatan pendapatan platform (service fee + iklan) \\
+\hline
+help\_tickets & Tiket bantuan customer: kategori, deskripsi, bukti, status, catatan admin \\
+\hline
+waste\_logs & Catatan makanan tidak layak/tidak terjual (kategori, berat, alasan, foto) \\
+\hline
+notifications / audit\_logs & Notifikasi pengguna dan log audit aksi admin \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{API Design}
+
+Backend Go/Fiber mengekspos REST API berformat JSON. Tabel~\ref{tab:api} merangkum endpoint utama
+sesuai rancangan MVP. Endpoint yang telah tersedia pada basis kode ditandai kolom Status
+\emph{Ada}, sedangkan endpoint yang menjadi bagian MVP dan direncanakan ditandai \emph{Rencana}.
+
+\begin{table}[htbp]
+\centering
+\caption{Endpoint API Utama}
+\label{tab:api}
+\small
+\begin{tabularx}{\textwidth}{|l|>{\RaggedRight\arraybackslash}p{0.30\textwidth}|X|l|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Deskripsi} & \textbf{Status} \\
+\hline
+POST & /auth/register, /auth/login & Registrasi \& login (4 role) & Rencana \\
+\hline
+GET & /products/marketplace & Daftar produk rescue aktif & Ada \\
+\hline
+POST/PUT/DELETE & /products, /products/:id & Kelola produk UMKM & Ada \\
+\hline
+POST & /food-trust/calculate & Hitung Food Trust Index & Rencana \\
+\hline
+POST & /orders & Buat order cashless via Midtrans & Rencana \\
+\hline
+POST & /payments/midtrans-token & Buat token pembayaran Midtrans sandbox & Rencana \\
+\hline
+POST & /payments/midtrans-webhook & Terima \& verifikasi notifikasi pembayaran & Rencana \\
+\hline
+PUT & /orders/:id/status & Update status pesanan & Ada \\
+\hline
+POST & /orders/:id/validate-pickup & Validasi pickup code & Rencana \\
+\hline
+POST & /reviews, GET /reviews/keywords/:umkm\_id & Review + keyword safety per UMKM & Rencana \\
+\hline
+POST/GET & /help-tickets & Buat \& kelola tiket bantuan & Rencana \\
+\hline
+POST/GET & /waste-logs & Catat \& lihat Waste Log & Rencana \\
+\hline
+GET & /analytics/dashboard/:umkm\_id, /insight, /top-products & Analitik \& insight UMKM & Ada \\
+\hline
+POST/GET/PUT & /ads, /ads/active, /ads/:id/status & Kelola \& tayangkan iklan & Ada \\
+\hline
+POST & /mitra-donasi/register & Registrasi mitra donasi & Rencana \\
+\hline
+PATCH & /admin/mitra-donasi/:id/verify & Verifikasi mitra donasi & Rencana \\
+\hline
+GET & /admin/revenue, /admin/revenue/export & Keuangan platform \& export laporan & Rencana \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Alur Data}
+
+\subsubsection{Alur Penjualan Savora}
+Gambar~\ref{fig:alur_jual} menggambarkan alur utama \textit{food rescue} pada Savora, dari pemuatan
+produk oleh UMKM hingga ulasan oleh customer. Warna kotak menandai pelaku: biru untuk UMKM, oranye
+untuk proses sistem, dan hijau untuk customer. Harga rescue ditetapkan UMKM, sedangkan Food Score
+dihitung sistem dan meluruh mengikuti sisa waktu.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    font=\scriptsize,
+    step/.style={draw, semithick, rounded corners, align=center,
+                 minimum height=1.35cm, text width=3.1cm, inner sep=4pt},
+    umkm/.style={step, fill=blue!8},
+    sys/.style={step, fill=orange!12},
+    cust/.style={step, fill=green!10},
+    num/.style={circle, draw, fill=white, inner sep=1pt, font=\scriptsize\bfseries},
+    flow/.style={-{Latex[length=2.6mm]}, semithick},
+]
+% Grid: 3 kolom x 3 baris (susunan boustrophedon) supaya garis alur jelas
+\def\cA{0}\def\cB{5.3}\def\cC{10.6}
+\def\rA{0}\def\rB{-3.0}\def\rC{-6.0}
+% Baris 1 (kiri -> kanan): langkah 1,2,3
+\node[umkm] (a) at (\cA,\rA) {UMKM \emph{upload} produk + set harga \emph{rescue}};
+\node[sys]  (b) at (\cB,\rA) {Sistem hitung Food Score (\emph{decay})};
+\node[sys]  (c) at (\cC,\rA) {Produk tampil di \emph{marketplace}};
+% Baris 2 (kanan -> kiri): langkah 4,5,6
+\node[cust] (d) at (\cC,\rB) {Customer telusuri \& \emph{checkout cashless}};
+\node[umkm] (e) at (\cB,\rB) {UMKM proses status pesanan};
+\node[cust] (f) at (\cA,\rB) {\emph{Self-pickup} + validasi \emph{pickup code}};
+% Baris 3 (kiri -> kanan): langkah 7,8
+\node[cust] (g) at (\cA,\rC) {Customer beri \emph{rating} \& ulasan};
+\node[sys]  (h) at (\cB,\rC) {\emph{Update} keyword safety \& analitik};
+% Nomor langkah
+\foreach \n/\bx in {1/a,2/b,3/c,4/d,5/e,6/f,7/g,8/h}
+    \node[num] at (\bx.north west) {\n};
+% Alur: baris1 (L->R) -> turun -> baris2 (R->L) -> turun -> baris3 (L->R)
+\draw[flow] (a) -- (b);
+\draw[flow] (b) -- (c);
+\draw[flow] (c) -- (d);   % turun di kolom kanan
+\draw[flow] (d) -- (e);
+\draw[flow] (e) -- (f);
+\draw[flow] (f) -- (g);   % turun di kolom kiri
+\draw[flow] (g) -- (h);
+\end{tikzpicture}
+\caption{Alur Penjualan Savora}
+\label{fig:alur_jual}
+\end{figure}
+
+\subsubsection{Alur Pembayaran Cashless dan Status Pesanan}
+Pembayaran Savora bersifat \textit{cashless} melalui Midtrans \textit{sandbox}. Gambar~\ref{fig:alur_bayar}
+menggambarkan transisi status pesanan dari pembuatan order hingga selesai atau gagal. Stok
+di-reserve saat \textit{Payment Pending} dan dikembalikan bila pembayaran gagal/kedaluwarsa;
+\textit{pickup code} dibuat setelah status \textit{Paid}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    font=\scriptsize,
+    st/.style={draw, semithick, rounded corners, fill=green!10, align=center,
+               minimum height=1.0cm, text width=2.5cm, inner sep=3pt},
+    bad/.style={draw, semithick, rounded corners, fill=red!10, align=center,
+                minimum height=1.0cm, text width=2.5cm, inner sep=3pt},
+    lbl/.style={font=\tiny, fill=white, inner sep=1.5pt, midway},
+    flow/.style={-{Latex[length=2mm]}, semithick},
+    badflow/.style={-{Latex[length=2mm]}, semithick, red!60!black, densely dashed},
+]
+% Grid: happy path on top row (y=0), failure states on bottom row (y=-2.6)
+% Generous horizontal gap (3.6cm) so edge labels never touch boxes.
+\node[st] (created) at (0,0)     {Created};
+\node[st] (pending) at (3.7,0)   {Payment\\Pending\\\scriptsize stok di-reserve};
+\node[st] (paid)    at (7.4,0)   {Paid\\\scriptsize pickup code dibuat};
+\node[st] (ready)   at (11.1,0)  {Ready for\\Pickup};
+\node[st] (done)    at (11.1,-2.7){Completed\\\scriptsize pickup code valid};
+% Failure states on the bottom row, clear of the happy-path labels
+\node[bad] (fail)   at (3.7,-2.7) {Payment Failed\\/ Expired\\\scriptsize stok dikembalikan};
+\node[bad] (noshow) at (7.4,-2.7) {No-Show};
+
+% Happy path (horizontal), labels sit on the arrow with white background
+\draw[flow] (created) -- (pending);
+\draw[flow] (pending) -- node[lbl,above]{webhook \textit{Paid}} (paid);
+\draw[flow] (paid)    -- (ready);
+\draw[flow] (ready)   -- (done);
+% Failure transitions (dashed, downward) with labels beside the arrow
+\draw[badflow] (pending) -- node[lbl,left]{timeout / gagal} (fail);
+\draw[badflow] (ready)   -- node[lbl,left,pos=0.55]{tidak diambil} (noshow);
+% Legend (drawn directly on canvas, no nested tikzpicture)
+\draw[flow] (0,-4.0) -- ++(0.5,0) node[right, font=\tiny, black]{alur normal};
+\draw[badflow] (3.7,-4.0) -- ++(0.5,0) node[right, font=\tiny, black]{alur gagal (rollback stok)};
+\end{tikzpicture}
+\caption{Alur Status Pesanan dan Pembayaran Cashless}
+\label{fig:alur_bayar}
+\end{figure}
+
+\subsubsection{Alur Iklan UMKM}
+Sesuai layanan iklan aplikasi, sebuah iklan berpindah status \textbf{Draft} $\rightarrow$
+\textbf{Aktif} $\rightarrow$ \textbf{Kadaluarsa}, di mana status kadaluarsa dihitung dari tanggal
+akhir tayang (\texttt{end\_at}).
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    font=\scriptsize, node distance=1.4cm,
+    st/.style={draw, rounded corners, fill=orange!12, minimum width=2.2cm, minimum height=0.85cm, align=center},
+    flow/.style={-{Latex}, thick},
+]
+\node[st] (draft) {Pilih paket\\(Draft)};
+\node[st, right=of draft] (active) {Aktif\\\scriptsize (tayang)};
+\node[st, right=of active] (exp) {Kadaluarsa\\\scriptsize (end\_at lewat)};
+\draw[flow] (draft) -- node[above]{aktifkan} (active);
+\draw[flow] (active) -- node[above]{durasi habis} (exp);
+\end{tikzpicture}
+\caption{Alur Status Iklan UMKM}
+\label{fig:alur_iklan}
+\end{figure}
+
+\subsubsection{Alur Admin dan Mitra Donasi}
+Admin mengakses dashboard untuk memantau statistik platform, memverifikasi UMKM dan Mitra Donasi
+(\textit{approve}/\textit{reject} berdasarkan dokumen legalitas), memoderasi listing dan iklan,
+menangani \textit{Help Ticket}, serta melihat dashboard keuangan (\textit{service fee} + iklan) dan
+melakukan \textit{export} laporan. Mitra Donasi mendaftar melalui halaman registrasi dan berstatus
+\emph{pending} hingga diverifikasi admin.
