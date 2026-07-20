@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"/c/Users/RifM/Desktop/Proposal+App/Proposal/gambar\")",
+      "Bash(cp \"/c/Users/RifM/Desktop/Proposal+App/gambar/\"*.png \"/c/Users/RifM/Desktop/Proposal+App/Proposal/gambar/\")",
+      "Bash(mv \"BERANDA user.png\" beranda-customer.png)",
+      "Bash(mv \"Dashboard Design for Savora.png\" dashboard-umkm.png)",
+      "Bash(mv \"Admin Console Dashboard Design.png\" admin-console.png)",
+      "Bash(mv \"Analitik Produk Dashboard.png\" analitik-produk.png)",
+      "Bash(mv \"Tambah Produk - Reguler.png\" tambah-produk-reguler.png)",
+      "Bash(grep -n \"usic{a}\\\\|^usic\\\\|^}$\" include.bib)",
+      "Bash(awk '{print $2}')",
+      "Bash(latexmk -pdf -interaction=nonstopmode -halt-on-error bukped.tex)",
+      "Bash(echo \"EXIT=$?\")",
+      "Read(//c/Users/RifM/AppData/Roaming/TinyTeX/bin/windows//**)",
+      "Bash(\"/c/Users/RifM/AppData/Roaming/TinyTeX/bin/windows/tlmgr.bat\" install *)",
+      "Bash(/c/Users/RifM/AppData/Roaming/TinyTeX/bin/windows/tlmgr.bat update *)",
+      "Bash(latexmk -pdf -interaction=nonstopmode bukped.tex)",
+      "Read(//c/Users/RifM/AppData/Roaming/TinyTeX/**)",
+      "Bash(\"/c/Users/RifM/AppData/Roaming/TinyTeX/bin/windows/kpsewhich\" tikz.sty)",
+      "Bash(latexmk -C bukped.tex)",
+      "Bash(python3 -c ' *)",
+      "Bash(awk 'BEGIN{split\\(\\\\\"1 0.75 0.5 0.35 0.2 0.1 0.05 0\\\\\",a,\\\\\" \\\\\"\\); for\\(i in a\\){f=a[i]; printf \\\\\"%.2f -> %d\\\\n\\\\\", f, int\\(100*\\(f^0.65\\)+0.5\\)}}')"
+    ]
+  }
+}
