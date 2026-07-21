@@ -13,6 +13,7 @@ import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
 const COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1D5DB'];
 
 export default function DashboardPage() {
+<<<<<<< Updated upstream:Savora/frontend/src/app/dashboard/page.js
   const router = useRouter();
   const [data, setData] = useState(null);
 
@@ -33,6 +34,21 @@ export default function DashboardPage() {
       rating: 4.9,
     });
   }, []);
+=======
+  const [data, setData] = useState({
+    sales_today: 2450000,
+    sales_trend: 12.4,
+    active_orders: 12,
+    active_orders_trend: 3,
+    active_products: 34,
+    active_products_trend: -2.1,
+    monthly_revenue: 48750000,
+    monthly_revenue_trend: 18.7,
+    food_rescue_score: 94,
+    trust_score: 4.8,
+    rating: 4.9,
+  });
+>>>>>>> Stashed changes:frontend/src/app/dashboard/page.js
 
   const formatRupiah = (number) => {
     if (number >= 1000000) {
