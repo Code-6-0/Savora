@@ -18,8 +18,13 @@ import {
   ShoppingBag,
   Sun,
 } from "lucide-react";
-import { fallbackMarketplaceProducts, fetchMarketplaceProduct, normalizeMarketplaceProduct } from "@/lib/marketplace";
-import { computeFoodScore, foodScoreBand, rescueTimeParts } from "@/lib/foodScore";
+import {
+  computeProductScore,
+  fallbackMarketplaceProducts,
+  fetchMarketplaceProduct,
+  normalizeMarketplaceProduct,
+} from "@/lib/marketplace";
+import { foodScoreBand, rescueTimeColor, rescueTimeParts } from "@/lib/foodScore";
 import { classifyReviewText, deriveRestaurantSafety } from "@/lib/reviews";
 
 function formatRupiah(value) {
@@ -38,16 +43,15 @@ function safetyIcon(levelKey) {
   return <ShieldCheck size={13} aria-hidden="true" />;
 }
 
-// Detik berlalu sejak halaman dibuka. Satu sumber untuk timer sekaligus Food
-// Score, sehingga skor meluruh persis mengikuti Rescue Time. Counter murni
-// (hanya menambah) agar tidak memicu setState sinkron di dalam effect.
-function useElapsedSeconds() {
-  const [elapsed, setElapsed] = useState(0);
+// Timestamp Date.now() di-refresh tiap detik. Skor & sisa waktu dihitung dari
+// timestamp absolut sehingga TIDAK reset saat halaman dimuat ulang.
+function useNow() {
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const interval = window.setInterval(() => setElapsed((value) => value + 1), 1000);
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
-  return elapsed;
+  return now;
 }
 
 function MarketplaceHeader() {
@@ -72,8 +76,11 @@ function MarketplaceHeader() {
 
 function TimerDisplay({ seconds }) {
   const time = rescueTimeParts(seconds);
+  // Color indicator sisa waktu ABSOLUT (PRD 5.1 & REVISI #31): paralel dengan
+  // band skor, keduanya boleh berbeda.
+  const timeColor = rescueTimeColor(seconds);
   return (
-    <div className={`savora-rescue-timer${seconds <= 900 ? " is-hot" : ""}`}>
+    <div className={`savora-rescue-timer ${timeColor.className}`}>
       <span><Clock3 size={14} aria-hidden="true" /> Smart Rescue Timer</span>
       <div><b>{time.hours}</b><small>jam</small><b>{time.minutes}</b><small>menit</small><b>{time.seconds}</b><small>detik</small></div>
     </div>
@@ -116,9 +123,7 @@ export default function ProductDetailPage() {
     return () => { alive = false; };
   }, [id]);
 
-  const windowSeconds = Math.max(1, Math.round((Number(product?.timerMinutes) || 0) * 60));
-  const elapsed = useElapsedSeconds();
-  const remaining = Math.max(0, windowSeconds - elapsed);
+  const now = useNow();
   const safety = useMemo(
     () => deriveRestaurantSafety(product?.reviews, product?.safety_level),
     [product],
@@ -128,16 +133,30 @@ export default function ProductDetailPage() {
     return <div className="savora-marketplace"><MarketplaceHeader /><main className="savora-not-found"><h1>Produk tidak ditemukan</h1><p>Rescue deal ini mungkin sudah habis atau tidak aktif.</p><Link href="/marketplace" className="savora-primary-action">Kembali ke marketplace</Link></main></div>;
   }
 
+  const { score, remainingSeconds } = computeProductScore(product, now);
+  const band = foodScoreBand(score);
+  const expired = score <= 0 || remainingSeconds <= 0;
+  const showSafety = safety.level.key !== "aman" || safety.keywords.length > 0;
+
+  // Produk expired: tampilkan state "deal berakhir" (PRD 12.6).
+  if (expired) {
+    return (
+      <div className="savora-marketplace savora-detail-page">
+        <MarketplaceHeader />
+        <main className="savora-not-found">
+          <h1>Rescue deal telah berakhir</h1>
+          <p>Food Score untuk <strong>{product.name}</strong> dari {product.vendor} telah mencapai 0. Deal ini sudah kedaluwarsa dan tidak lagi tersedia.</p>
+          <Link href="/marketplace" className="savora-primary-action">← Kembali ke marketplace</Link>
+        </main>
+      </div>
+    );
+  }
+
   const savings = product.original_price - product.rescue_price;
   const reviewAverage = product.reviews?.length ? (product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length).toFixed(1) : "4.8";
-  const score = computeFoodScore(remaining, windowSeconds, product.trustScore);
-  const band = foodScoreBand(score);
-  const expired = remaining <= 0;
-  const showSafety = safety.level.key !== "aman" || safety.keywords.length > 0;
 
   function updateQuantity(delta) { setQuantity((current) => Math.min(product.stock, Math.max(1, current + delta))); }
   function reserveProduct() {
-    if (expired) { setNotice("Rescue Time sudah habis. Deal ini tidak lagi tersedia."); return; }
     setNotice(`${quantity} porsi ${product.name} berhasil dipilih. Lanjutkan ke Checkout untuk pembayaran.`);
   }
 
@@ -164,7 +183,7 @@ export default function ProductDetailPage() {
                 <div><span>◷ Masa simpan</span><b>{product.shelfLife}</b></div>
                 <div><span>✦ Skor Trust</span><b>{product.food_trust_status} ({product.trustScore}/100)</b></div>
               </div>
-              <p className="savora-disclaimer"><b>Kenapa skor ini?</b> Food Score dihitung dari Skor Trust UMKM lalu menurun otomatis mengikuti Rescue Time menuju batas layak konsumsi. Food Score bukan sertifikasi lab; periksa kondisi makanan saat pickup.</p>
+              <p className="savora-disclaimer"><b>Kenapa skor ini?</b> Food Score dihitung dari status Food Trust Index saat listing dipublikasikan (Fresh=100, Layak Dijual=85, Segera Dijual=70) lalu menurun otomatis mengikuti sisa waktu menuju batas layak konsumsi. Food Score bukan sertifikasi lab; periksa kondisi makanan saat pickup.</p>
             </section>
 
             <section className="savora-reviews" aria-labelledby="reviews-title">
@@ -203,17 +222,17 @@ export default function ProductDetailPage() {
             <div className={`savora-score-panel ${band.className}`}>
               <div className="savora-score-panel-head">
                 <span><Gauge size={15} aria-hidden="true" /> Food Score</span>
-                <b>{expired ? "0" : score}<small>/100</small></b>
+                <b>{score}<small>/100</small></b>
               </div>
-              <div className="savora-score-meter" role="img" aria-label={`Food Score ${expired ? 0 : score} dari 100, ${band.label}`}>
-                <span style={{ width: `${expired ? 0 : score}%` }} />
+              <div className="savora-score-meter" role="img" aria-label={`Food Score ${score} dari 100, ${band.label}`}>
+                <span style={{ width: `${score}%` }} />
               </div>
-              <p>{band.label} — skor menurun otomatis mengikuti Rescue Time.</p>
+              <p>{band.label} — skor menurun otomatis mengikuti sisa waktu.</p>
             </div>
 
-            <TimerDisplay seconds={remaining} />
+            <TimerDisplay seconds={remainingSeconds} />
             <div className="savora-quantity"><span>Sisa {product.stock} porsi</span><div><button type="button" onClick={() => updateQuantity(-1)} disabled={quantity <= 1} aria-label="Kurangi jumlah"><Minus size={15} /></button><b>{quantity}</b><button type="button" onClick={() => updateQuantity(1)} disabled={quantity >= product.stock} aria-label="Tambah jumlah"><Plus size={15} /></button></div></div>
-            <button type="button" className="savora-main-rescue" onClick={reserveProduct} disabled={expired}>{expired ? "Rescue Time habis" : <>Selamatkan sekarang — <span>{formatRupiah(product.rescue_price * quantity)}</span></>}</button>
+            <button type="button" className="savora-main-rescue" onClick={reserveProduct}>Selamatkan sekarang — <span>{formatRupiah(product.rescue_price * quantity)}</span></button>
             <div className="savora-pickup" id="pickup"><b><MapPin size={15} /> Lokasi Pickup</b><span>{product.pickup_address}</span><small>Tunjukkan pickup code saat tiba. Batas pickup mengikuti Smart Rescue Timer.</small></div>
           </aside>
         </section>

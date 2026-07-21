@@ -19,12 +19,13 @@ import {
   Sun,
 } from "lucide-react";
 import {
+  computeProductScore,
   fallbackMarketplaceProducts,
   fetchMarketplaceProducts,
   filterMarketplaceProducts,
   normalizeMarketplaceProduct,
 } from "@/lib/marketplace";
-import { computeFoodScore, foodScoreBand, rescueTimeLabel } from "@/lib/foodScore";
+import { foodScoreBand, rescueTimeColor, rescueTimeLabel } from "@/lib/foodScore";
 import { deriveRestaurantSafety } from "@/lib/reviews";
 import { fallbackAds, fetchAds } from "@/lib/ads";
 
@@ -39,16 +40,16 @@ function formatRupiah(value) {
   }).format(value);
 }
 
-// Ticker bersama: satu interval untuk seluruh halaman menghitung detik sejak
-// mount, sehingga semua kartu meluruh (Food Score + rescue time) serempak
-// tanpa banyak timer dan tanpa memanggil Date.now() saat render.
-function useElapsedSeconds() {
-  const [elapsed, setElapsed] = useState(0);
+// Ticker bersama: satu timestamp Date.now() di-refresh tiap detik. Semua kartu
+// menghitung Food Score & sisa waktu terhadap timestamp ini sehingga skor TIDAK
+// reset saat halaman dimuat ulang (berbasis waktu absolut, bukan elapsed).
+function useNow() {
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const interval = window.setInterval(() => setElapsed((value) => value + 1), 1000);
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
-  return elapsed;
+  return now;
 }
 
 function safetyIcon(levelKey) {
@@ -117,12 +118,13 @@ function AdRail({ ads }) {
   );
 }
 
-function FoodCard({ product, elapsed }) {
+function FoodCard({ product, now }) {
   const savings = product.original_price - product.rescue_price;
-  const remainingSeconds = Math.max(0, product.rescueWindowSeconds - elapsed);
-  const score = computeFoodScore(remainingSeconds, product.rescueWindowSeconds, product.trustScore);
+  const { score, remainingSeconds } = computeProductScore(product, now);
   const band = foodScoreBand(score);
-  const expired = remainingSeconds <= 0;
+  // Color indicator sisa waktu ABSOLUT (PRD 5.1 & REVISI #31): paralel dengan
+  // band skor, keduanya boleh berbeda.
+  const timeColor = rescueTimeColor(remainingSeconds);
   const safety = product.safety;
   const showSafety = safety.level.key !== "aman" || safety.keywords.length > 0;
 
@@ -131,11 +133,11 @@ function FoodCard({ product, elapsed }) {
       <div className="savora-food-image">
         <Image src={product.photo_url} alt={product.name} fill sizes="(max-width: 570px) 100vw, (max-width: 900px) 50vw, 33vw" />
         <span className={`savora-score-badge ${band.className}`} title={`Food Score ${score}/100 — ${band.label}`}>
-          <Gauge size={12} aria-hidden="true" /> {expired ? "Habis" : `${score}`}<small>{expired ? "" : "/100"}</small>
+          <Gauge size={12} aria-hidden="true" /> {score}<small>/100</small>
         </span>
         {product.discountPercent > 0 && <span className="savora-discount">-{product.discountPercent}%</span>}
-        <span className={`savora-timer${remainingSeconds <= 900 && !expired ? " is-hot" : ""}`}>
-          <Clock3 size={12} aria-hidden="true" /> {expired ? "Waktu habis" : rescueTimeLabel(remainingSeconds)}
+        <span className={`savora-timer ${timeColor.className}`}>
+          <Clock3 size={12} aria-hidden="true" /> {rescueTimeLabel(remainingSeconds)}
         </span>
       </div>
       <div className="savora-food-content">
@@ -166,12 +168,10 @@ function FoodCard({ product, elapsed }) {
   );
 }
 
-// Lekatkan data turunan yang stabil: jendela rescue (detik) + status keamanan
-// dari ulasan. Sisa waktu dihitung dari ticker `elapsed` bersama saat render.
+// Lekatkan data turunan yang stabil: status keamanan dari ulasan.
 function attachRuntimeFields(product) {
   return {
     ...product,
-    rescueWindowSeconds: Math.max(1, Math.round((Number(product.timerMinutes) || 0) * 60)),
     safety: deriveRestaurantSafety(product.reviews, product.safety_level),
   };
 }
@@ -182,7 +182,7 @@ export default function MarketplacePage() {
   );
   const [ads, setAds] = useState(() => fallbackAds.slice(0, 3).map((ad) => ({ ...ad, external: /^https?:\/\//i.test(ad.href) })));
   const [filters, setFilters] = useState({ search: "", category: "Semua", trustStatus: "Semua", sort: "default" });
-  const elapsed = useElapsedSeconds();
+  const now = useNow();
 
   useEffect(() => {
     let alive = true;
@@ -198,10 +198,15 @@ export default function MarketplacePage() {
     return () => { alive = false; };
   }, []);
 
-  const visibleProducts = useMemo(
-    () => filterMarketplaceProducts(products, filters),
-    [products, filters],
-  );
+  // Filter + hide expired (food_score 0 / sisa waktu habis) — PRD 12.6:
+  // "Listing otomatis berstatus Expired dan disembunyikan dari marketplace".
+  const visibleProducts = useMemo(() => {
+    const filtered = filterMarketplaceProducts(products, filters);
+    return filtered.filter((product) => {
+      const { score } = computeProductScore(product, now);
+      return score > 0;
+    });
+  }, [products, filters, now]);
 
   function updateFilter(name, value) {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -259,7 +264,7 @@ export default function MarketplacePage() {
           </div>
           <AdRail ads={ads} />
           <div className="savora-product-grid">
-            {visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} elapsed={elapsed} />) : (
+            {visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} now={now} />) : (
               <div className="savora-empty"><b>Belum ada rescue deal yang cocok.</b><span>Coba ubah kata kunci atau filter-mu.</span></div>
             )}
           </div>

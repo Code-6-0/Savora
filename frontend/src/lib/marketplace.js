@@ -1,4 +1,27 @@
+import {
+  computeFoodScore,
+  computeFoodScoreFromDates,
+  initialFoodScore,
+} from "./foodScore.js";
+
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=85";
+
+// Anchor waktu untuk data demo, dievaluasi sekali saat modul diimpor (bukan saat
+// render). Timestamp demo dihitung relatif ke anchor ini agar fallback tetap
+// realistis kapan pun aplikasi dijalankan tanpa backend.
+const DEMO_NOW = Date.now();
+
+// Bangun published_at/expires_at demo dari total masa layak + sisa waktu, mirip
+// bentuk data yang dikirim API (ISO string). expires_at = anchor + sisa waktu;
+// published_at = expires_at − total masa layak.
+function demoWindow(totalHours, remainingMinutes) {
+  const expires = DEMO_NOW + remainingMinutes * 60 * 1000;
+  const published = expires - totalHours * 60 * 60 * 1000;
+  return {
+    published_at: new Date(published).toISOString(),
+    expires_at: new Date(expires).toISOString(),
+  };
+}
 
 export const fallbackMarketplaceProducts = [
   {
@@ -13,6 +36,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Fresh",
     trustScore: 92,
     timerMinutes: 135,
+    ...demoWindow(8, 135),
     photo_url: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=85",
     description: "Nasi campur lengkap dengan ayam suwir, telur, sayur urap, dan sambal matah. Disiapkan pagi ini untuk layanan makan siang.",
     pickup_address: "Jl. Kaliurang KM 5, Sleman, Yogyakarta",
@@ -37,6 +61,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Segera Dijual",
     trustScore: 74,
     timerMinutes: 45,
+    ...demoWindow(4, 45),
     photo_url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=85",
     description: "Isi 10 gorengan pilihan: bakwan, tahu isi, risol, dan tempe mendoan. Cocok untuk teman belajar atau makan sore.",
     pickup_address: "Pasar Colombo, Depok, Sleman",
@@ -61,6 +86,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Layak Dijual",
     trustScore: 85,
     timerMinutes: 220,
+    ...demoWindow(14, 220),
     photo_url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=85",
     description: "Roti sourdough artisan dengan kulit renyah dan tekstur lembut. Dipanggang pagi ini dengan bahan lokal.",
     pickup_address: "Jl. Pandega Marta 34, Depok, Sleman",
@@ -82,6 +108,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Fresh",
     trustScore: 90,
     timerMinutes: 115,
+    ...demoWindow(7, 115),
     photo_url: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=1200&q=85",
     description: "Paket ayam bakar bumbu kecap, nasi, lalapan, dan sambal. Porsi lengkap untuk makan siang.",
     pickup_address: "Jl. Gejayan 88, Depok, Sleman",
@@ -103,6 +130,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Layak Dijual",
     trustScore: 84,
     timerMinutes: 250,
+    ...demoWindow(10, 250),
     photo_url: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1200&q=85",
     description: "Pastry berlapis dengan isian cokelat dan taburan almond panggang.",
     pickup_address: "Jl. Palagan Tentara Pelajar 12, Sleman",
@@ -124,6 +152,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Segera Dijual",
     trustScore: 76,
     timerMinutes: 80,
+    ...demoWindow(5, 80),
     photo_url: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85",
     description: "Nasi kotak pilihan dari acara siang: ayam bumbu, mie, sayur, dan kerupuk.",
     pickup_address: "Jl. Monjali 7, Mlati, Sleman",
@@ -160,6 +189,17 @@ export function normalizeMarketplaceProduct(raw) {
   const rescuePrice = Number(base.rescue_price) || originalPrice;
   const fallbackDiscount = originalPrice > 0 ? Math.max(0, Math.round(((originalPrice - rescuePrice) / originalPrice) * 100)) : 0;
 
+  // Timestamp: terima ISO string atau epoch ms dari API. Fallback:
+  // published_at ← created_at. Kalau keduanya kosong → undefined (jalur
+  // timerMinutes lama dipakai di computeProductScore).
+  const publishRaw = base.published_at || base.created_at;
+  const expiresRaw = base.expires_at;
+  const publishMs = publishRaw ? new Date(publishRaw).getTime() : undefined;
+  const expiresMs = expiresRaw ? new Date(expiresRaw).getTime() : undefined;
+
+  // Skor awal dikunci dari status Food Trust Index (PRD 12.6).
+  const baseScore = initialFoodScore(base.food_trust_status || defaultMetadata.food_trust_status);
+
   return {
     ...defaultMetadata,
     ...base,
@@ -176,7 +216,42 @@ export function normalizeMarketplaceProduct(raw) {
     trustScore: Number(base.trustScore ?? defaultMetadata.trustScore),
     timerMinutes: Number(base.timerMinutes ?? defaultMetadata.timerMinutes),
     photo_url: base.photo_url || defaultMetadata.photo_url,
+    // Timestamp & skor awal terkunci untuk scoring berbasis waktu absolut.
+    _publishMs: Number.isFinite(publishMs) ? publishMs : undefined,
+    _expiresMs: Number.isFinite(expiresMs) ? expiresMs : undefined,
+    _baseScore: baseScore,
   };
+}
+
+/**
+ * Hitung Food Score & sisa detik untuk sebuah produk terhadap waktu `now`.
+ *
+ * Jalur utama: gunakan timestamp absolut (expires_at − published_at).
+ * Jalur fallback (data demo tanpa timestamp): gunakan timerMinutes + elapsed
+ * detik sejak mount, seperti perilaku lama.
+ *
+ * @param {object} product produk hasil normalizeMarketplaceProduct.
+ * @param {number} now epoch ms waktu sekarang.
+ * @param {number} [elapsedSeconds] detik berlalu sejak mount (fallback only).
+ * @returns {{ score: number, remainingSeconds: number }}
+ */
+export function computeProductScore(product, now, elapsedSeconds = 0) {
+  const baseScore = product._baseScore;
+  // Status yang tidak dikenali → tidak tayang (skor null, disembunyikan).
+  if (baseScore == null) return { score: 0, remainingSeconds: 0 };
+
+  if (product._publishMs && product._expiresMs) {
+    // Jalur utama: timestamp absolut (PRD 12.6).
+    const score = computeFoodScoreFromDates(baseScore, product._publishMs, product._expiresMs, now);
+    const remainingSeconds = Math.max(0, Math.floor((product._expiresMs - now) / 1000));
+    return { score, remainingSeconds };
+  }
+
+  // Jalur fallback: timerMinutes + elapsed (data demo lama tanpa timestamp).
+  const windowSeconds = Math.max(1, Math.round((Number(product.timerMinutes) || 0) * 60));
+  const remainingSeconds = Math.max(0, windowSeconds - elapsedSeconds);
+  const score = computeFoodScore(remainingSeconds, windowSeconds, baseScore);
+  return { score, remainingSeconds };
 }
 
 export function filterMarketplaceProducts(products, { search = "", category = "Semua", trustStatus = "Semua", sort = "default" } = {}) {

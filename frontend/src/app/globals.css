@@ -792,6 +792,20 @@ body {
 .savora-score-badge.is-expired { background: #d8dad4; color: #4a4f47; }
 /* Timer chip "panas" saat mendekati batas */
 .savora-timer.is-hot { background: rgba(122, 42, 18, 0.9); color: #ffd9cb; }
+/* Color indicator sisa waktu ABSOLUT (PRD 5.1 & REVISI #31): merah < 1 jam,
+   kuning 1-3 jam, hijau > 3 jam. Paralel dengan band skor, boleh berbeda. */
+.savora-timer.is-red { background: rgba(122, 42, 18, 0.9); color: #ffd9cb; }
+.savora-timer.is-yellow { background: rgba(112, 78, 3, 0.9); color: #ffe9b5; }
+.savora-timer.is-green { background: rgba(19, 23, 18, 0.88); color: #f3f6f0; }
+.savora-rescue-timer.is-red { background: #3a1810; }
+.savora-rescue-timer.is-red > span { color: #ffc4b0; }
+.savora-rescue-timer.is-red b { color: #ff8a65; }
+.savora-rescue-timer.is-yellow { background: #33290e; }
+.savora-rescue-timer.is-yellow > span { color: #ffe5a0; }
+.savora-rescue-timer.is-yellow b { color: #ffc451; }
+.savora-rescue-timer.is-green { background: #242d1d; }
+.savora-rescue-timer.is-green > span { color: #d8f6a5; }
+.savora-rescue-timer.is-green b { color: var(--savora-lime); }
 /* Meter Food Score pada kartu & detail */
 .savora-score-meter { position: relative; height: 6px; margin: 12px 0 6px; border-radius: 999px; background: #2a3123; overflow: hidden; }
 .savora-score-meter > span { display: block; height: 100%; border-radius: 999px; background: var(--savora-lime); transition: width 900ms linear; }
