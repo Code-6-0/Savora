@@ -34,4 +34,8 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
 	api.Put("/ads/:id/status", handlers.UpdateAdStatus)
 	api.Get("/ads/active", handlers.GetActiveAds)
+
+	// Waste Logs
+	api.Get("/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
+	api.Post("/waste-logs", handlers.CreateWasteLog)
 }

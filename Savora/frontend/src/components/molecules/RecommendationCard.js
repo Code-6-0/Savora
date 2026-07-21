@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 
-export default function RecommendationCard({ icon, title, description, actionText, type = "info" }) {
+export default function RecommendationCard({ icon, title, description, actionText, type = "info", onClick }) {
   // Determine colors based on type (warning, info, success)
   const colors = {
     warning: { bg: '#FEF2F2', border: '#FCA5A5', icon: '#EF4444', text: '#991B1B' },
@@ -44,7 +44,9 @@ export default function RecommendationCard({ icon, title, description, actionTex
           display: 'flex',
           justifyContent: 'flex-end'
         }}>
-          <button style={{ 
+          <button 
+            onClick={onClick}
+            style={{ 
             background: 'none', 
             border: 'none', 
             color: theme.text, 

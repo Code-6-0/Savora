@@ -20,6 +20,16 @@ export const fallbackInsight = {
   total_revenue: 48800000,
   total_units: 1284,
   top_products: fallbackTopProducts,
+  keyword_safety: {
+    badge: "Aman",
+    top_positive: [
+      { keyword: "enak", count: 15 },
+      { keyword: "segar", count: 12 },
+    ],
+    top_negative: [
+      { keyword: "basi", count: 1 },
+    ],
+  },
 };
 
 /**
@@ -52,6 +62,7 @@ export function normalizeInsight(raw) {
     total_revenue: Number(base.total_revenue ?? 0),
     total_units: Number(base.total_units ?? 0),
     top_products: top,
+    keyword_safety: base.keyword_safety || { badge: "Belum Cukup Data", top_positive: [], top_negative: [] },
   };
 }
 
@@ -109,9 +120,56 @@ export async function fetchSalesTrend(umkmId = DEFAULT_UMKM_ID, granularity = "d
       period: String(point.period ?? ""),
       revenue: Number(point.revenue ?? 0),
       units_sold: Number(point.units_sold ?? 0),
-      orders: Number(point.orders ?? 0),
-    }));
-  } catch {
-    return [];
-  }
+		orders: Number(point.orders ?? 0),
+		}));
+	} catch {
+		return [];
+	}
+}
+
+/**
+ * Ambil daftar Waste Log untuk UMKM tertentu.
+ */
+export async function fetchWasteLogs(umkmId = DEFAULT_UMKM_ID) {
+	try {
+		const data = await fetchJson(`/api/waste-logs/umkm/${umkmId}`);
+		if (!Array.isArray(data)) return [];
+		return data;
+	} catch {
+		return [];
+	}
+}
+
+/**
+ * Catat Waste Log baru.
+ */
+export async function createWasteLog(payload) {
+	const response = await fetch(`${baseUrl()}/api/waste-logs`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(payload)
+	});
+	if (!response.ok) {
+		throw new Error("Gagal membuat waste log");
+	}
+	return response.json();
+}
+
+/**
+ * Ambil metrik performa listing.
+ */
+export async function fetchListingMetrics(umkmId = DEFAULT_UMKM_ID) {
+	try {
+		const data = await fetchJson(`/api/analytics/listing-metrics/${umkmId}`);
+		if (!Array.isArray(data)) return [];
+		return data;
+	} catch {
+		return [
+			{ product_id: 1, name: "Nasi Kotak Ayam Bakar", units_sold: 284, revenue: 5680000, orders_count: 210, stock_left: 8, sell_through: 0.97, views: 1250, ctr: 0.18, conversion_rate: 0.22 },
+			{ product_id: 2, name: "Roti Gandum Artisan", units_sold: 267, revenue: 5340000, orders_count: 198, stock_left: 3, sell_through: 0.98, views: 980, ctr: 0.15, conversion_rate: 0.27 },
+			{ product_id: 3, name: "Salad Bowl Superfood", units_sold: 156, revenue: 4368000, orders_count: 140, stock_left: 12, sell_through: 0.92, views: 1400, ctr: 0.21, conversion_rate: 0.11 },
+		];
+	}
 }

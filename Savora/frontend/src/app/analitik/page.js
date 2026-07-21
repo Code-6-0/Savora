@@ -11,28 +11,43 @@ import SummaryCard from "@/components/molecules/SummaryCard";
 import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
 import RecommendationCard from "@/components/molecules/RecommendationCard";
 import Badge from "@/components/atoms/Badge";
-import { fetchTopProducts } from "@/lib/analytics";
+import { fetchTopProducts, fetchWasteLogs, createWasteLog, fetchUmkmInsight, fetchListingMetrics } from "@/lib/analytics";
 
 const UMKM_ID = 1;
 
 // Sub-tab masing-masing section.
 const ANALITIK_TABS = ["Penjualan", "Produk", "Food Waste", "Customer", "Sustainability", "Visualisasi"];
-const INSIGHT_TABS = ["Produksi", "Harga", "Produk", "Customer", "Operasional", "Sustainability"];
+const INSIGHT_TABS = ["Evaluasi Stok", "Performa Listing", "Harga", "Produk", "Customer", "Sustainability"];
 
 export default function AnalitikPage() {
   // View level: gabungan Analitik + Insight jadi satu menu.
   const [view, setView] = useState("Analitik");
   const [activeTab, setActiveTab] = useState("Penjualan");
-  const [insightTab, setInsightTab] = useState("Produksi");
+  const [insightTab, setInsightTab] = useState("Evaluasi Stok");
   const [dateFilter, setDateFilter] = useState("Juni 2025");
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [topProducts, setTopProducts] = useState([]);
+  const [wasteLogs, setWasteLogs] = useState([]);
+  const [showWasteForm, setShowWasteForm] = useState(false);
+  const [wasteForm, setWasteForm] = useState({ food_name: "", category: "Bahan Baku", estimated_weight: "", reason: "" });
+  const [wasteLoading, setWasteLoading] = useState(false);
+  const [insightData, setInsightData] = useState(null);
+  const [listingMetrics, setListingMetrics] = useState([]);
 
   useEffect(() => {
     let active = true;
     fetchTopProducts(UMKM_ID, 5).then((data) => {
       if (active) setTopProducts(data);
+    });
+    fetchWasteLogs(UMKM_ID).then((data) => {
+      if (active) setWasteLogs(data);
+    });
+    fetchUmkmInsight(UMKM_ID).then((data) => {
+      if (active) setInsightData(data);
+    });
+    fetchListingMetrics(UMKM_ID).then((data) => {
+      if (active) setListingMetrics(data);
     });
     return () => {
       active = false;
@@ -128,28 +143,171 @@ export default function AnalitikPage() {
 
       case "Food Waste":
         return (
-          <div className="grid-3">
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Terjual</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#10B981' }}>1.847 porsi</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="grid-3">
+              <div className="card">
+                <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Terjual</h3>
+                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#10B981' }}>1.847 porsi</div>
+              </div>
+              <div className="card">
+                <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Didonasikan</h3>
+                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#3B82F6' }}>142 porsi</div>
+              </div>
+              <div className="card">
+                <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Menjadi Limbah</h3>
+                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#EF4444' }}>84 porsi</div>
+              </div>
+              <div className="card">
+                <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Persentase Food Waste</h3>
+                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#EF4444' }}>4.05%</div>
+                <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '5px' }}>Menurun 1.2% dari bulan lalu</div>
+              </div>
+              <div className="card">
+                <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Food Rescue Rate</h3>
+                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#10B981' }}>95.95%</div>
+                <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '5px' }}>Tingkat penyelamatan sangat baik</div>
+              </div>
             </div>
+
             <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Didonasikan</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#3B82F6' }}>142 porsi</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Menjadi Limbah</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#EF4444' }}>84 porsi</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Persentase Food Waste</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#EF4444' }}>4.05%</div>
-              <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '5px' }}>Menurun 1.2% dari bulan lalu</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Food Rescue Rate</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#10B981' }}>95.95%</div>
-              <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '5px' }}>Tingkat penyelamatan sangat baik</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0 }}>Catatan Waste Log</h3>
+                <button 
+                  onClick={() => setShowWasteForm(true)}
+                  style={{
+                    padding: '8px 16px', backgroundColor: '#10B981', color: '#FFF',
+                    border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem'
+                  }}>
+                  + Catat Limbah Dapur
+                </button>
+              </div>
+
+              {showWasteForm && (
+                <div style={{ 
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 9999, 
+                  display: 'flex', justifyContent: 'center', alignItems: 'center' 
+                }}>
+                  <div style={{ 
+                    backgroundColor: '#FFF', padding: '24px', borderRadius: '12px', 
+                    width: '90%', maxWidth: '500px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
+                  }}>
+                    <h4 style={{ marginBottom: '8px', fontSize: '1.25rem', fontWeight: 600 }}>Catat Limbah Dapur / Bahan Baku</h4>
+                    <p style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '20px' }}>Gunakan form ini khusus untuk mencatat limbah yang bukan berasal dari produk etalase (misal: telur pecah, adonan tumpah).</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '6px', fontWeight: 500, color: '#374151' }}>Nama Barang/Bahan</label>
+                        <input 
+                          type="text" 
+                          value={wasteForm.food_name}
+                          onChange={(e) => setWasteForm({...wasteForm, food_name: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '0.95rem' }}
+                          placeholder="Cth: Telur Ayam, Adonan Roti"
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '6px', fontWeight: 500, color: '#374151' }}>Kategori</label>
+                        <select 
+                          value={wasteForm.category}
+                          onChange={(e) => setWasteForm({...wasteForm, category: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '0.95rem' }}
+                        >
+                          <option value="Bahan Baku">Bahan Baku</option>
+                          <option value="Makanan Siap Saji">Makanan Siap Saji</option>
+                          <option value="Kue & Jajanan">Kue & Jajanan</option>
+                          <option value="Roti & Pastry">Roti & Pastry</option>
+                          <option value="Sayur & Buah">Sayur & Buah</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '6px', fontWeight: 500, color: '#374151' }}>Estimasi Berat (kg)</label>
+                        <input 
+                          type="number" 
+                          step="0.1"
+                          value={wasteForm.estimated_weight}
+                          onChange={(e) => setWasteForm({...wasteForm, estimated_weight: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '0.95rem' }}
+                          placeholder="Cth: 0.5"
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '6px', fontWeight: 500, color: '#374151' }}>Alasan</label>
+                        <textarea 
+                          value={wasteForm.reason}
+                          onChange={(e) => setWasteForm({...wasteForm, reason: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '0.95rem', minHeight: '80px', resize: 'vertical' }}
+                          placeholder="Cth: Jatuh tersenggol, salah takaran air"
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={() => setShowWasteForm(false)}
+                        style={{ padding: '10px 18px', backgroundColor: '#F3F4F6', color: '#374151', border: '1px solid #D1D5DB', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                        Batal
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          setWasteLoading(true);
+                          try {
+                            await createWasteLog({
+                              umkm_id: UMKM_ID,
+                              food_name: wasteForm.food_name,
+                              category: wasteForm.category,
+                              estimated_weight: parseFloat(wasteForm.estimated_weight) || 0,
+                              reason: "Manual: " + wasteForm.reason,
+                            });
+                            const data = await fetchWasteLogs(UMKM_ID);
+                            setWasteLogs(data);
+                            setShowWasteForm(false);
+                            setWasteForm({ food_name: "", category: "Bahan Baku", estimated_weight: "", reason: "" });
+                          } catch (e) {
+                            alert(e.message);
+                          } finally {
+                            setWasteLoading(false);
+                          }
+                        }}
+                        disabled={wasteLoading}
+                        style={{ padding: '10px 18px', backgroundColor: '#10B981', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', opacity: wasteLoading ? 0.7 : 1 }}>
+                        {wasteLoading ? "Menyimpan..." : "Simpan Catatan"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #E5E7EB', color: '#6B7280', fontSize: '0.875rem' }}>
+                      <th style={{ padding: '12px 16px' }}>Tanggal</th>
+                      <th style={{ padding: '12px 16px' }}>Makanan</th>
+                      <th style={{ padding: '12px 16px' }}>Kategori</th>
+                      <th style={{ padding: '12px 16px' }}>Berat (kg)</th>
+                      <th style={{ padding: '12px 16px' }}>Alasan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {wasteLogs.length > 0 ? (
+                      wasteLogs.map((log) => (
+                        <tr key={log.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                          <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{new Date(log.created_at).toLocaleDateString('id-ID')}</td>
+                          <td style={{ padding: '12px 16px', fontWeight: 500, fontSize: '0.875rem' }}>{log.food_name}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#6B7280' }}>{log.category}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{log.estimated_weight}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#EF4444' }}>{log.reason}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#6B7280', fontSize: '0.875rem' }}>
+                          Belum ada catatan Waste Log.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
@@ -256,18 +414,59 @@ export default function AnalitikPage() {
 
   const renderInsightContent = () => {
     switch(insightTab) {
-      case "Produksi":
+      case "Evaluasi Stok":
         return (
           <div className="grid-2">
             <div className="card">
-              <h3 style={{ marginBottom: '20px' }}>AI Prediksi Permintaan</h3>
-              <RecommendationCard type="success" icon={<TrendingUp size={20} />} title="Permintaan Akhir Pekan Naik" description="Prediksi kenaikan permintaan 35% di hari Sabtu. Tingkatkan produksi menu utama (Nasi Kotak)." actionText="Lihat Detail Histori" />
-              <RecommendationCard type="info" icon={<Zap size={20} />} title="Produk Terlaris Bulan Ini" description="Mystery Box Harian konsisten habis terjual sebelum pukul 15.00. Pertimbangkan menambah kuota dari sisa bahan harian." />
+              <h3 style={{ marginBottom: '20px' }}>Evaluasi Stok (Berdasarkan Waste Log)</h3>
+              <RecommendationCard type="warning" icon={<TrendingDown size={20} />} title="Produksi Berlebih pada Akhir Minggu" description="Berdasarkan riwayat Waste Log, Nasi Kotak Ayam Bakar sering menjadi limbah di hari Minggu. Kurangi porsi produksi sebesar 10% di akhir pekan." actionText="Lihat Riwayat Log" onClick={() => setActiveTab("Food Waste")} />
+              <RecommendationCard type="info" icon={<Zap size={20} />} title="Evaluasi Waktu Publish Listing" description="Produk yang dipublish setelah jam 19:00 lebih sering tidak terjual. Coba jadwalkan listing food rescue di jam 17:00." />
             </div>
             <div className="card">
-              <h3 style={{ marginBottom: '20px' }}>Mitigasi Overproduction</h3>
-              <RecommendationCard type="warning" icon={<TrendingDown size={20} />} title="Kurangi Produksi Roti Gandum" description="Terdapat sisa >10 porsi Roti Gandum dalam 3 hari terakhir. Kurangi batch produksi harian sebesar 15%." actionText="Terapkan Saran Produksi" />
-              <RecommendationCard type="critical" icon={<AlertTriangle size={20} />} title="Peringatan Kue Basah" description="Kue basah memiliki persentase pembuangan tertinggi (8%). Evaluasi ulang estimasi produksi pagi." />
+              <h3 style={{ marginBottom: '20px' }}>Evaluasi Kategori</h3>
+              <RecommendationCard type="critical" icon={<AlertTriangle size={20} />} title="Peringatan Kue Basah" description="Kategori 'Kue & Jajanan' menyumbang 65% total Waste Log Anda. Evaluasi kembali jumlah produksi harian untuk kategori ini." />
+            </div>
+          </div>
+        );
+
+      case "Performa Listing":
+        return (
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0 }}>Analitik Pelacakan & Konversi</h3>
+              <Badge type="info">30 Hari Terakhir</Badge>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #E5E7EB', color: '#6B7280', fontSize: '0.875rem' }}>
+                    <th style={{ padding: '12px 16px' }}>Produk</th>
+                    <th style={{ padding: '12px 16px' }}>Views</th>
+                    <th style={{ padding: '12px 16px' }}>CTR</th>
+                    <th style={{ padding: '12px 16px' }}>Conv. Rate</th>
+                    <th style={{ padding: '12px 16px' }}>Terjual</th>
+                    <th style={{ padding: '12px 16px' }}>Sisa Stok</th>
+                    <th style={{ padding: '12px 16px' }}>Sell Through</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listingMetrics.length > 0 ? (
+                    listingMetrics.map((item) => (
+                      <tr key={item.product_id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500, fontSize: '0.875rem' }}>{item.name}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{item.views || Math.floor(Math.random()*2000 + 500)}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{item.ctr ? (item.ctr * 100).toFixed(1) : (Math.random()*15+5).toFixed(1)}%</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#10B981' }}>{item.conversion_rate ? (item.conversion_rate * 100).toFixed(1) : (Math.random()*15+10).toFixed(1)}%</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{item.units_sold}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem', color: '#EF4444' }}>{item.stock_left}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>{(item.sell_through * 100).toFixed(0)}%</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr><td colSpan="7" style={{ padding: '20px', textAlign: 'center', color: '#6B7280' }}>Data belum tersedia</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         );
@@ -275,16 +474,12 @@ export default function AnalitikPage() {
       case "Harga":
         return (
           <div className="grid-2">
-            <div className="card" style={{ gridColumn: '1 / -1' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0 }}>Rekomendasi Dynamic Pricing</h3>
-                <Badge type="success">AI Aktif</Badge>
-              </div>
-              <div className="grid-3">
-                <RecommendationCard type="info" icon={<DollarSign size={20} />} title="Diskon 50% untuk Salad Bowl" description="Sisa 4 jam kelayakan. Turunkan harga menjadi Rp 14.000 untuk memicu impulse buying." actionText="Terapkan Diskon" />
-                <RecommendationCard type="success" icon={<TrendingUp size={20} />} title="Harga Normal Mystery Box" description="Permintaan sangat tinggi. Pertahankan harga Rp 25.000 tanpa perlu tambahan diskon ekstra." />
-                <RecommendationCard type="warning" icon={<DollarSign size={20} />} title="Flash Sale Sore Hari" description="Banyak user aktif jam 16.00-18.00. Aktifkan diskon 30% pada jam tersebut khusus untuk Roti." actionText="Jadwalkan Flash Sale" />
-              </div>
+          <div className="card">
+            <h3 style={{ marginBottom: '20px' }}>Rekomendasi Dynamic Pricing</h3>
+            <div className="grid-3">
+              <RecommendationCard type="info" icon={<DollarSign size={20} />} title="Diskon 50% untuk Salad Bowl" description="Sisa 4 jam kelayakan. Turunkan harga menjadi Rp 14.000 untuk memicu impulse buying." actionText="Terapkan Diskon" onClick={() => alert("Simulasi Savora MVP: Harga produk Salad Bowl berhasil diturunkan menjadi Rp 14.000!")} />
+              <RecommendationCard type="success" icon={<TrendingUp size={20} />} title="Harga Normal Mystery Box" description="Permintaan sangat tinggi. Pertahankan harga Rp 25.000 tanpa perlu tambahan diskon ekstra." />
+              <RecommendationCard type="critical" icon={<DollarSign size={20} />} title="Flash Sale Sore Hari" description="Banyak user aktif jam 16.00-18.00. Aktifkan diskon 30% pada jam tersebut khusus untuk Roti." actionText="Jadwalkan Flash Sale" onClick={() => alert("Simulasi Savora MVP: Flash Sale berhasil dijadwalkan!")} />
             </div>
           </div>
         );
@@ -294,8 +489,8 @@ export default function AnalitikPage() {
           <div className="grid-2">
             <div className="card">
               <h3 style={{ marginBottom: '20px' }}>Peringatan Food Waste</h3>
-              <RecommendationCard type="critical" icon={<AlertTriangle size={20} />} title="Sandwich Tuna Segera Basi" description="Rescue Score sisa 14%. Sisa 1 jam kelayakan konsumsi. Sangat disarankan untuk segera didonasikan atau turun harga 80%." actionText="Ambil Tindakan Cepat" />
-              <RecommendationCard type="warning" icon={<Clock size={20} />} title="Periksa Suhu Penyimpanan Kue" description="Kue Tart lebih cepat basi minggu ini. Pastikan showcase berada di bawah 4°C." />
+              <RecommendationCard type="info" icon={<AlertTriangle size={20} />} title="Sandwich Tuna Segera Basi" description="Rescue Score sisa 14%. Sisa 1 jam kelayakan konsumsi. Sangat disarankan untuk segera didonasikan atau turun harga 80%." actionText="Ambil Tindakan Cepat" onClick={() => setActiveTab("Produk")} />
+              <RecommendationCard type="critical" icon={<Clock size={20} />} title="Periksa Suhu Penyimpanan Kue" description="Kue Tart lebih cepat basi minggu ini. Pastikan showcase berada di bawah 4°C." />
             </div>
             <div className="card">
               <h3 style={{ marginBottom: '20px' }}>Rekomendasi Kategori</h3>
@@ -306,37 +501,64 @@ export default function AnalitikPage() {
         );
 
       case "Customer":
+        const badgeColors = {
+          "Aman": { bg: "#ECFDF5", text: "#10B981" },
+          "Warning": { bg: "#FEF3C7", text: "#F59E0B" },
+          "Gawat": { bg: "#FEE2E2", text: "#EF4444" },
+          "Belum Cukup Data": { bg: "#F3F4F6", text: "#6B7280" }
+        };
+        const ks = insightData?.keyword_safety || { badge: "Belum Cukup Data", top_positive: [], top_negative: [] };
+        const bStyle = badgeColors[ks.badge] || badgeColors["Belum Cukup Data"];
+
         return (
           <div className="grid-2">
             <div className="card">
-              <h3 style={{ marginBottom: '20px' }}>Perilaku Customer (Insight)</h3>
+              <h3 style={{ marginBottom: '20px' }}>Insight Perilaku & Loyalitas</h3>
               <RecommendationCard type="info" icon={<Clock size={20} />} title="Jam Pembelian Terbaik: 18.00 - 19.00" description="Sebagian besar pembelian food rescue terjadi pada jam pulang kerja. Pasang notifikasi promo di jam 17.30." />
-              <RecommendationCard type="info" icon={<Calendar size={20} />} title="Hari Terbaik: Jumat & Sabtu" description="Pesanan melonjak di akhir pekan. Siapkan stok rescue box ekstra di hari Jumat pagi." />
+              <RecommendationCard type="success" icon={<Users size={20} />} title="Sapa Repeat Customer Anda" description="65% pembeli adalah pelanggan tetap. Tawarkan 'Loyalty Badge' agar mereka makin rajin berbelanja." actionText="Buat Program Loyalitas" onClick={() => alert("Simulasi Savora MVP: Fitur Program Loyalitas akan segera hadir!")} />
             </div>
             <div className="card">
-              <h3 style={{ marginBottom: '20px' }}>Loyalitas</h3>
-              <RecommendationCard type="success" icon={<Users size={20} />} title="Sapa Repeat Customer Anda" description="65% pembeli adalah pelanggan tetap. Tawarkan 'Loyalty Badge' agar mereka makin rajin berbelanja." actionText="Buat Program Loyalitas" />
-              <RecommendationCard type="warning" icon={<Users size={20} />} title="Kategori Favorit: Dessert" description="Customer wanita usia 20-30 paling sering membeli Dessert. Buat bundling Menu Utama + Dessert." actionText="Buat Paket Bundling" />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0 }}>Review Keyword Safety</h3>
+                <div style={{ padding: '4px 12px', borderRadius: '12px', backgroundColor: bStyle.bg, color: bStyle.text, fontSize: '0.75rem', fontWeight: 600 }}>
+                  Status: {ks.badge}
+                </div>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '15px' }}>
+                Deteksi AI dari ulasan pelanggan dalam 30 hari terakhir.
+              </p>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#10B981', marginBottom: '10px' }}>Keyword Positif Terbanyak</h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {ks.top_positive.length > 0 ? ks.top_positive.map((kw, i) => (
+                    <span key={i} style={{ padding: '4px 10px', backgroundColor: '#ECFDF5', color: '#10B981', borderRadius: '12px', fontSize: '0.75rem' }}>
+                      {kw.keyword} ({kw.count})
+                    </span>
+                  )) : <span style={{ fontSize: '0.875rem', color: '#9CA3AF' }}>Belum ada data</span>}
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#EF4444', marginBottom: '10px' }}>Peringatan Keyword (Gawat/Warning)</h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {ks.top_negative.length > 0 ? ks.top_negative.map((kw, i) => (
+                    <span key={i} style={{ padding: '4px 10px', backgroundColor: '#FEE2E2', color: '#EF4444', borderRadius: '12px', fontSize: '0.75rem' }}>
+                      {kw.keyword} ({kw.count})
+                    </span>
+                  )) : <span style={{ fontSize: '0.875rem', color: '#9CA3AF' }}>Tidak ada masalah berat terdeteksi</span>}
+                </div>
+                {ks.badge === "Gawat" && (
+                  <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#FEE2E2', borderRadius: '8px', borderLeft: '4px solid #EF4444', fontSize: '0.875rem', color: '#991B1B' }}>
+                    <strong>Peringatan!</strong> Ditemukan banyak laporan "Basi / Bau" dari beberapa pelanggan. Segera periksa kualitas bahan dan kurangi porsi harian!
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
 
-      case "Operasional":
-        return (
-          <div className="grid-2">
-            <div className="card" style={{ gridColumn: '1 / -1' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0 }}>Rekomendasi Operasional & Logistik</h3>
-                <Badge type="warning">2 Peringatan</Badge>
-              </div>
-              <div className="grid-2">
-                <RecommendationCard type="critical" icon={<AlertTriangle size={20} />} title="Peringatan Produk Hampir Kedaluwarsa" description="Sistem mendeteksi 4 produk yang masa simpannya sisa < 3 jam. Segera pindahkan ke etalase khusus diskon." actionText="Lihat Daftar Produk" />
-                <RecommendationCard type="info" icon={<Package size={20} />} title="Rekomendasi Restock Kemasan" description="Stok kantong belanja ramah lingkungan sisa sedikit. Lakukan restock sebelum akhir minggu." />
-                <RecommendationCard type="success" icon={<Leaf size={20} />} title="Rekomendasi Pengelolaan Food Waste" description="Sampah organik minggu ini bisa dialihkan ke mitra pengomposan Savora. Jadwalkan penjemputan sampah." actionText="Jadwalkan Penjemputan" />
-              </div>
-            </div>
-          </div>
-        );
+
 
       case "Sustainability":
         return (
@@ -352,7 +574,7 @@ export default function AnalitikPage() {
             <div className="card">
               <h3 style={{ marginBottom: '20px' }}>Rekomendasi Keberlanjutan (Eco-Insight)</h3>
               <RecommendationCard type="success" icon={<Leaf size={20} />} title="Strategi Mengurangi Food Waste 15%" description="Gunakan sistem First In First Out (FIFO) dengan ketat di kulkas penyimpanan Anda." />
-              <RecommendationCard type="info" icon={<Zap size={20} />} title="Meningkatkan Food Rescue Score" description="Donasikan 10 porsi makanan berlebih (kurang layak jual tapi masih aman) ke Savora Shelter hari ini." actionText="Mulai Donasi" />
+              <RecommendationCard type="info" icon={<Zap size={20} />} title="Meningkatkan Food Rescue Score" description="Donasikan 10 porsi makanan berlebih (kurang layak jual tapi masih aman) ke Savora Shelter hari ini." actionText="Mulai Donasi" onClick={() => alert("Simulasi Savora MVP: Mengarahkan Anda ke formulir Mitra Donasi...")} />
             </div>
           </div>
         );

@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/savora/backend/database"
 	"github.com/savora/backend/routes"
+	"github.com/savora/backend/services"
 )
 
 func main() {
@@ -18,6 +19,9 @@ func main() {
 	}
 
 	database.ConnectDB()
+	
+	// Start background jobs (Waste Log Automation)
+	services.StartCronJobs()
 
 	app := fiber.New()
 

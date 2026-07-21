@@ -37,8 +37,32 @@ func CreateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
+	if product.FoodTrustStatus == "Tidak Layak Konsumsi" {
+		product.Status = "Limbah"
+	}
+
 	if err := database.DB.Create(&product).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if product.Status == "Limbah" {
+		estimatedWeight := float64(product.Stock) * product.WeightPerPortion / 1000.0
+		wasteLog := models.WasteLog{
+			UmkmID:          product.UmkmID,
+			FoodName:        product.Name,
+			Category:        product.Category,
+			EstimatedWeight: estimatedWeight,
+			Reason:          "Otomatis oleh sistem: Tidak Layak Konsumsi (Berdasarkan Food Trust Index)",
+			PhotoURL:        product.PhotoURL,
+		}
+		database.DB.Create(&wasteLog)
+
+		notification := models.Notification{
+			UmkmID:  product.UmkmID,
+			Title:   "Produk Ditolak Sistem",
+			Message: "Produk " + product.Name + " terdeteksi Tidak Layak Konsumsi dan otomatis dialihkan ke Waste Log.",
+		}
+		database.DB.Create(&notification)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(product)
@@ -58,7 +82,31 @@ func UpdateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
+	if updateData.FoodTrustStatus == "Tidak Layak Konsumsi" && product.Status != "Limbah" {
+		updateData.Status = "Limbah"
+	}
+
 	database.DB.Model(&product).Updates(updateData)
+
+	if updateData.Status == "Limbah" && product.Status != "Limbah" {
+		estimatedWeight := float64(product.Stock) * product.WeightPerPortion / 1000.0
+		wasteLog := models.WasteLog{
+			UmkmID:          product.UmkmID,
+			FoodName:        product.Name,
+			Category:        product.Category,
+			EstimatedWeight: estimatedWeight,
+			Reason:          "Otomatis oleh sistem: Update produk menjadi Tidak Layak Konsumsi",
+			PhotoURL:        product.PhotoURL,
+		}
+		database.DB.Create(&wasteLog)
+
+		notification := models.Notification{
+			UmkmID:  product.UmkmID,
+			Title:   "Produk Menjadi Limbah",
+			Message: "Produk " + product.Name + " telah diubah menjadi Tidak Layak Konsumsi dan masuk ke Waste Log.",
+		}
+		database.DB.Create(&notification)
+	}
 
 	return c.JSON(product)
 }

@@ -137,7 +137,7 @@ func GetUmkmInsight(c *fiber.Ctx) error {
 	}
 
 	var reviews []models.Review
-	if err := database.DB.Where("umkm_id = ?", umkmParam).Find(&reviews).Error; err != nil {
+	if err := database.DB.Preload("ReviewKeywords").Where("target_id = ?", umkmParam).Find(&reviews).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

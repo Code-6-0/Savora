@@ -46,8 +46,9 @@ type UmkmInsight struct {
 	AvgRating    float64        `json:"avg_rating"`
 	ReviewCount  int            `json:"review_count"`
 	TotalRevenue float64        `json:"total_revenue"`
-	TotalUnits   int            `json:"total_units"`
-	TopProducts  []ProductSales `json:"top_products"`
+	TotalUnits   int                 `json:"total_units"`
+	TopProducts  []ProductSales      `json:"top_products"`
+	KeywordSafety KeywordSafetyResult `json:"keyword_safety"`
 }
 
 // countedOrders melacak order unik per produk agar OrdersCount akurat.
@@ -219,6 +220,7 @@ func BuildUmkmInsight(umkmID uint, orders []models.Order, reviews []models.Revie
 		insight.TotalUnits += ps.UnitsSold
 	}
 	insight.TopProducts = TopSellingProducts(orders, topN)
+	insight.KeywordSafety = CalculateKeywordSafety(reviews)
 	return insight
 }
 

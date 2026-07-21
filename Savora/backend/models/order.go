@@ -25,12 +25,3 @@ type OrderItem struct {
 	Product   Product `json:"product" gorm:"foreignKey:ProductID"`
 }
 
-type Review struct {
-	ID           uint      `gorm:"primaryKey" json:"id"`
-	UmkmID       uint      `json:"umkm_id"`
-	CustomerName string    `json:"customer_name"`
-	Rating       int       `json:"rating"` // 1-5
-	Comment      string    `json:"comment"`
-	Sentiment    string    `json:"sentiment"` // Positif, Netral, Negatif
-	CreatedAt    time.Time `json:"created_at"`
-}
