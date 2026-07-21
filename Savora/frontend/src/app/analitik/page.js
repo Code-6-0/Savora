@@ -482,6 +482,7 @@ export default function AnalitikPage() {
               <RecommendationCard type="critical" icon={<DollarSign size={20} />} title="Flash Sale Sore Hari" description="Banyak user aktif jam 16.00-18.00. Aktifkan diskon 30% pada jam tersebut khusus untuk Roti." actionText="Jadwalkan Flash Sale" onClick={() => alert("Simulasi Savora MVP: Flash Sale berhasil dijadwalkan!")} />
             </div>
           </div>
+          </div>
         );
 
       case "Produk":
@@ -500,7 +501,7 @@ export default function AnalitikPage() {
           </div>
         );
 
-      case "Customer":
+      case "Customer": {
         const badgeColors = {
           "Aman": { bg: "#ECFDF5", text: "#10B981" },
           "Warning": { bg: "#FEF3C7", text: "#F59E0B" },
@@ -557,6 +558,7 @@ export default function AnalitikPage() {
             </div>
           </div>
         );
+      }
 
 
 

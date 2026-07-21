@@ -627,6 +627,8 @@ export default function ProdukPage() {
                     <button className="btn-secondary" onClick={() => { setIsModalOpen(false); setAddMode(null); setEditingProductId(null); }}>Batal</button>
                     <button className="btn-primary" onClick={handleAddProduct}>Simpan Produk</button>
                   </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
