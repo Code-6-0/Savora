@@ -771,6 +771,12 @@ body {
 .savora-quantity > div { display: flex; align-items: center; gap: 17px; }
 .savora-quantity button { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid #4d5944; border-radius: 50%; background: #252d20; color: #e9eee4; cursor: pointer; }
 .savora-quantity button:disabled { opacity: 0.45; cursor: not-allowed; }
+.savora-quantity b { color: #f0f4eb; font-size: 16px; }
+/* Rincian harga final (PRD 13.3 & 14.4: service fee 5% + total jelas) */
+.savora-price-breakdown { display: grid; gap: 8px; margin: 18px 0 20px; padding: 14px 0; border-top: 1px solid #374130; border-bottom: 1px solid #374130; font-size: 12px; }
+.savora-price-row { display: flex; justify-content: space-between; align-items: baseline; color: #adb6a7; }
+.savora-price-row.savora-price-total { margin-top: 4px; padding-top: 8px; border-top: 1px solid #4a5542; color: #e9eee4; font-size: 13px; }
+.savora-price-row.savora-price-total b { color: #fff; font-size: 17px; font-weight: 800; }
 .savora-main-rescue { width: 100%; padding: 15px; }
 .savora-pickup { display: grid; gap: 5px; margin-top: 20px; padding-top: 18px; border-top: 1px solid #374130; font-size: 12px; }
 .savora-pickup b { display: flex; align-items: center; gap: 5px; color: #e6eae1; }

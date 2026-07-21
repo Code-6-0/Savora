@@ -26,6 +26,7 @@ import {
 } from "@/lib/marketplace";
 import { foodScoreBand, rescueTimeColor, rescueTimeParts } from "@/lib/foodScore";
 import { classifyReviewText, deriveRestaurantSafety } from "@/lib/reviews";
+import { computeCheckoutPricing } from "@/lib/pricing";
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
@@ -232,7 +233,16 @@ export default function ProductDetailPage() {
 
             <TimerDisplay seconds={remainingSeconds} />
             <div className="savora-quantity"><span>Sisa {product.stock} porsi</span><div><button type="button" onClick={() => updateQuantity(-1)} disabled={quantity <= 1} aria-label="Kurangi jumlah"><Minus size={15} /></button><b>{quantity}</b><button type="button" onClick={() => updateQuantity(1)} disabled={quantity >= product.stock} aria-label="Tambah jumlah"><Plus size={15} /></button></div></div>
-            <button type="button" className="savora-main-rescue" onClick={reserveProduct}>Selamatkan sekarang — <span>{formatRupiah(product.rescue_price * quantity)}</span></button>
+
+            {/* Rincian harga final — PRD 13.3: harga harus jelas sebelum checkout.
+                Service fee 5% ditambahkan ke total pembayaran customer (PRD 14.4). */}
+            <div className="savora-price-breakdown">
+              <div className="savora-price-row"><span>Subtotal ({quantity}×)</span><span>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).subtotal)}</span></div>
+              <div className="savora-price-row"><span>Service fee 5%</span><span>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).serviceFee)}</span></div>
+              <div className="savora-price-row savora-price-total"><span>Total</span><b>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).total)}</b></div>
+            </div>
+
+            <button type="button" className="savora-main-rescue" onClick={reserveProduct}>Selamatkan sekarang — <span>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).total)}</span></button>
             <div className="savora-pickup" id="pickup"><b><MapPin size={15} /> Lokasi Pickup</b><span>{product.pickup_address}</span><small>Tunjukkan pickup code saat tiba. Batas pickup mengikuti Smart Rescue Timer.</small></div>
           </aside>
         </section>
