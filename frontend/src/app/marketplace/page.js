@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -29,7 +29,7 @@ import {
 } from "@/lib/marketplace";
 import { foodScoreBand, rescueTimeColor, rescueTimeLabel } from "@/lib/foodScore";
 import { deriveRestaurantSafety } from "@/lib/reviews";
-import { fallbackAds, fetchAds } from "@/lib/ads";
+import { fallbackAds, fetchAds, trackAdImpression, trackAdClick } from "@/lib/ads";
 
 const categories = ["Semua", "Nasi", "Bakery", "Snack", "Catering"];
 const trustOptions = ["Semua", "Fresh", "Layak Dijual", "Segera Dijual"];
@@ -94,8 +94,53 @@ function MarketplaceHeader({ search, onSearchChange }) {
   );
 }
 
-function AdRail({ ads }) {
+function AdRail({ ads, source }) {
+  const impressionTracked = useRef(new Set());
+
+  const handleAdClick = (adId) => {
+    // Track klik tanpa menunda navigasi (fire-and-forget, non-blocking)
+    trackAdClick(adId, source);
+  };
+
+  const handleAdVisible = useCallback((adId) => {
+    // Catat impression SEKALI per iklan per pemuatan halaman
+    if (impressionTracked.current.has(adId)) return;
+    impressionTracked.current.add(adId);
+    trackAdImpression(adId, source);
+  }, [source]);
+
+  useEffect(() => {
+    // Fallback: catat impression saat mount untuk iklan yang sudah terlihat
+    // (bila IntersectionObserver tidak tersedia atau iklan sudah di viewport)
+    if (!ads.length) return;
+
+    // Coba pakai IntersectionObserver untuk tracking yang lebih akurat
+    if (typeof IntersectionObserver === "undefined") {
+      // Browser lama: langsung track semua iklan saat mount
+      ads.forEach((ad) => handleAdVisible(ad.id));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const adId = entry.target.dataset.adId;
+            if (adId) handleAdVisible(adId);
+          }
+        });
+      },
+      { threshold: 0.5 },
+    );
+
+    const cards = document.querySelectorAll("[data-ad-id]");
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [ads, handleAdVisible]);
+
   if (!ads.length) return null;
+
   return (
     <aside className="savora-ad-rail" aria-label="Iklan dan promosi">
       {ads.map((ad) => {
@@ -104,7 +149,13 @@ function AdRail({ ads }) {
           : { href: ad.href };
         const Wrapper = ad.external ? "a" : Link;
         return (
-          <Wrapper key={ad.id} className={`savora-ad-card is-${ad.type}`} {...linkProps}>
+          <Wrapper
+            key={ad.id}
+            className={`savora-ad-card is-${ad.type}`}
+            data-ad-id={ad.id}
+            onClick={() => handleAdClick(ad.id)}
+            {...linkProps}
+          >
             <div className="savora-ad-media">
               <Image src={ad.photo_url} alt={ad.sponsor} fill sizes="(max-width: 900px) 100vw, 33vw" />
               <span className="savora-ad-flag"><Megaphone size={11} aria-hidden="true" /> {ad.type === "umkm" ? "Promoted" : "Iklan"}</span>
@@ -184,6 +235,7 @@ export default function MarketplacePage() {
     fallbackMarketplaceProducts.map(normalizeMarketplaceProduct).map(attachRuntimeFields),
   );
   const [ads, setAds] = useState(() => fallbackAds.slice(0, 3).map((ad) => ({ ...ad, external: /^https?:\/\//i.test(ad.href) })));
+  const [adSource, setAdSource] = useState("fallback");
   const [filters, setFilters] = useState({ search: "", category: "Semua", trustStatus: "Semua", sort: "default" });
   const [dataSource, setDataSource] = useState("fallback");
   const [isLoading, setIsLoading] = useState(true);
@@ -212,7 +264,12 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     let alive = true;
-    fetchAds(3).then((items) => { if (alive) setAds(items); });
+    fetchAds(3).then((result) => {
+      if (alive) {
+        setAds(result.ads || result);
+        setAdSource(result.source || "fallback");
+      }
+    });
     return () => { alive = false; };
   }, []);
 
@@ -280,7 +337,7 @@ export default function MarketplacePage() {
               {category === "Semua" ? "🍽" : category === "Nasi" ? "🍚" : category === "Bakery" ? "🥐" : category === "Snack" ? "🥟" : "🍱"} {category}
             </button>)}
           </div>
-          <AdRail ads={ads} />
+          <AdRail ads={ads} source={adSource} />
           {dataSource === "fallback" && !isLoading && (
             <div className="savora-fallback-banner" role="status">
               <AlertTriangle size={15} aria-hidden="true" />

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fallbackAds, normalizeAd } from "../src/lib/ads.js";
+import { fallbackAds, normalizeAd, buildAdTrackingUrl } from "../src/lib/ads.js";
 
 test("normalizeAd keeps a valid UMKM ad and marks internal links as same-tab", () => {
   const ad = normalizeAd(fallbackAds[0]);
@@ -35,4 +35,37 @@ test("normalizeAd accepts API aliases (ad_id, vendor, title, image_url)", () => 
   assert.equal(ad.sponsor, "Kios Sari");
   assert.equal(ad.headline, "Diskon sore");
   assert.equal(ad.photo_url, "https://images.unsplash.com/x");
+});
+
+test("buildAdTrackingUrl constructs valid impression URL", () => {
+  const url = buildAdTrackingUrl("http://localhost:3001", "ad-123", "impression");
+  assert.equal(url, "http://localhost:3001/advertisements/ad-123/impression");
+});
+
+test("buildAdTrackingUrl constructs valid click URL", () => {
+  const url = buildAdTrackingUrl("http://localhost:3001", "ad-456", "click");
+  assert.equal(url, "http://localhost:3001/advertisements/ad-456/click");
+});
+
+test("buildAdTrackingUrl returns null for empty adId", () => {
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", "", "impression"), null);
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", "   ", "click"), null);
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", null, "impression"), null);
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", undefined, "click"), null);
+});
+
+test("buildAdTrackingUrl returns null for unknown event type", () => {
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", "ad-123", "view"), null);
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", "ad-123", "hover"), null);
+  assert.equal(buildAdTrackingUrl("http://localhost:3001", "ad-123", ""), null);
+});
+
+test("buildAdTrackingUrl encodes special characters in adId", () => {
+  const url = buildAdTrackingUrl("http://localhost:3001", "ad/special?id=123", "impression");
+  assert.equal(url, "http://localhost:3001/advertisements/ad%2Fspecial%3Fid%3D123/impression");
+});
+
+test("buildAdTrackingUrl handles numeric adId", () => {
+  const url = buildAdTrackingUrl("http://localhost:3001", 789, "click");
+  assert.equal(url, "http://localhost:3001/advertisements/789/click");
 });
