@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowLeft,
   Clock3,
   Flame,
@@ -12,6 +13,7 @@ import {
   MapPin,
   Minus,
   Plus,
+  RefreshCw,
   Search,
   ShieldAlert,
   ShieldCheck,
@@ -66,7 +68,7 @@ function MarketplaceHeader() {
         <Search size={17} aria-hidden="true" />
         <input placeholder="Cari nasi, roti, warung, atau UMKM..." aria-label="Cari produk atau UMKM" readOnly />
       </label>
-      <nav className="savora-main-nav" aria-label="Navigasi marketplace"><Link href="/marketplace">Rescue Deals</Link><a href="#assessment">Food Score</a><a href="#pickup">Pickup</a></nav>
+      <nav className="savora-main-nav" aria-label="Navigasi marketplace"><Link href="/marketplace">Rescue Deals</Link><a href="#assessment">Food Score</a><a href="#pickup">Pickup</a><Link href="/akun">Riwayat &amp; Impact</Link></nav>
       <button className="savora-icon-button" type="button" aria-label="Tema terang demo"><Sun size={18} /></button>
       <button className="savora-cart" type="button" aria-label="Keranjang demo"><ShoppingBag size={19} /> <b>2</b></button>
       <button className="savora-login" type="button">Masuk</button>
@@ -117,18 +119,57 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(() => fallbackMarketplaceProducts.map(normalizeMarketplaceProduct).find((item) => item.id === id));
   const [quantity, setQuantity] = useState(1);
   const [notice, setNotice] = useState("");
+  const [dataSource, setDataSource] = useState("fallback");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
+
+  const loadProduct = useCallback(async () => {
+    try {
+      const result = await fetchMarketplaceProduct(id);
+      setProduct(result.product);
+      setDataSource(result.source);
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    let alive = true;
-    fetchMarketplaceProduct(id).then((result) => { if (alive) setProduct(result); });
-    return () => { alive = false; };
-  }, [id]);
+    loadProduct();
+  }, [loadProduct]);
+
+  const handleRetry = () => {
+    setIsRefetching(true);
+    loadProduct();
+  };
 
   const now = useNow();
   const safety = useMemo(
     () => deriveRestaurantSafety(product?.reviews, product?.safety_level),
     [product],
   );
+
+  // Loading state: tampilkan skeleton
+  if (isLoading) {
+    return (
+      <div className="savora-marketplace">
+        <MarketplaceHeader />
+        <main className="savora-detail-main">
+          <div className="savora-skeleton-line" style={{ width: "120px", height: "20px", marginBottom: "25px" }} />
+          <div className="savora-detail-layout">
+            <div>
+              <div className="savora-skeleton-pulse" style={{ width: "100%", height: "391px", borderRadius: "24px" }} />
+            </div>
+            <div>
+              <div className="savora-skeleton-line" style={{ width: "70%", height: "32px", marginBottom: "12px" }} />
+              <div className="savora-skeleton-line" style={{ width: "90%", height: "16px", marginBottom: "8px" }} />
+              <div className="savora-skeleton-line" style={{ width: "60%", height: "24px" }} />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!product) {
     return <div className="savora-marketplace"><MarketplaceHeader /><main className="savora-not-found"><h1>Produk tidak ditemukan</h1><p>Rescue deal ini mungkin sudah habis atau tidak aktif.</p><Link href="/marketplace" className="savora-primary-action">Kembali ke marketplace</Link></main></div>;
@@ -166,6 +207,15 @@ export default function ProductDetailPage() {
       <MarketplaceHeader />
       <main className="savora-detail-main">
         <button type="button" className="savora-back" onClick={() => router.back()}><ArrowLeft size={16} /> Kembali ke marketplace</button>
+        {dataSource === "fallback" && (
+          <div className="savora-fallback-banner" role="status">
+            <AlertTriangle size={15} aria-hidden="true" />
+            <span>Menampilkan data demo — server tidak terjangkau</span>
+            <button type="button" onClick={handleRetry} disabled={isRefetching}>
+              <RefreshCw size={13} className={isRefetching ? "savora-spin" : ""} aria-hidden="true" /> Coba lagi
+            </button>
+          </div>
+        )}
         <section className="savora-detail-layout">
           <div className="savora-detail-left">
             <div className="savora-detail-image">

@@ -268,21 +268,39 @@ export function filterMarketplaceProducts(products, { search = "", category = "S
   return filtered;
 }
 
+/**
+ * Fetch produk marketplace dari API backend. Jika gagal, gunakan data demo.
+ *
+ * Mengembalikan objek `{ products, source }`:
+ *   - `products` — array produk yang sudah dinormalisasi.
+ *   - `source`  — `"api"` jika data dari backend, `"fallback"` jika demo lokal.
+ *
+ * Backward compatibility: hasil juga bertindak sebagai array (memiliki
+ * `.map`, `.filter`, dll.) via spread, sehingga pemanggil lama yang
+ * langsung memanggil `result.map(...)` tetap berfungsi.
+ */
 export async function fetchMarketplaceProducts() {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  const makeResult = (products, source) => {
+    const result = [...products];
+    result.products = products;
+    result.source = source;
+    return result;
+  };
   try {
     const response = await fetch(`${baseUrl}/api/products/marketplace`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json")) throw new Error("Marketplace API tidak tersedia");
     const data = await response.json();
     if (!Array.isArray(data)) throw new Error("Respons marketplace tidak valid");
-    return data.map(normalizeMarketplaceProduct);
+    return makeResult(data.map(normalizeMarketplaceProduct), "api");
   } catch {
-    return fallbackMarketplaceProducts.map(normalizeMarketplaceProduct);
+    return makeResult(fallbackMarketplaceProducts.map(normalizeMarketplaceProduct), "fallback");
   }
 }
 
 export async function fetchMarketplaceProduct(id) {
-  const products = await fetchMarketplaceProducts();
-  return products.find((product) => product.id === String(id));
+  const result = await fetchMarketplaceProducts();
+  const product = result.products.find((product) => product.id === String(id));
+  return { product, source: result.source };
 }

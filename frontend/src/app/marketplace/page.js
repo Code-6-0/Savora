@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   ArrowRight,
   ArrowUpDown,
   Clock3,
@@ -11,6 +12,7 @@ import {
   Gauge,
   Leaf,
   Megaphone,
+  RefreshCw,
   Search,
   ShieldAlert,
   ShieldCheck,
@@ -78,6 +80,7 @@ function MarketplaceHeader({ search, onSearchChange }) {
         <a href="#rescue-deals">Rescue Deals</a>
         <a href="#cara-kerja">Cara Kerja</a>
         <a href="#untuk-umkm">UMKM</a>
+        <Link href="/akun">Riwayat &amp; Impact</Link>
       </nav>
       <button className="savora-icon-button" type="button" aria-label="Tema terang demo">
         <Sun size={18} />
@@ -182,15 +185,30 @@ export default function MarketplacePage() {
   );
   const [ads, setAds] = useState(() => fallbackAds.slice(0, 3).map((ad) => ({ ...ad, external: /^https?:\/\//i.test(ad.href) })));
   const [filters, setFilters] = useState({ search: "", category: "Semua", trustStatus: "Semua", sort: "default" });
+  const [dataSource, setDataSource] = useState("fallback");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   const now = useNow();
 
+  const loadProducts = async () => {
+    try {
+      const result = await fetchMarketplaceProducts();
+      setProducts(result.products.map(attachRuntimeFields));
+      setDataSource(result.source);
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
+  };
+
   useEffect(() => {
-    let alive = true;
-    fetchMarketplaceProducts().then((items) => {
-      if (alive) setProducts(items.map(attachRuntimeFields));
-    });
-    return () => { alive = false; };
+    loadProducts();
   }, []);
+
+  const handleRetry = () => {
+    setIsRefetching(true);
+    loadProducts();
+  };
 
   useEffect(() => {
     let alive = true;
@@ -263,8 +281,30 @@ export default function MarketplacePage() {
             </button>)}
           </div>
           <AdRail ads={ads} />
+          {dataSource === "fallback" && !isLoading && (
+            <div className="savora-fallback-banner" role="status">
+              <AlertTriangle size={15} aria-hidden="true" />
+              <span>Menampilkan data demo — server tidak terjangkau</span>
+              <button type="button" onClick={handleRetry} disabled={isRefetching}>
+                <RefreshCw size={13} className={isRefetching ? "savora-spin" : ""} aria-hidden="true" /> Coba lagi
+              </button>
+            </div>
+          )}
           <div className="savora-product-grid">
-            {visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} now={now} />) : (
+            {isLoading ? (
+              <>
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="savora-food-card savora-skeleton-card" aria-hidden="true">
+                    <div className="savora-food-image savora-skeleton-pulse" />
+                    <div className="savora-food-content">
+                      <div className="savora-skeleton-line" style={{ width: "60%" }} />
+                      <div className="savora-skeleton-line" style={{ width: "80%" }} />
+                      <div className="savora-skeleton-line" style={{ width: "40%" }} />
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} now={now} />) : (
               <div className="savora-empty"><b>Belum ada rescue deal yang cocok.</b><span>Coba ubah kata kunci atau filter-mu.</span></div>
             )}
           </div>
