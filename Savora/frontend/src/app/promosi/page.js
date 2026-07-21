@@ -24,17 +24,11 @@ const statusBadgeType = (status) => {
   return "warning"; // Draft
 };
 
-async function fetchUmkmProducts(umkmId) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-  try {
-    const response = await fetch(`${baseUrl}/api/products/umkm/${umkmId}`);
-    if (!response.ok) throw new Error("Products API tidak tersedia");
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
+const fallbackProducts = [
+  { id: 1, name: "Nasi Kotak Ayam Bakar" },
+  { id: 2, name: "Salad Bowl Superfood" },
+  { id: 3, name: "Roti Gandum Artisan" },
+];
 
 export default function PromosiPage() {
   const [packages, setPackages] = useState([]);
@@ -51,23 +45,25 @@ export default function PromosiPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const reloadAds = async () => {
-    setAds(await fetchUmkmAds(UMKM_ID));
+    // Local state handle this
   };
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const [pkgs, adList, prods] = await Promise.all([
-        fetchAdPackages(),
-        fetchUmkmAds(UMKM_ID),
-        fetchUmkmProducts(UMKM_ID),
-      ]);
+      const pkgs = await fetchAdPackages();
       if (!active) return;
       setPackages(pkgs);
-      setAds(adList);
-      setProducts(prods);
+      
+      // Dummy data for visual
+      const dummyAds = [
+        { id: 1, umkm_id: UMKM_ID, product_id: 1, package_id: "populer", headline: "Flash Sale Ayam Bakar", cta: "Beli Sekarang", status: AD_STATUS.Aktif.key, price: 35000, duration_days: 7, start_at: new Date().toISOString() }
+      ];
+      setAds(dummyAds);
+      setProducts(fallbackProducts);
+      
       if (pkgs.length > 0) setPackageId(pkgs[0].id);
-      if (prods.length > 0) setProductId(String(prods[0].id));
+      if (fallbackProducts.length > 0) setProductId(String(fallbackProducts[0].id));
       setLoading(false);
     })();
     return () => {
@@ -85,33 +81,32 @@ export default function PromosiPage() {
     }
     setSubmitting(true);
     setNotice(null);
-    try {
-      await createUmkmAd({
+    
+    // Simulate API Create
+    setTimeout(() => {
+      const newAd = {
+        id: ads.length > 0 ? Math.max(...ads.map(a => a.id)) + 1 : 1,
         umkm_id: UMKM_ID,
         product_id: Number(productId),
         package_id: packageId,
-        headline,
-        cta,
-      });
+        headline: headline || "Promosi Baru",
+        cta: cta || "Lihat Produk",
+        status: AD_STATUS.Draft.key,
+        price: selectedPackage ? selectedPackage.price : 0,
+        duration_days: selectedPackage ? selectedPackage.duration_days : 0,
+        start_at: new Date().toISOString()
+      };
+      setAds([newAd, ...ads]);
       setHeadline("");
       setCta("");
-      await reloadAds();
       setNotice({ type: "success", text: "Promosi dibuat sebagai Draft. Aktifkan untuk mulai tayang." });
-    } catch (err) {
-      setNotice({ type: "error", text: err.message });
-    } finally {
       setSubmitting(false);
-    }
+    }, 500);
   };
 
   const handleActivate = async (id) => {
-    try {
-      await updateAdStatus(id, AD_STATUS.Aktif.key);
-      await reloadAds();
-      setNotice({ type: "success", text: "Promosi diaktifkan dan mulai tayang di marketplace." });
-    } catch (err) {
-      setNotice({ type: "error", text: err.message });
-    }
+    setAds(ads.map(ad => ad.id === id ? { ...ad, status: AD_STATUS.Aktif.key } : ad));
+    setNotice({ type: "success", text: "Promosi diaktifkan dan mulai tayang di marketplace." });
   };
 
   const productName = (id) => products.find((p) => String(p.id) === String(id))?.name || `Produk #${id}`;

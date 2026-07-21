@@ -19,7 +19,7 @@ export default function ProdukPage() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Dummy data for visual
-  const products = [
+  const [products, setProducts] = useState([
     { id: 1, name: "Nasi Kotak Ayam Bakar", category: "Makanan Siap Saji", original_price: 35000, rescue_price: 20000, stock: 8, score: 87, timer: "6j", status: "Aktif" },
     { id: 2, name: "Roti Gandum Artisan", category: "Bakeri & Roti", original_price: 25000, rescue_price: 12000, stock: 3, score: 38, timer: "2j", status: "Hampir Habis" },
     { id: 3, name: "Salad Bowl Superfood", category: "Makanan Sehat", original_price: 45000, rescue_price: 28000, stock: 12, score: 74, timer: "8j", status: "Aktif" },
@@ -28,7 +28,32 @@ export default function ProdukPage() {
     { id: 6, name: "Smoothie Bowl Mango", category: "Minuman & Bowl", original_price: 55000, rescue_price: 35000, stock: 6, score: 68, timer: "7j", status: "Aktif" },
     { id: 7, name: "Pizza Margherita Min", category: "Pizza & Pasta", original_price: 65000, rescue_price: 65000, stock: 4, score: 91, timer: "11j", status: "Aktif" },
     { id: 8, name: "Bakso Premium Solo", category: "Makanan Siap Saji", original_price: 40000, rescue_price: 25000, stock: 6, score: 55, timer: "5j", status: "Aktif" },
-  ];
+  ]);
+
+  const [newProduct, setNewProduct] = useState({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "" });
+
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.category) return;
+    const addedProduct = {
+      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+      name: newProduct.name,
+      category: newProduct.category,
+      original_price: parseInt(newProduct.original_price) || 0,
+      rescue_price: parseInt(newProduct.rescue_price) || 0,
+      stock: parseInt(newProduct.stock) || 0,
+      score: 100,
+      timer: "12j",
+      status: "Aktif"
+    };
+    setProducts([addedProduct, ...products]);
+    setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "" });
+    setIsModalOpen(false);
+    setAddMode(null);
+  };
+
+  const handleDeleteProduct = (id) => {
+    setProducts(products.filter(p => p.id !== id));
+  };
 
   const formatRupiah = (number) => {
     if (!number) return "—";
@@ -221,7 +246,7 @@ export default function ProdukPage() {
                   <td style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                       <button style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }} title="Edit"><Edit size={16} /></button>
-                      <button style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }} title="Hapus"><Trash2 size={16} /></button>
+                      <button style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }} title="Hapus" onClick={() => handleDeleteProduct(p.id)}><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
@@ -454,28 +479,28 @@ export default function ProdukPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Nama Produk</label>
-                    <input type="text" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                    <input type="text" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Kategori</label>
-                      <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }}>
-                        <option>Pilih Kategori</option>
+                      <select value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }}>
+                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                       </select>
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Stok</label>
-                      <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                      <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Harga Normal</label>
-                      <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                      <input type="number" value={newProduct.original_price} onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
                     </div>
                     <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px', color: '#10B981' }}>Harga Rescue (AI Suggested)</label>
-                      <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #10B981', backgroundColor: '#F0FDF4' }} />
+                      <input type="number" value={newProduct.rescue_price} onChange={(e) => setNewProduct({...newProduct, rescue_price: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #10B981', backgroundColor: '#F0FDF4' }} />
                       <Sparkles size={16} color="#10B981" style={{ position: 'absolute', right: '10px', top: '35px' }} />
                     </div>
                   </div>
@@ -495,7 +520,7 @@ export default function ProdukPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
                     <button className="btn-secondary" onClick={() => { setIsModalOpen(false); setAddMode(null); }}>Batal</button>
-                    <button className="btn-primary">Simpan Produk</button>
+                    <button className="btn-primary" onClick={handleAddProduct}>Simpan Produk</button>
                   </div>
                 </div>
               </div>

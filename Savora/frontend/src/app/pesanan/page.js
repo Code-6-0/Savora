@@ -42,6 +42,16 @@ export default function PesananPage() {
     setIsModalOpen(true);
   };
 
+  const handleUpdateStatus = (newStatus) => {
+    if (!selectedOrder) return;
+    setOrders(orders.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o));
+    setSelectedOrder({ ...selectedOrder, status: newStatus });
+    if (newStatus === "Didonasikan" || newStatus === "Dibatalkan") {
+      setIsEmergencyModalOpen(false);
+      setIsModalOpen(false);
+    }
+  };
+
   const filteredOrders = orders.filter(o => {
     let matchesTab = true;
     if (activeTab === "Pesanan Aktif") matchesTab = ["Menunggu", "Diproses", "Siap Diambil"].includes(o.status);
@@ -265,13 +275,13 @@ export default function PesananPage() {
               {selectedOrder.status !== "Selesai" && selectedOrder.status !== "Dibatalkan" && (
                 <div style={{ display: 'flex', gap: '15px' }}>
                   {selectedOrder.status === "Menunggu" && (
-                    <button className="btn-primary" style={{ flex: 1, padding: '12px' }}>Konfirmasi & Proses Pesanan</button>
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("Diproses")} style={{ flex: 1, padding: '12px' }}>Konfirmasi & Proses Pesanan</button>
                   )}
                   {selectedOrder.status === "Diproses" && (
-                    <button className="btn-primary" style={{ flex: 1, padding: '12px' }}>Pesanan Siap Diambil</button>
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("Siap Diambil")} style={{ flex: 1, padding: '12px' }}>Pesanan Siap Diambil</button>
                   )}
                   {selectedOrder.status === "Siap Diambil" && (
-                    <button className="btn-primary" style={{ flex: 1, padding: '12px' }}>Selesaikan Pesanan</button>
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("Selesai")} style={{ flex: 1, padding: '12px' }}>Selesaikan Pesanan</button>
                   )}
                   
                   <button onClick={() => setIsEmergencyModalOpen(true)} style={{ padding: '12px 20px', border: '1px solid #EF4444', color: '#EF4444', backgroundColor: 'white', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -302,10 +312,10 @@ export default function PesananPage() {
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="btn-primary" style={{ padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+              <button className="btn-primary" onClick={() => handleUpdateStatus("Didonasikan")} style={{ padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
                 Alihkan ke Donasi Savora
               </button>
-              <button className="btn-secondary" style={{ padding: '12px', width: '100%', color: '#EF4444', borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }}>
+              <button className="btn-secondary" onClick={() => handleUpdateStatus("Dibatalkan")} style={{ padding: '12px', width: '100%', color: '#EF4444', borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }}>
                 Batalkan & Kembalikan ke Stok
               </button>
               <button onClick={() => setIsEmergencyModalOpen(false)} style={{ padding: '12px', width: '100%', background: 'none', border: 'none', color: '#6B7280', fontWeight: 600, cursor: 'pointer', marginTop: '10px' }}>

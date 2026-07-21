@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { 
@@ -11,6 +11,20 @@ import {
 function ProfilContent() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') || 'bantuan';
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [showSaveBar, setShowSaveBar] = useState(true);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText("SARI2024");
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleSave = () => {
+    alert("Perubahan profil berhasil disimpan!");
+    setShowSaveBar(false);
+  };
 
   return (
     <div style={{ backgroundColor: '#F9FAFB', minHeight: '100vh', paddingBottom: '100px' }}>
@@ -109,8 +123,8 @@ function ProfilContent() {
                   <div style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF', letterSpacing: '1px', marginBottom: '12px' }}>KODE REFERRAL</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                     <span style={{ fontSize: '24px', fontWeight: 800, color: '#10B981' }}>SARI2024</span>
-                    <button style={{ display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid #E5E7EB', backgroundColor: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', color: '#4B5563', cursor: 'pointer' }}>
-                      <Copy size={12} /> Salin
+                    <button onClick={handleCopy} style={{ display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid #E5E7EB', backgroundColor: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', color: isCopied ? '#10B981' : '#4B5563', cursor: 'pointer' }}>
+                      {isCopied ? <CheckCircle size={12} /> : <Copy size={12} />} {isCopied ? "Tersalin!" : "Salin"}
                     </button>
                   </div>
                   <div style={{ fontSize: '13px', color: '#6B7280' }}>12 referral berhasil</div>
@@ -151,8 +165,8 @@ function ProfilContent() {
                     </div>
                   </div>
                   {/* Toggle Switch */}
-                  <div style={{ width: '44px', height: '24px', backgroundColor: '#D1D5DB', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-                    <div style={{ width: '20px', height: '20px', backgroundColor: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: '2px', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}></div>
+                  <div onClick={() => setIs2FAEnabled(!is2FAEnabled)} style={{ width: '44px', height: '24px', backgroundColor: is2FAEnabled ? '#10B981' : '#D1D5DB', borderRadius: '12px', position: 'relative', cursor: 'pointer', transition: 'background-color 0.2s' }}>
+                    <div style={{ width: '20px', height: '20px', backgroundColor: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: is2FAEnabled ? '22px' : '2px', boxShadow: '0 1px 2px rgba(0,0,0,0.1)', transition: 'left 0.2s' }}></div>
                   </div>
                 </div>
 
@@ -171,21 +185,23 @@ function ProfilContent() {
       </div>
 
       {/* Floating Action Bar */}
-      <div style={{ position: 'fixed', bottom: 0, left: '250px', right: 0, backgroundColor: 'white', borderTop: '1px solid #E5E7EB', padding: '16px', zIndex: 100 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 40px' }}>
-          <div style={{ fontSize: '14px', color: '#9CA3AF' }}>
-            Perubahan belum disimpan <span style={{ margin: '0 4px' }}>·</span> Terakhir disimpan <span style={{ color: '#111827', fontWeight: 600 }}>2 jam lalu</span>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{ padding: '10px 20px', backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
-              Batal
-            </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#10B981', border: 'none', borderRadius: '8px', fontWeight: 600, color: 'white', cursor: 'pointer' }}>
-              <CheckCircle size={18} /> Simpan Perubahan
-            </button>
+      {showSaveBar && (
+        <div style={{ position: 'fixed', bottom: 0, left: '250px', right: 0, backgroundColor: 'white', borderTop: '1px solid #E5E7EB', padding: '16px', zIndex: 100 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 40px' }}>
+            <div style={{ fontSize: '14px', color: '#9CA3AF' }}>
+              Perubahan belum disimpan <span style={{ margin: '0 4px' }}>·</span> Terakhir disimpan <span style={{ color: '#111827', fontWeight: 600 }}>2 jam lalu</span>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setShowSaveBar(false)} style={{ padding: '10px 20px', backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
+                Batal
+              </button>
+              <button onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#10B981', border: 'none', borderRadius: '8px', fontWeight: 600, color: 'white', cursor: 'pointer' }}>
+                <CheckCircle size={18} /> Simpan Perubahan
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
