@@ -11,6 +11,7 @@ export default function ProdukPage() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addMode, setAddMode] = useState(null); // 'manual' or 'ai'
+  const [editingProductId, setEditingProductId] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
@@ -30,25 +31,97 @@ export default function ProdukPage() {
     { id: 8, name: "Bakso Premium Solo", category: "Makanan Siap Saji", original_price: 40000, rescue_price: 25000, stock: 6, score: 55, timer: "5j", status: "Aktif" },
   ]);
 
-  const [newProduct, setNewProduct] = useState({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "" });
+  const [newProduct, setNewProduct] = useState({ 
+    name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",
+    production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai"
+  });
+
+  const calculateFoodTrustStatus = (prod) => {
+    if (!prod.production_time || !prod.expires_at) return "Menunggu Data";
+    const prodTime = new Date(prod.production_time).getTime();
+    const expTime = new Date(prod.expires_at).getTime();
+    const now = new Date().getTime();
+    const totalLifespan = expTime - prodTime;
+    const remainingTime = expTime - now;
+
+    let f = 0;
+    if (totalLifespan > 0) {
+      f = remainingTime / totalLifespan;
+    }
+
+    if (f <= 0 || prod.packaging_condition === "Rusak") return "Tidak Layak Konsumsi";
+    if (f < 0.15 || prod.storage_method === "Tidak Sesuai") return "Tidak Disarankan Dijual";
+    if (f < 0.40) return "Segera Dijual";
+    if (f < 0.75 || prod.packaging_condition === "Standar") return "Layak Dijual";
+    if (f >= 0.75 && prod.packaging_condition === "Baik" && prod.storage_method === "Sesuai") return "Fresh";
+    return "Layak Dijual";
+  };
+
+  const getFtiBadgeColor = (status) => {
+    switch (status) {
+      case "Fresh": return { bg: '#D1FAE5', text: '#10B981' };
+      case "Layak Dijual": return { bg: '#DBEAFE', text: '#3B82F6' };
+      case "Segera Dijual": return { bg: '#FEF3C7', text: '#D97706' };
+      case "Tidak Disarankan Dijual": return { bg: '#FEE2E2', text: '#EF4444' };
+      case "Tidak Layak Konsumsi": return { bg: '#F3F4F6', text: '#4B5563' };
+      default: return { bg: '#F3F4F6', text: '#6B7280' };
+    }
+  };
+
+  const currentFtiStatus = calculateFoodTrustStatus(newProduct);
+  const ftiColor = getFtiBadgeColor(currentFtiStatus);
 
   const handleAddProduct = () => {
     if (!newProduct.name || !newProduct.category) return;
-    const addedProduct = {
-      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      name: newProduct.name,
-      category: newProduct.category,
-      original_price: parseInt(newProduct.original_price) || 0,
-      rescue_price: parseInt(newProduct.rescue_price) || 0,
-      stock: parseInt(newProduct.stock) || 0,
-      score: 100,
-      timer: "12j",
-      status: "Aktif"
-    };
-    setProducts([addedProduct, ...products]);
-    setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "" });
+    
+    if (editingProductId) {
+      setProducts(products.map(p => p.id === editingProductId ? {
+        ...p,
+        name: newProduct.name,
+        category: newProduct.category,
+        original_price: parseInt(newProduct.original_price) || 0,
+        rescue_price: parseInt(newProduct.rescue_price) || 0,
+        stock: parseInt(newProduct.stock) || 0,
+        status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
+        ftiStatus: currentFtiStatus
+      } : p));
+    } else {
+      const addedProduct = {
+        id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+        name: newProduct.name,
+        category: newProduct.category,
+        original_price: parseInt(newProduct.original_price) || 0,
+        rescue_price: parseInt(newProduct.rescue_price) || 0,
+        stock: parseInt(newProduct.stock) || 0,
+        score: 100,
+        timer: "12j",
+        status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
+        ftiStatus: currentFtiStatus
+      };
+      setProducts([addedProduct, ...products]);
+    }
+
+    setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" });
     setIsModalOpen(false);
     setAddMode(null);
+    setEditingProductId(null);
+  };
+
+  const handleEditClick = (p) => {
+    setEditingProductId(p.id);
+    setNewProduct({
+      name: p.name,
+      category: p.category,
+      original_price: p.original_price || "",
+      rescue_price: p.rescue_price || "",
+      stock: p.stock || "",
+      production_time: "", // We don't have this in dummy data, so let user set it again
+      expires_at: "",
+      packaging_condition: "Standar",
+      storage_method: "Sesuai"
+    });
+    setAddMode('manual');
+    setIsModalOpen(true);
   };
 
   const handleDeleteProduct = (id) => {
@@ -125,9 +198,11 @@ export default function ProdukPage() {
               </div>
             )}
           </div>
-          <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '5px', borderRadius: '20px' }} onClick={() => setIsModalOpen(true)}>
-            <Plus size={16} /> Tambah Produk
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={() => { setIsModalOpen(true); setEditingProductId(null); setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" }); }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+              <Plus size={16} /> Tambah Produk
+            </button>
+          </div>
         </div>
       </TopHeader>
 
@@ -243,12 +318,20 @@ export default function ProdukPage() {
                   <td style={{ color: p.timer === '-' ? '#9CA3AF' : '#D97706', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     {p.timer !== '-' && <Clock size={14} />} {p.timer}
                   </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }} title="Edit"><Edit size={16} /></button>
-                      <button style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }} title="Hapus" onClick={() => handleDeleteProduct(p.id)}><Trash2 size={16} /></button>
-                    </div>
-                  </td>
+                  <td style={{ padding: '15px' }}>
+                        {p.ftiStatus && (
+                           <div style={{ marginBottom: '5px' }}>
+                             <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: getFtiBadgeColor(p.ftiStatus).bg, color: getFtiBadgeColor(p.ftiStatus).text, fontWeight: 600 }}>{p.ftiStatus}</span>
+                           </div>
+                        )}
+                        <span style={{ color: p.status === 'Aktif' ? '#10B981' : p.status === 'Hampir Habis' ? '#F59E0B' : '#EF4444', fontWeight: 500, fontSize: '0.875rem' }}>{p.status}</span>
+                      </td>
+                      <td style={{ padding: '15px' }}>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button onClick={() => handleEditClick(p)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }} title="Edit"><Edit size={16} /></button>
+                          <button onClick={() => handleDeleteProduct(p.id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }} title="Hapus"><Trash2 size={16} /></button>
+                        </div>
+                      </td>
                 </tr>
               )) : (
                 <tr>
@@ -440,8 +523,8 @@ export default function ProdukPage() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0 }}>Tambah Produk Baru</h3>
-              <button onClick={() => { setIsModalOpen(false); setAddMode(null); }} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6B7280' }}>&times;</button>
+              <h3 style={{ margin: 0 }}>{editingProductId ? "Edit Produk" : "Tambah Produk Baru"}</h3>
+              <button onClick={() => { setIsModalOpen(false); setAddMode(null); setEditingProductId(null); }} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6B7280' }}>&times;</button>
             </div>
             
             {!addMode ? (
@@ -498,32 +581,52 @@ export default function ProdukPage() {
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Harga Normal</label>
                       <input type="number" value={newProduct.original_price} onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
                     </div>
-                    <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px', color: '#10B981' }}>Harga Rescue (AI Suggested)</label>
-                      <input type="number" value={newProduct.rescue_price} onChange={(e) => setNewProduct({...newProduct, rescue_price: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #10B981', backgroundColor: '#F0FDF4' }} />
-                      <Sparkles size={16} color="#10B981" style={{ position: 'absolute', right: '10px', top: '35px' }} />
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Harga Rescue</label>
+                      <input type="number" value={newProduct.rescue_price} onChange={(e) => setNewProduct({...newProduct, rescue_price: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
                     </div>
                   </div>
-                  <div style={{ marginTop: '10px' }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '10px' }}>Assessment Kelayakan Makanan</div>
-                    <div style={{ padding: '15px', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                         <input type="checkbox" /> <span>Kemasan masih utuh dan tidak rusak</span>
-                       </label>
-                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                         <input type="checkbox" /> <span>Warna, bau, dan tekstur normal</span>
-                       </label>
-                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                         <input type="checkbox" /> <span>Belum melewati batas kedaluwarsa maksimal 2 hari</span>
-                       </label>
+                  
+                  <div style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h4 style={{ margin: 0 }}>Food Trust Index Metadata</h4>
+                      <div style={{ backgroundColor: ftiColor.bg, color: ftiColor.text, padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
+                        Status: {currentFtiStatus}
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Waktu Masak / Produksi</label>
+                        <input type="datetime-local" value={newProduct.production_time} onChange={(e) => setNewProduct({...newProduct, production_time: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Batas Kelayakan (Expired)</label>
+                        <input type="datetime-local" value={newProduct.expires_at} onChange={(e) => setNewProduct({...newProduct, expires_at: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Kondisi Kemasan</label>
+                        <select value={newProduct.packaging_condition} onChange={(e) => setNewProduct({...newProduct, packaging_condition: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }}>
+                          <option value="Baik">Baik</option>
+                          <option value="Standar">Standar</option>
+                          <option value="Rusak">Rusak</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Metode Penyimpanan</label>
+                        <select value={newProduct.storage_method} onChange={(e) => setNewProduct({...newProduct, storage_method: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }}>
+                          <option value="Sesuai">Sesuai SOP</option>
+                          <option value="Tidak Sesuai">Tidak Sesuai SOP</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
+
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                    <button className="btn-secondary" onClick={() => { setIsModalOpen(false); setAddMode(null); }}>Batal</button>
+                    <button className="btn-secondary" onClick={() => { setIsModalOpen(false); setAddMode(null); setEditingProductId(null); }}>Batal</button>
                     <button className="btn-primary" onClick={handleAddProduct}>Simpan Produk</button>
                   </div>
-                </div>
-              </div>
             )}
           </div>
         </div>

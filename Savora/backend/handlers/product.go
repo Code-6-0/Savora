@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/savora/backend/database"
 	"github.com/savora/backend/models"
@@ -36,6 +38,8 @@ func CreateProduct(c *fiber.Ctx) error {
 	if err := c.BodyParser(product); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
+
+	product.FoodTrustStatus = CalculateFoodTrustStatus(product)
 
 	if product.FoodTrustStatus == "Tidak Layak Konsumsi" {
 		product.Status = "Limbah"
@@ -82,6 +86,8 @@ func UpdateProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
 	}
 
+	updateData.FoodTrustStatus = CalculateFoodTrustStatus(&updateData)
+
 	if updateData.FoodTrustStatus == "Tidak Layak Konsumsi" && product.Status != "Limbah" {
 		updateData.Status = "Limbah"
 	}
@@ -123,4 +129,39 @@ func DeleteProduct(c *fiber.Ctx) error {
 	database.DB.Delete(&product)
 
 	return c.JSON(fiber.Map{"message": "Product successfully deleted"})
+}
+
+// CalculateFoodTrustStatus menghitung FTI berdasarkan PRD 12.4
+func CalculateFoodTrustStatus(p *models.Product) string {
+	if p.ProductionTime == nil || p.ExpiresAt == nil {
+		// Fallback jika tidak ada data waktu
+		return p.FoodTrustStatus
+	}
+
+	now := time.Now()
+	totalLifespan := p.ExpiresAt.Sub(*p.ProductionTime)
+	remainingTime := p.ExpiresAt.Sub(now)
+
+	var f float64 = 0
+	if totalLifespan > 0 {
+		f = float64(remainingTime) / float64(totalLifespan)
+	}
+
+	if f <= 0 || p.PackagingCondition == "Rusak" {
+		return "Tidak Layak Konsumsi"
+	}
+	if f < 0.15 || p.StorageMethod == "Tidak Sesuai" {
+		return "Tidak Disarankan Dijual"
+	}
+	if f < 0.40 {
+		return "Segera Dijual"
+	}
+	if f < 0.75 || p.PackagingCondition == "Standar" {
+		return "Layak Dijual"
+	}
+	if f >= 0.75 && p.PackagingCondition == "Baik" && p.StorageMethod == "Sesuai" {
+		return "Fresh"
+	}
+
+	return "Layak Dijual" // Fallback
 }
