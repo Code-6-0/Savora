@@ -94,28 +94,7 @@ const NAV_ITEMS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// Interface untuk Food Trust Index Result
-interface FoodTrustResult {
-  status: "Fresh" | "Layak Dijual" | "Segera Dijual" | "Tidak Disarankan Dijual" | "Tidak Layak Konsumsi";
-  canPublish: boolean;
-  reason: string;
-  badge: {
-    label: string;
-    color: string;
-    bg: string;
-    border: string;
-    dot: string;
-  };
-}
-
-// Interface untuk Discount Result
-interface DiscountResult {
-  discount: number;
-  rescuePrice: number;
-  reason: string;
-}
-
-function fmt(val: string): string {
+function fmt(val) {
   const num = parseInt(val.replace(/\D/g, ""), 10);
   if (isNaN(num)) return "";
   return num.toLocaleString("id-ID");
@@ -280,7 +259,7 @@ function calculateFoodTrustIndex(
 }
 
 // FUNGSI LAMA: Tetap ada untuk backward compatibility (akan dihapus nanti)
-function calcRescueScore(a): number {
+function calcRescueScore(a) {
   let score = 0;
   if (a.packaging === "sangat_baik") score += 30;
   else if (a.packaging === "cukup") score += 18;
@@ -297,7 +276,7 @@ function calcRescueScore(a): number {
   return Math.min(score, 100);
 }
 
-function scoreStatus(score: number) {
+function scoreStatus(score) {
   if (score >= 80) return { label: "Layak Dikonsumsi", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500" };
   if (score >= 60) return { label: "Layak dengan Catatan", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" };
   return { label: "Tidak Direkomendasikan", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500" };
@@ -363,7 +342,7 @@ function calculateDynamicDiscount(
 }
 
 // FUNGSI LAMA: Tetap ada untuk backward compatibility (akan dihapus nanti)
-function estimateDiscount(score: number): number {
+function estimateDiscount(score) {
   if (score >= 85) return 30;
   if (score >= 70) return 40;
   if (score >= 55) return 55;
@@ -443,7 +422,7 @@ function Sidebar() {
   );
 }
 
-function TopNav({ step }: { step }) {
+function TopNav({ step }) {
   const steps = [
     { n: 1, label: "Informasi Produk" },
     { n: 2, label: "Penilaian Kelayakan" },
@@ -605,7 +584,7 @@ function Input({
   type = "text",
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (v) => void;
   placeholder?: string;
   prefix?: string;
   type?: string;
@@ -633,7 +612,7 @@ function Select({
   placeholder,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (v) => void;
   options: string[];
   placeholder?: string;
 }) {
@@ -659,7 +638,7 @@ function QuantityControl({
   onChange,
 }: {
   value: number;
-  onChange: (v: number) => void;
+  onChange: (v) => void;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -691,7 +670,7 @@ function TagSelector({
   onChange: (v: string[]) => void;
   options: string[];
 }) {
-  function toggle(tag: string) {
+  function toggle(tag) {
     onChange(
       selected.includes(tag) ? selected.filter((t) => t !== tag) : [...selected, tag]
     );
@@ -723,7 +702,7 @@ function AllergenGrid({
   selected: string[];
   onChange: (v: string[]) => void;
 }) {
-  function toggle(a: string) {
+  function toggle(a) {
     onChange(
       selected.includes(a) ? selected.filter((x) => x !== a) : [...selected, a]
     );
@@ -749,7 +728,7 @@ function AllergenGrid({
   );
 }
 
-function QualityChecklist({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function QualityChecklist({ checked, onChange }) {
   const items = [
     "Produk masih dalam kondisi layak konsumsi",
     "Disimpan sesuai standar kebersihan (HACCP)",
@@ -1282,7 +1261,7 @@ function AssessmentRadioGroup({
   label: string;
   options: { value: string; label: string; icon?: React.ReactNode }[];
   value: string | null;
-  onChange: (v: string) => void;
+  onChange: (v) => void;
 }) {
   return (
     <div className="space-y-2.5">
@@ -1318,7 +1297,7 @@ function SliderField({
 }: {
   label: string;
   value: number;
-  onChange: (v: number) => void;
+  onChange: (v) => void;
   min?: number;
   max?: number;
   leftLabel?: string;
@@ -1363,7 +1342,7 @@ function Step2Assessment({
     setData((prev) => ({ ...prev, [key]: value }));
   }
 
-  function toggleClean(item: string) {
+  function toggleClean(item) {
     setData((prev) => ({
       ...prev,
       cleanlinessItems: prev.cleanlinessItems.includes(item)
@@ -2188,3 +2167,4 @@ export default function App() {
     </div>
   );
 }
+
