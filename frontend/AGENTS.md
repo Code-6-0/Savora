@@ -47,3 +47,5 @@ Marketplace food rescue untuk lomba CODE 6.0. Deadline submission: 25 Juli 2026.
 - `npm run lint` punya error pre-existing di `src/app/dashboard/page.js` dan
   `src/app/pesanan/page.js` (modul lain) — JANGAN memperbaikinya kecuali diminta;
   cukup pastikan tidak menambah error baru.
+  - Screenshot QA: WAJIB via scripts/shot.mjs (JPEG kecil per-element).
+  Dilarang page.screenshot fullPage/PNG.
