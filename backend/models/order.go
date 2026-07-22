@@ -7,6 +7,7 @@ import (
 type Order struct {
 	ID           uint        `gorm:"primaryKey" json:"id"`
 	UmkmID       uint        `json:"umkm_id"`
+	CustomerID   uint        `json:"customer_id"` // Foreign key ke users table (role=customer)
 	CustomerName string      `json:"customer_name"`
 	TotalAmount  float64     `json:"total_amount"`
 	Status       string      `json:"status"` // Menunggu, Diproses, Siap Diambil, Selesai, Dibatalkan

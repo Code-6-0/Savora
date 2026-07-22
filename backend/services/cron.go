@@ -61,9 +61,10 @@ func processExpiredProducts() {
 
 			// 3. Buat Notifikasi untuk UMKM
 			notification := models.Notification{
-				UmkmID:  product.UmkmID,
-				Title:   "Produk Menjadi Limbah",
-				Message: fmt.Sprintf("%d porsi %s telah melewati batas kelayakan konsumsi dan dialihkan ke Waste Log.", product.Stock, product.Name),
+				UserID:   product.UmkmID,
+				UserRole: "umkm",
+				Title:    "Produk Menjadi Limbah",
+				Message:  fmt.Sprintf("%d porsi %s telah melewati batas kelayakan konsumsi dan dialihkan ke Waste Log.", product.Stock, product.Name),
 			}
 			if err := database.DB.Create(&notification).Error; err != nil {
 				log.Println("Failed to create notification for UMKM:", product.UmkmID)

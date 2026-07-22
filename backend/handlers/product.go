@@ -62,9 +62,10 @@ func CreateProduct(c *fiber.Ctx) error {
 		database.DB.Create(&wasteLog)
 
 		notification := models.Notification{
-			UmkmID:  product.UmkmID,
-			Title:   "Produk Ditolak Sistem",
-			Message: "Produk " + product.Name + " terdeteksi Tidak Layak Konsumsi dan otomatis dialihkan ke Waste Log.",
+			UserID:   product.UmkmID,
+			UserRole: "umkm",
+			Title:    "Produk Ditolak Sistem",
+			Message:  "Produk " + product.Name + " terdeteksi Tidak Layak Konsumsi dan otomatis dialihkan ke Waste Log.",
 		}
 		database.DB.Create(&notification)
 	}
@@ -107,9 +108,10 @@ func UpdateProduct(c *fiber.Ctx) error {
 		database.DB.Create(&wasteLog)
 
 		notification := models.Notification{
-			UmkmID:  product.UmkmID,
-			Title:   "Produk Menjadi Limbah",
-			Message: "Produk " + product.Name + " telah diubah menjadi Tidak Layak Konsumsi dan masuk ke Waste Log.",
+			UserID:   product.UmkmID,
+			UserRole: "umkm",
+			Title:    "Produk Menjadi Limbah",
+			Message:  "Produk " + product.Name + " telah diubah menjadi Tidak Layak Konsumsi dan masuk ke Waste Log.",
 		}
 		database.DB.Create(&notification)
 	}
