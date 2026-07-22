@@ -102,19 +102,18 @@ function fmt(val) {
 
 // FUNGSI BARU: Calculate Food Trust Index berdasarkan PRD
 function calculateFoodTrustIndex(
-  category: string,
-  productionTime: string,
-  storageMethod: string | null,
-  packagingCondition: string | null,
-  appearance: number,
-  aroma: string | null,
-  hasSauceOrGravy: boolean,
+  category,
+  productionTime,
+  storageMethod| null,
+  packagingCondition| null,
+  appearance,
+  aroma| null,
+  hasSauceOrGravy,
   // CRITICAL SAFETY GATES (BARU)
-  hasMoldOrSlime: boolean,
-  hasAbnormalAroma: boolean,
-  hasPackagingLeakSevere: boolean,
-  hasColdChainBroken: boolean
-): FoodTrustResult {
+  hasMoldOrSlime,
+  hasAbnormalAroma,
+  hasPackagingLeakSevere,
+  hasColdChainBroken) {
   
   // CRITICAL SAFETY GATE CHECKS - Auto-reject sebelum kalkulasi
   // Sesuai Review_Final_Audit_PRD_Savora_CODE_6_0.md lines 32-43
@@ -284,10 +283,10 @@ function scoreStatus(score) {
 
 // FUNGSI BARU: Dynamic Discount berdasarkan Food Trust Index (sesuai PRD)
 function calculateDynamicDiscount(
-  trustStatus: string,
-  originalPrice: number,
-  minimumPrice: number = 0
-): DiscountResult {
+  trustStatus,
+  originalPrice,
+  minimumPrice = 0
+) {
   
   let discount = 0;
   let reason = "";
@@ -486,7 +485,7 @@ function ProductTypeToggle({
   onChange,
 }: {
   value;
-  onChange: (v) => void;
+  onChange;
 }) {
   return (
     <div className="flex rounded-xl border border-border overflow-hidden">
@@ -511,12 +510,12 @@ function PhotoUpload({
   url,
   onChange,
 }: {
-  url: string | null;
-  onChange: (u: string | null) => void;
+  url| null;
+  onChange;
 }) {
-  const ref = useRef<HTMLInputElement>(null);
+  const ref = useRef(null);
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -563,9 +562,9 @@ function FormField({
   children,
   hint,
 }: {
-  label: string;
-  children: React.ReactNode;
-  hint?: string;
+  label;
+  children;
+  hint;
 }) {
   return (
     <div className="space-y-1.5">
@@ -583,11 +582,11 @@ function Input({
   prefix,
   type = "text",
 }: {
-  value: string;
-  onChange: (v) => void;
-  placeholder?: string;
-  prefix?: string;
-  type?: string;
+  value;
+  onChange;
+  placeholder;
+  prefix;
+  type;
 }) {
   return (
     <div className="flex items-center border border-border rounded-lg bg-input-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
@@ -611,10 +610,10 @@ function Select({
   options,
   placeholder,
 }: {
-  value: string;
-  onChange: (v) => void;
-  options: string[];
-  placeholder?: string;
+  value;
+  onChange;
+  options;
+  placeholder;
 }) {
   return (
     <div className="relative">
@@ -637,8 +636,8 @@ function QuantityControl({
   value,
   onChange,
 }: {
-  value: number;
-  onChange: (v) => void;
+  value;
+  onChange;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -666,9 +665,9 @@ function TagSelector({
   onChange,
   options,
 }: {
-  selected: string[];
-  onChange: (v: string[]) => void;
-  options: string[];
+  selected;
+  onChange;
+  options;
 }) {
   function toggle(tag) {
     onChange(
@@ -699,8 +698,8 @@ function AllergenGrid({
   selected,
   onChange,
 }: {
-  selected: string[];
-  onChange: (v: string[]) => void;
+  selected;
+  onChange;
 }) {
   function toggle(a) {
     onChange(
@@ -774,7 +773,7 @@ function ProductPreviewCard({
   score,
 }: {
   form;
-  score: number | null;
+  score| null;
 }) {
   const isMystery = form.productType === "mystery";
   const name = isMystery
@@ -1258,10 +1257,10 @@ function AssessmentRadioGroup({
   value,
   onChange,
 }: {
-  label: string;
-  options: { value: string; label: string; icon?: React.ReactNode }[];
-  value: string | null;
-  onChange: (v) => void;
+  label;
+  options: { value; label; icon? }[];
+  value| null;
+  onChange;
 }) {
   return (
     <div className="space-y-2.5">
@@ -1295,13 +1294,13 @@ function SliderField({
   leftLabel,
   rightLabel,
 }: {
-  label: string;
-  value: number;
-  onChange: (v) => void;
-  min?: number;
-  max?: number;
-  leftLabel?: string;
-  rightLabel?: string;
+  label;
+  value;
+  onChange;
+  min;
+  max;
+  leftLabel;
+  rightLabel;
 }) {
   return (
     <div className="space-y-2.5">
@@ -2167,4 +2166,8 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
