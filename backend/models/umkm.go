@@ -12,6 +12,7 @@ type UMKMProfile struct {
 	GeoLocation        string    `json:"geo_location"`
 	VerificationStatus string    `json:"verification_status"`
 	Rating             float64   `json:"rating"`
+	KeywordSafetyLevel string    `json:"keyword_safety_level"` // AMAN, WARNING, GAWAT (PRD 12.7)
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 }
