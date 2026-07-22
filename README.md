@@ -87,9 +87,19 @@ cp .env.example .env
 
 # Run backend
 go run main.go
+
+# (Optional) Seed database dengan data testing
+# Jalankan perintah ini untuk membuat sample data:
+# - 1 admin user (admin@savora.com / admin123)
+# - 2-3 UMKM users (beberapa PENDING, beberapa ACTIVE)
+# - 2-3 Mitra Donasi users (PENDING)
+# - Sample products, orders, advertisements
+go run cmd/seed/main.go
 ```
 
 Backend akan berjalan di **http://localhost:3001**
+
+**PENTING:** Database akan di-migrate otomatis saat backend pertama kali jalan. Seed data opsional tapi sangat direkomendasikan untuk development & testing.
 
 ### 3. Frontend Setup
 
@@ -184,33 +194,32 @@ Savora-1/
 - `GET /reviews/keywords/{umkm_id}` - Keyword safety score (Public)
 
 ### Admin - Verifikasi & Moderasi
-- `GET /admin/umkm` - List UMKM pendaftar
-- `PATCH /admin/umkm/{id}/verification` - Verifikasi UMKM
 - `GET /admin/users` - List semua user
-- `PATCH /admin/users/{id}/status` - Suspend/activate user
-- `GET /admin/products` - List semua produk
-- `PATCH /admin/products/{id}/status` - Suspend/approve listing
+- `PATCH /admin/users/{id}/moderate` - Moderasi user (warning/suspend/approve)
+- `PATCH /admin/umkm/{id}/verification` - Verifikasi UMKM (approve/reject)
 
 ### Admin - Mitra Donasi
 - `GET /admin/mitra-donasi` - List pendaftar mitra donasi
-- `PATCH /admin/mitra-donasi/{id}/verify` - Verifikasi mitra
+- `PATCH /admin/mitra-donasi/{id}/verify` - Verifikasi mitra (approve/reject)
 
 ### Admin - Iklan
 - `POST /advertisements` - Submit iklan (UMKM/External)
-- `GET /advertisements` - List iklan (role-based)
-- `PATCH /admin/advertisements/{id}/status` - Approve/reject iklan
+- `GET /advertisements` - List iklan (Admin/UMKM)
+- `PATCH /advertisements/{id}/status` - Approve/reject iklan (Admin)
 - `GET /advertisements/active` - Iklan aktif untuk marketplace (Public)
 
 ### Admin - Keuangan
 - `GET /admin/revenue` - Dashboard revenue platform
-- `GET /admin/revenue/export?format=csv&start=YYYY-MM-DD&end=YYYY-MM-DD` - Export laporan
+- `GET /admin/revenue/export?format={csv|excel|pdf}&start=YYYY-MM-DD&end=YYYY-MM-DD` - Export laporan
 
 ### Help Center
 - `POST /help-tickets` - Buat ticket bantuan (Customer)
-- `GET /admin/help-tickets` - List tickets (Admin)
-- `PATCH /admin/help-tickets/{id}/status` - Update status ticket (Admin)
+- `GET /help-tickets` - List tickets (Admin)
+- `PATCH /help-tickets/{id}/status` - Update status ticket (Admin)
 
-**Detail lengkap:** Lihat [docs/SAVORA_PRD.md](docs/SAVORA_PRD.md) Section 19
+**Detail lengkap:** 
+- **PRD Section 19:** [docs/SAVORA_PRD.md](docs/SAVORA_PRD.md) Section 19
+- **Admin Endpoints:** [docs/admin-endpoints.md](docs/admin-endpoints.md)
 
 ---
 
@@ -246,8 +255,23 @@ Savora-1/
 
 ```bash
 cd backend
+
+# Run all tests (unit + integration)
 go test ./... -v
+
+# Run specific package tests
+go test ./handlers -v        # Handler integration tests
+go test ./middleware -v      # Auth & RBAC tests
+go test ./tests -v           # Business logic tests
 ```
+
+**Integration Tests Coverage:**
+- ✅ Auth & RBAC middleware (JWT validation, role-based access)
+- ✅ UMKM verification flow (approve/reject + audit log)
+- ✅ User moderation (warning/suspend/approve + audit log)
+- ✅ Mitra Donasi verification (approve/reject + audit log)
+- ✅ Advertisement approval/rejection + platform_revenue creation
+- ⏭️ Help ticket management (skipped - requires orders table migration)
 
 ### Frontend Tests
 
@@ -256,6 +280,22 @@ cd frontend
 npm test
 ```
 
+### Manual Smoke Testing
+
+Comprehensive end-to-end smoke test checklist untuk admin module:
+
+📋 **[docs/admin-smoke-test.md](docs/admin-smoke-test.md)**
+
+Checklist mencakup:
+- Login & RBAC protection
+- Verifikasi UMKM (approve/reject)
+- Moderasi user (warning/suspend/reactivate)
+- Verifikasi Mitra Donasi
+- Help Center & ticket management
+- Revenue dashboard & export (CSV/Excel/PDF)
+- Advertisement approval & platform_revenue
+- Audit log verification
+
 ### Critical Business Logic Tests
 
 Lihat test files untuk:
@@ -263,6 +303,9 @@ Lihat test files untuk:
 - Service Fee 5% calculation
 - Dynamic Discount rules
 - Midtrans signature verification
+- UMKM verification flow ([backend/handlers/admin_umkm_test.go](backend/handlers/admin_umkm_test.go))
+- User moderation flow ([backend/handlers/admin_moderation_test.go](backend/handlers/admin_moderation_test.go))
+- Advertisement approval flow ([backend/handlers/advertisement_test.go](backend/handlers/advertisement_test.go))
 
 ---
 

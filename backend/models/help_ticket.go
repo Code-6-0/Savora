@@ -4,14 +4,15 @@ import (
 	"time"
 )
 
-// HelpTicketCategory enum values
+// HelpTicketCategory enum values (PRD Section 14.7 - 7 kategori PERSIS wording)
 const (
-	CategoryProductNotAvailable = "PRODUK_TIDAK_TERSEDIA"
-	CategoryNotMatchDescription = "TIDAK_SESUAI_DESKRIPSI"
-	CategoryUMKMNotResponsive   = "UMKM_TIDAK_MERESPONS"
-	CategoryPickupIssue         = "KENDALA_PICKUP"
-	CategoryPaymentIssue        = "PAYMENT_BERMASALAH"
-	CategoryOther               = "LAINNYA"
+	CategoryProductNotAvailable      = "Produk tidak tersedia saat pickup"
+	CategoryNotMatchDescription      = "Produk tidak sesuai deskripsi/foto"
+	CategoryUMKMNotResponsive        = "UMKM tidak merespons"
+	CategoryPickupIssue              = "Terjadi kendala saat pickup"
+	CategoryOrderCancelled           = "Order dibatalkan sepihak"
+	CategoryPaymentSuccessNoCode     = "Pembayaran Midtrans sandbox berhasil tetapi pickup code tidak muncul"
+	CategoryPaymentFailedOrExpired   = "Pembayaran Midtrans sandbox gagal/expired atau status tidak berubah"
 )
 
 // HelpTicketStatus enum values

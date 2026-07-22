@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -127,7 +128,7 @@ func TestVerifyMitraDonasiHandler_Approve(t *testing.T) {
 	}
 	bodyJSON, _ := json.Marshal(reqBody)
 
-	req := httptest.NewRequest(http.MethodPatch, "/api/admin/mitra-donasi/"+string(rune(mitraProfile.ID+48))+"/verify", bytes.NewReader(bodyJSON))
+	req := httptest.NewRequest(http.MethodPatch, "/api/admin/mitra-donasi/"+strconv.Itoa(int(mitraProfile.ID))+"/verify", bytes.NewReader(bodyJSON))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Perform request
@@ -167,7 +168,7 @@ func TestVerifyMitraDonasiHandler_Approve(t *testing.T) {
 	}
 
 	// Test Case 4: Audit log tercatat
-	time.Sleep(500 * time.Millisecond) // Wait for async audit log insert (increased for reliability)
+	time.Sleep(2000 * time.Millisecond) // Wait for async audit log insert (increased to 2s for reliability)
 	var auditCount int64
 	database.DB.Table("audit_logs").
 		Where("actor_id = ? AND action = ? AND target_type = ? AND target_id = ?",
@@ -248,7 +249,7 @@ func TestVerifyMitraDonasiHandler_Reject(t *testing.T) {
 	}
 	bodyJSON, _ := json.Marshal(reqBody)
 
-	req := httptest.NewRequest(http.MethodPatch, "/api/admin/mitra-donasi/"+string(rune(mitraProfile.ID+48))+"/verify", bytes.NewReader(bodyJSON))
+	req := httptest.NewRequest(http.MethodPatch, "/api/admin/mitra-donasi/"+strconv.Itoa(int(mitraProfile.ID))+"/verify", bytes.NewReader(bodyJSON))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Perform request
@@ -288,7 +289,7 @@ func TestVerifyMitraDonasiHandler_Reject(t *testing.T) {
 	}
 
 	// Test Case 4: Audit log tercatat dengan action REJECTED
-	time.Sleep(500 * time.Millisecond) // Wait for async audit log insert (increased for reliability)
+	time.Sleep(2000 * time.Millisecond) // Wait for async audit log insert (increased to 2s for reliability)
 	var auditCount int64
 	database.DB.Table("audit_logs").
 		Where("actor_id = ? AND action = ? AND target_type = ? AND target_id = ?",

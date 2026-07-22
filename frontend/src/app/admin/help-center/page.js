@@ -19,6 +19,7 @@ export default function HelpCenterPage() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [adminNote, setAdminNote] = useState('');
+  const [action, setAction] = useState(''); // Aksi: WARN_UMKM, CANCEL_ORDER, CLOSE_INVALID (PRD 14.8)
   const [submitting, setSubmitting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -50,8 +51,9 @@ export default function HelpCenterPage() {
     }
   }
 
-  function openDialog(ticket) {
+  function openDialog(ticket, actionType = '') {
     setSelectedTicket(ticket);
+    setAction(actionType); // Set aksi yang dipilih (PRD 14.8)
     setNewStatus(ticket.status);
     setAdminNote(ticket.admin_note || '');
     setShowDialog(true);
@@ -66,13 +68,26 @@ export default function HelpCenterPage() {
 
     try {
       setSubmitting(true);
-      const response = await apiPatch(`/admin/help-tickets/${selectedTicket.id}/status`, {
+      const payload = {
         status: newStatus,
         admin_note: adminNote,
-      });
+      };
+
+      // Tambahkan action jika ada (PRD Section 14.8)
+      if (action) {
+        payload.action = action;
+      }
+
+      const response = await apiPatch(`/admin/help-tickets/${selectedTicket.id}/status`, payload);
 
       if (response.success) {
-        alert('Status ticket berhasil diperbarui');
+        const actionText = {
+          'WARN_UMKM': 'Warning berhasil diberikan ke UMKM',
+          'CANCEL_ORDER': 'Order berhasil dibatalkan',
+          'CLOSE_INVALID': 'Tiket berhasil ditutup (invalid)',
+        }[action] || 'Status ticket berhasil diperbarui';
+
+        alert(actionText);
         setShowDialog(false);
         fetchTickets();
       }
@@ -83,13 +98,15 @@ export default function HelpCenterPage() {
     }
   }
 
+  // 7 Kategori PERSIS dari PRD Section 14.7 (wording exact, disesuaikan dengan backend model)
   const categoryLabels = {
-    'PRODUK_TIDAK_TERSEDIA': 'Produk Tidak Tersedia',
-    'TIDAK_SESUAI_DESKRIPSI': 'Tidak Sesuai Deskripsi',
-    'UMKM_TIDAK_MERESPONS': 'UMKM Tidak Merespons',
-    'KENDALA_PICKUP': 'Kendala Pickup',
-    'PAYMENT_BERMASALAH': 'Payment Bermasalah',
-    'LAINNYA': 'Lainnya',
+    'Produk tidak tersedia saat pickup': 'Produk tidak tersedia saat pickup',
+    'Produk tidak sesuai deskripsi/foto': 'Produk tidak sesuai deskripsi/foto',
+    'UMKM tidak merespons': 'UMKM tidak merespons',
+    'Terjadi kendala saat pickup': 'Terjadi kendala saat pickup',
+    'Order dibatalkan sepihak': 'Order dibatalkan sepihak',
+    'Pembayaran Midtrans sandbox berhasil tetapi pickup code tidak muncul': 'Pembayaran Midtrans sandbox berhasil tetapi pickup code tidak muncul',
+    'Pembayaran Midtrans sandbox gagal/expired atau status tidak berubah': 'Pembayaran Midtrans sandbox gagal/expired atau status tidak berubah'
   };
 
   return (
@@ -302,6 +319,89 @@ export default function HelpCenterPage() {
               <p style={{ marginTop: '12px', marginBottom: '0', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                 Dibuat: {new Date(selectedTicket?.created_at).toLocaleString('id-ID')}
               </p>
+            </div>
+
+            {/* Pilihan Aksi Penanganan (PRD Section 14.8) */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-main)', fontSize: '14px', fontWeight: 600 }}>
+                Pilih Aksi Penanganan:
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setAction('')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: action === '' ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                    background: action === '' ? 'var(--primary-color)' : 'white',
+                    color: action === '' ? 'white' : 'var(--text-main)',
+                    fontSize: '13px',
+                    fontWeight: action === '' ? 600 : 400,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Update Status Biasa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAction('WARN_UMKM')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: action === 'WARN_UMKM' ? '2px solid var(--warning-color)' : '1px solid var(--border-color)',
+                    background: action === 'WARN_UMKM' ? 'var(--warning-color)' : 'white',
+                    color: action === 'WARN_UMKM' ? 'white' : 'var(--text-main)',
+                    fontSize: '13px',
+                    fontWeight: action === 'WARN_UMKM' ? 600 : 400,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Beri Warning ke UMKM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAction('CANCEL_ORDER')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: action === 'CANCEL_ORDER' ? '2px solid var(--danger-color)' : '1px solid var(--border-color)',
+                    background: action === 'CANCEL_ORDER' ? 'var(--danger-color)' : 'white',
+                    color: action === 'CANCEL_ORDER' ? 'white' : 'var(--text-main)',
+                    fontSize: '13px',
+                    fontWeight: action === 'CANCEL_ORDER' ? 600 : 400,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Batalkan Order
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAction('CLOSE_INVALID')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: action === 'CLOSE_INVALID' ? '2px solid var(--text-muted)' : '1px solid var(--border-color)',
+                    background: action === 'CLOSE_INVALID' ? 'var(--text-muted)' : 'white',
+                    color: action === 'CLOSE_INVALID' ? 'white' : 'var(--text-main)',
+                    fontSize: '13px',
+                    fontWeight: action === 'CLOSE_INVALID' ? 600 : 400,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Tutup Tiket (Invalid)
+                </button>
+              </div>
+              {action && (
+                <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--secondary-color)', borderRadius: '6px', fontSize: '13px', color: 'var(--text-main)' }}>
+                  <strong>Aksi dipilih:</strong> {
+                    action === 'WARN_UMKM' ? 'Beri Warning ke UMKM (dicatat ke audit logs)' :
+                    action === 'CANCEL_ORDER' ? 'Batalkan Order (order status → CANCELLED)' :
+                    action === 'CLOSE_INVALID' ? 'Tutup Tiket karena Komplain Tidak Valid' :
+                    'Update Status Biasa'
+                  }
+                </div>
+              )}
             </div>
 
             {/* Update Form */}

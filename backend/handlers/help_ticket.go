@@ -20,6 +20,7 @@ type CreateTicketRequest struct {
 type UpdateTicketStatusRequest struct {
 	Status    string `json:"status"`     // OPEN, IN_PROGRESS, RESOLVED, CLOSED
 	AdminNote string `json:"admin_note"` // Catatan admin
+	Action    string `json:"action"`     // WARN_UMKM, CANCEL_ORDER, CLOSE_INVALID (opsional, PRD 14.8)
 }
 
 // CreateTicketHandler - POST /api/help-tickets (authenticated: customer)
@@ -54,14 +55,15 @@ func CreateTicketHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Validasi kategori
+	// Validasi kategori (PRD Section 14.7 - 7 kategori PERSIS wording)
 	validCategories := map[string]bool{
-		models.CategoryProductNotAvailable: true,
-		models.CategoryNotMatchDescription: true,
-		models.CategoryUMKMNotResponsive:   true,
-		models.CategoryPickupIssue:         true,
-		models.CategoryPaymentIssue:        true,
-		models.CategoryOther:               true,
+		models.CategoryProductNotAvailable:    true,
+		models.CategoryNotMatchDescription:    true,
+		models.CategoryUMKMNotResponsive:      true,
+		models.CategoryPickupIssue:            true,
+		models.CategoryOrderCancelled:         true,
+		models.CategoryPaymentSuccessNoCode:   true,
+		models.CategoryPaymentFailedOrExpired: true,
 	}
 	if !validCategories[req.Category] {
 		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
@@ -87,6 +89,15 @@ func CreateTicketHandler(c *fiber.Ctx) error {
 			Data:    nil,
 			Error:   &ErrorInfo{Code: "INTERNAL_ERROR", Message: "Gagal membuat ticket bantuan"},
 		})
+	}
+
+	// Update order status ke HELP_REQUESTED jika order_id ada (PRD Section 14.7)
+	if req.OrderID != nil {
+		var order models.Order
+		if err := database.DB.First(&order, *req.OrderID).Error; err == nil {
+			order.Status = "HELP_REQUESTED"
+			database.DB.Save(&order)
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(APIResponse{
@@ -145,6 +156,7 @@ func GetTicketsHandler(c *fiber.Ctx) error {
 }
 
 // UpdateTicketStatusHandler - PATCH /api/help-tickets/{id}/status (admin only)
+// Mendukung aksi penanganan sesuai PRD Section 14.8
 func UpdateTicketStatusHandler(c *fiber.Ctx) error {
 	// Get admin user from context
 	userLocal := c.Locals("user")
@@ -177,21 +189,6 @@ func UpdateTicketStatusHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Validasi status
-	validStatuses := map[string]bool{
-		models.TicketStatusOpen:       true,
-		models.TicketStatusInProgress: true,
-		models.TicketStatusResolved:   true,
-		models.TicketStatusClosed:     true,
-	}
-	if !validStatuses[req.Status] {
-		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
-			Success: false,
-			Data:    nil,
-			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Status tidak valid"},
-		})
-	}
-
 	// Query ticket
 	var ticket models.HelpTicket
 	if err := database.DB.First(&ticket, ticketID).Error; err != nil {
@@ -202,28 +199,103 @@ func UpdateTicketStatusHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Update status dan admin note
-	ticket.Status = req.Status
-	if req.AdminNote != "" {
+	// Handle aksi penanganan sesuai PRD Section 14.8
+	switch req.Action {
+	case "WARN_UMKM":
+		// Beri warning ke UMKM terkait (PRD 14.8: Produk tidak tersedia, UMKM tidak merespons)
+		if req.AdminNote == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+				Success: false,
+				Data:    nil,
+				Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Catatan warning wajib diisi"},
+			})
+		}
+		if ticket.OrderID != nil {
+			var order models.Order
+			if err := database.DB.First(&order, *ticket.OrderID).Error; err == nil {
+				// Catat ke audit_logs dengan target UMKM
+				createAuditLog(claims.UserID, "WARN_UMKM", "UMKM", order.UmkmID, req.AdminNote)
+			}
+		}
+		// Update ticket status ke RESOLVED
+		ticket.Status = models.TicketStatusResolved
 		ticket.AdminNote = req.AdminNote
+
+	case "CANCEL_ORDER":
+		// Batalkan order terkait (PRD 14.8: UMKM tidak merespons)
+		if req.AdminNote == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+				Success: false,
+				Data:    nil,
+				Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Catatan alasan pembatalan wajib diisi"},
+			})
+		}
+		if ticket.OrderID != nil {
+			var order models.Order
+			if err := database.DB.First(&order, *ticket.OrderID).Error; err == nil {
+				// Update order status ke CANCELLED
+				order.Status = "CANCELLED"
+				database.DB.Save(&order)
+				// Catat ke audit_logs
+				createAuditLog(claims.UserID, "CANCEL_ORDER", "ORDER", order.ID, req.AdminNote)
+			}
+		}
+		// Update ticket status ke RESOLVED
+		ticket.Status = models.TicketStatusResolved
+		ticket.AdminNote = req.AdminNote
+
+	case "CLOSE_INVALID":
+		// Tutup tiket karena komplain tidak valid (PRD 14.8: Komplain tidak valid)
+		if req.AdminNote == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+				Success: false,
+				Data:    nil,
+				Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Catatan alasan penolakan wajib diisi"},
+			})
+		}
+		// Update ticket status ke CLOSED
+		ticket.Status = models.TicketStatusClosed
+		ticket.AdminNote = req.AdminNote
+		// Catat ke audit_logs
+		createAuditLog(claims.UserID, "CLOSE_INVALID_TICKET", "HELP_TICKET", uint(ticketID), req.AdminNote)
+
+	default:
+		// Default: update status biasa (behaviour existing untuk backward compatibility)
+		// Validasi status
+		validStatuses := map[string]bool{
+			models.TicketStatusOpen:       true,
+			models.TicketStatusInProgress: true,
+			models.TicketStatusResolved:   true,
+			models.TicketStatusClosed:     true,
+		}
+		if !validStatuses[req.Status] {
+			return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+				Success: false,
+				Data:    nil,
+				Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Status tidak valid"},
+			})
+		}
+		ticket.Status = req.Status
+		if req.AdminNote != "" {
+			ticket.AdminNote = req.AdminNote
+		}
+		// Catat ke audit_logs
+		createAuditLog(claims.UserID, "UPDATE_HELP_TICKET_STATUS", "HELP_TICKET", uint(ticketID), req.AdminNote)
 	}
 
+	// Save ticket
 	if err := database.DB.Save(&ticket).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(APIResponse{
 			Success: false,
 			Data:    nil,
-			Error:   &ErrorInfo{Code: "INTERNAL_ERROR", Message: "Gagal memperbarui status ticket"},
+			Error:   &ErrorInfo{Code: "INTERNAL_ERROR", Message: "Gagal memperbarui ticket"},
 		})
 	}
-
-	// Create audit log
-	action := "UPDATE_HELP_TICKET_STATUS"
-	createAuditLog(claims.UserID, action, "HELP_TICKET", uint(ticketID), req.AdminNote)
 
 	return c.JSON(APIResponse{
 		Success: true,
 		Data: fiber.Map{
-			"message": "Status ticket berhasil diperbarui",
+			"message": "Ticket berhasil ditangani",
 			"ticket":  ticket,
 		},
 		Error: nil,
