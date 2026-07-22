@@ -256,19 +256,11 @@ export default function KeuanganPage() {
               <Button variant="primary" onClick={() => handleExport('csv')}>
                 📄 Export CSV
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('excel')}
-                title="Fitur Excel export belum tersedia"
-              >
-                📊 Export Excel (Coming Soon)
+              <Button variant="primary" onClick={() => handleExport('xlsx')}>
+                📊 Export Excel
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('pdf')}
-                title="Fitur PDF export belum tersedia"
-              >
-                📑 Export PDF (Coming Soon)
+              <Button variant="primary" onClick={() => handleExport('pdf')}>
+                📑 Export PDF
               </Button>
             </div>
 
@@ -280,7 +272,7 @@ export default function KeuanganPage() {
               fontSize: '13px',
               color: 'var(--text-main)'
             }}>
-              <strong>Catatan:</strong> Export CSV sudah berfungsi penuh. Excel & PDF akan segera tersedia.
+              <strong>Catatan:</strong> Export tersedia dalam 3 format: CSV, Excel (XLSX), dan PDF. Pilih rentang tanggal opsional untuk filter data.
             </div>
           </div>
         </div>
