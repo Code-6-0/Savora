@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef } from "react";
 import {
@@ -37,6 +37,54 @@ import {
   Users,
   ShoppingCart,
 } from "lucide-react";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type ProductType = "reguler" | "mystery";
+type Step = 1 | 2 | 3;
+
+type FormData = {
+  productType;
+  photoUrl: string | null;
+  name: string;
+  description: string;
+  category: string;
+  expiryDate: string;
+  productionTime: string; // BARU: Jam produksi (HH:MM)
+  normalPrice: string;
+  rescuePrice: string;
+  minimumPrice: string; // BARU: Harga minimum UMKM
+  quantity: number;
+  weight: string;
+  portion: string;
+  tags: string[];
+  allergens: string[];
+  qualityChecked: boolean;
+  mysteryName: string;
+  mysteryEstWeight: string;
+  mysteryEstPortion: string;
+  mysteryContents: string;
+  mysteryCategory: string;
+};
+
+type AssessmentData = {
+  // CRITICAL SAFETY GATES - Hard-fail checks (BARU)
+  hasMoldOrSlime: boolean;       // Ada jamur atau lendir
+  hasAbnormalAroma: boolean;     // Aroma tidak normal (busuk/asam/basi)
+  hasPackagingLeakSevere: boolean; // Kemasan bocor parah
+  hasColdChainBroken: boolean;   // Cold chain terputus
+  
+  // Regular assessment fields
+  packaging: "sangat_baik" | "cukup" | "rusak" | null;
+  appearance: number;
+  aroma: "segar" | "normal" | "berkurang" | null;
+  storage: "dingin" | "suhu_ruang" | "panas" | null;
+  shelfLife: string;
+  freeContamination: boolean;
+  cleanlinessItems: string[];
+  confirmSafe: boolean;
+  hasSauceOrGravy: boolean; // Ada kuah/saus?
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -94,28 +142,51 @@ const NAV_ITEMS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function fmt(val) {
+// Interface untuk Food Trust Index Result
+interface FoodTrustResult {
+  status: "Fresh" | "Layak Dijual" | "Segera Dijual" | "Tidak Disarankan Dijual" | "Tidak Layak Konsumsi";
+  canPublish: boolean;
+  reason: string;
+  badge: {
+    label: string;
+    color: string;
+    bg: string;
+    border: string;
+    dot: string;
+  };
+}
+
+// Interface untuk Discount Result
+interface DiscountResult {
+  discount: number;
+  rescuePrice: number;
+  reason: string;
+}
+
+function fmt(val: string): string {
   const num = parseInt(val.replace(/\D/g, ""), 10);
   if (isNaN(num)) return "";
   return num.toLocaleString("id-ID");
 }
 
-// FUNGSI: Calculate Food Trust Index berdasarkan PRD
+// FUNGSI BARU: Calculate Food Trust Index berdasarkan PRD
 function calculateFoodTrustIndex(
-  category,
-  productionTime,
-  storageMethod,
-  packagingCondition,
-  appearance,
-  aroma,
-  hasSauceOrGravy,
-  hasMoldOrSlime,
-  hasAbnormalAroma,
-  hasPackagingLeakSevere,
-  hasColdChainBroken
-) {
+  category: string,
+  productionTime: string,
+  storageMethod: string | null,
+  packagingCondition: string | null,
+  appearance: number,
+  aroma: string | null,
+  hasSauceOrGravy: boolean,
+  // CRITICAL SAFETY GATES (BARU)
+  hasMoldOrSlime: boolean,
+  hasAbnormalAroma: boolean,
+  hasPackagingLeakSevere: boolean,
+  hasColdChainBroken: boolean
+): FoodTrustResult {
   
   // CRITICAL SAFETY GATE CHECKS - Auto-reject sebelum kalkulasi
+  // Sesuai Review_Final_Audit_PRD_Savora_CODE_6_0.md lines 32-43
   if (hasMoldOrSlime || hasAbnormalAroma || hasPackagingLeakSevere || hasColdChainBroken) {
     return {
       status: "Tidak Layak Konsumsi",
@@ -145,6 +216,7 @@ function calculateFoodTrustIndex(
       const productionDate = new Date();
       productionDate.setHours(hours, minutes, 0, 0);
       
+      // Jika waktu produksi lebih besar dari waktu sekarang, berarti kemarin
       if (productionDate > now) {
         productionDate.setDate(productionDate.getDate() - 1);
       }
@@ -255,8 +327,8 @@ function calculateFoodTrustIndex(
   };
 }
 
-// FUNGSI LAMA: Tetap ada untuk backward compatibility
-function calcRescueScore(a) {
+// FUNGSI LAMA: Tetap ada untuk backward compatibility (akan dihapus nanti)
+function calcRescueScore(a): number {
   let score = 0;
   if (a.packaging === "sangat_baik") score += 30;
   else if (a.packaging === "cukup") score += 18;
@@ -273,35 +345,36 @@ function calcRescueScore(a) {
   return Math.min(score, 100);
 }
 
-function scoreStatus(score) {
+function scoreStatus(score: number) {
   if (score >= 80) return { label: "Layak Dikonsumsi", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500" };
   if (score >= 60) return { label: "Layak dengan Catatan", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" };
   return { label: "Tidak Direkomendasikan", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500" };
 }
 
-// FUNGSI: Dynamic Discount berdasarkan Food Trust Index (sesuai PRD)
+// FUNGSI BARU: Dynamic Discount berdasarkan Food Trust Index (sesuai PRD)
 function calculateDynamicDiscount(
-  trustStatus,
-  originalPrice,
-  minimumPrice = 0
-) {
+  trustStatus: string,
+  originalPrice: number,
+  minimumPrice: number = 0
+): DiscountResult {
   
   let discount = 0;
   let reason = "";
   
+  // Tabel diskon dari PRD (baris 416-423)
   switch (trustStatus) {
     case "Fresh":
-      discount = 15;
+      discount = 15; // 10-20% (ambil tengah)
       reason = "Produk dalam kondisi fresh. Diskon standar untuk food rescue.";
       break;
       
     case "Layak Dijual":
-      discount = 27;
+      discount = 27; // 20-35% (ambil tengah)
       reason = "Produk masih layak dijual. Diskon menarik untuk mempercepat penjualan.";
       break;
       
     case "Segera Dijual":
-      discount = 42;
+      discount = 42; // 35-50% (ambil tengah)
       reason = "Produk mendekati batas konsumsi. Diskon tinggi untuk penjualan cepat dan menghindari food waste.";
       break;
       
@@ -320,6 +393,7 @@ function calculateDynamicDiscount(
   
   let rescuePrice = originalPrice * (1 - discount / 100);
   
+  // Check minimum price constraint (guardrail dari PRD)
   if (minimumPrice > 0 && rescuePrice < minimumPrice) {
     const adjustedDiscount = ((originalPrice - minimumPrice) / originalPrice) * 100;
     return {
@@ -336,40 +410,48 @@ function calculateDynamicDiscount(
   };
 }
 
+// FUNGSI LAMA: Tetap ada untuk backward compatibility (akan dihapus nanti)
+function estimateDiscount(score: number): number {
+  if (score >= 85) return 30;
+  if (score >= 70) return 40;
+  if (score >= 55) return 55;
+  return 70;
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Sidebar() {
   return (
-    <aside className="fixed top-0 left-0 h-screen w-60 bg-white border-r border-gray-200 flex flex-col z-30">
+    <aside className="fixed top-0 left-0 h-screen w-60 bg-sidebar border-r border-sidebar-border flex flex-col z-30">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-200">
+      <div className="px-5 py-5 border-b border-sidebar-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <Leaf className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="text-sm font-bold text-gray-900" style={{ fontFamily: "Manrope, sans-serif" }}>Savora</div>
-            <div className="text-[10px] text-gray-500 leading-none">Food Rescue Platform</div>
+            <div className="text-sm font-bold text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>Savora</div>
+            <div className="text-[10px] text-muted-foreground leading-none">Food Rescue Platform</div>
           </div>
         </div>
       </div>
 
       {/* Merchant info */}
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div className="px-4 py-3 border-b border-sidebar-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
-            <Store className="w-4 h-4 text-green-600" />
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Store className="w-4 h-4 text-primary" />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-semibold text-gray-900 truncate">Warung Segar Ibu Sari</div>
-            <div className="text-[10px] text-gray-500">Jakarta Selatan</div>
+            <div className="text-xs font-semibold text-foreground truncate">Warung Segar Ibu Sari</div>
+            <div className="text-[10px] text-muted-foreground">Jakarta Selatan</div>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-2 mb-2">Menu Utama</div>
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">Menu Utama</div>
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => (
             <li key={item.label}>
@@ -377,8 +459,8 @@ function Sidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   item.active
-                    ? "bg-green-50 text-green-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -395,8 +477,8 @@ function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="px-3 py-4 border-t border-gray-200 space-y-0.5">
-        <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all">
+      <div className="px-3 py-4 border-t border-sidebar-border space-y-0.5">
+        <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
           <Store className="w-4 h-4" />
           Profil Toko
         </a>
@@ -409,7 +491,7 @@ function Sidebar() {
   );
 }
 
-function TopNav({ step }) {
+function TopNav({ step }: { step }) {
   const steps = [
     { n: 1, label: "Informasi Produk" },
     { n: 2, label: "Penilaian Kelayakan" },
@@ -417,36 +499,36 @@ function TopNav({ step }) {
   ];
 
   return (
-    <header className="fixed top-0 left-60 right-0 h-14 bg-white border-b border-gray-200 z-20 flex items-center px-6 gap-4">
+    <header className="fixed top-0 left-60 right-0 h-14 bg-card border-b border-border z-20 flex items-center px-6 gap-4">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm text-gray-500 flex-1">
-        <span className="hover:text-gray-900 cursor-pointer transition-colors">Produk</span>
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-1">
+        <span className="hover:text-foreground cursor-pointer transition-colors">Produk</span>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-gray-900 font-medium">Tambah Produk</span>
+        <span className="text-foreground font-medium">Tambah Produk</span>
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center gap-1 bg-gray-100 rounded-xl px-3 py-1.5">
+      <div className="flex items-center gap-1 bg-muted/60 rounded-xl px-3 py-1.5">
         {steps.map((s, i) => (
           <div key={s.n} className="flex items-center gap-1">
             <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-medium transition-all ${
               s.n === step
-                ? "bg-green-600 text-white"
+                ? "bg-primary text-white"
                 : s.n < step
-                ? "text-green-600"
-                : "text-gray-500"
+                ? "text-primary"
+                : "text-muted-foreground"
             }`}>
               {s.n < step ? (
                 <Check className="w-3 h-3" />
               ) : (
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  s.n === step ? "bg-white/20" : "bg-gray-400/20"
+                  s.n === step ? "bg-white/20" : "bg-muted-foreground/20"
                 }`}>{s.n}</span>
               )}
               {s.label}
             </div>
             {i < steps.length - 1 && (
-              <ChevronRight className={`w-3 h-3 ${s.n < step ? "text-green-600" : "text-gray-400"}`} />
+              <ChevronRight className={`w-3 h-3 ${s.n < step ? "text-primary" : "text-muted-foreground/40"}`} />
             )}
           </div>
         ))}
@@ -454,12 +536,12 @@ function TopNav({ step }) {
 
       {/* Right actions */}
       <div className="flex items-center gap-3">
-        <button className="relative p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-          <Bell className="w-5 h-5 text-gray-500" />
+        <button className="relative p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <Bell className="w-5 h-5 text-muted-foreground" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
-          <span className="text-xs font-semibold text-green-600">IS</span>
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+          <span className="text-xs font-semibold text-primary">IS</span>
         </div>
       </div>
     </header>
@@ -468,17 +550,23 @@ function TopNav({ step }) {
 
 // ─── Step 1: Form Fields ──────────────────────────────────────────────────────
 
-function ProductTypeToggle({ value, onChange }) {
+function ProductTypeToggle({
+  value,
+  onChange,
+}: {
+  value;
+  onChange: (v) => void;
+}) {
   return (
-    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
-      {["reguler", "mystery"].map((t) => (
+    <div className="flex rounded-xl border border-border overflow-hidden">
+      {(["reguler", "mystery"] as ProductType[]).map((t) => (
         <button
           key={t}
           onClick={() => onChange(t)}
           className={`flex-1 px-4 py-2.5 text-sm font-semibold transition-all ${
             value === t
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-500 hover:bg-gray-50"
+              ? "bg-primary text-white"
+              : "bg-card text-muted-foreground hover:bg-muted"
           }`}
         >
           {t === "reguler" ? "Produk Reguler" : "Mystery Food Box"}
@@ -488,14 +576,20 @@ function ProductTypeToggle({ value, onChange }) {
   );
 }
 
-function PhotoUpload({ url, onChange }) {
-  const ref = useRef(null);
+function PhotoUpload({
+  url,
+  onChange,
+}: {
+  url: string | null;
+  onChange: (u: string | null) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
 
-  function handleFile(e) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => onChange(ev.target?.result);
+    reader.onload = (ev) => onChange(ev.target?.result as string);
     reader.readAsDataURL(file);
   }
 
@@ -503,7 +597,7 @@ function PhotoUpload({ url, onChange }) {
     <div
       onClick={() => ref.current?.click()}
       className={`relative border-2 border-dashed rounded-xl cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${
-        url ? "border-green-400 bg-green-50" : "border-gray-200 hover:border-green-400 hover:bg-gray-50"
+        url ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
       }`}
       style={{ minHeight: 140 }}
     >
@@ -520,12 +614,12 @@ function PhotoUpload({ url, onChange }) {
         </>
       ) : (
         <>
-          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
-            <Camera className="w-5 h-5 text-green-600" />
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Camera className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900">Klik untuk upload foto produk</p>
-            <p className="text-xs text-gray-500 mt-0.5">Maks. 5MB (JPG, PNG, WebP) · Gunakan foto asli</p>
+            <p className="text-sm font-medium text-foreground">Klik untuk upload foto produk</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Maks. 5MB (JPG, PNG, WebP) · Gunakan foto asli</p>
           </div>
         </>
       )}
@@ -533,66 +627,102 @@ function PhotoUpload({ url, onChange }) {
   );
 }
 
-function FormField({ label, children, hint }) {
+function FormField({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+}) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-semibold text-gray-900">{label}</label>
+      <label className="block text-sm font-semibold text-foreground">{label}</label>
       {children}
-      {hint && <p className="text-xs text-gray-500">{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
 
-function Input({ value, onChange, placeholder, prefix, type = "text" }) {
+function Input({
+  value,
+  onChange,
+  placeholder,
+  prefix,
+  type = "text",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  prefix?: string;
+  type?: string;
+}) {
   return (
-    <div className="flex items-center border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-green-200 focus-within:border-green-600 transition-all">
+    <div className="flex items-center border border-border rounded-lg bg-input-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
       {prefix && (
-        <span className="px-3 text-sm text-gray-500 border-r border-gray-200 bg-gray-50 py-2.5">{prefix}</span>
+        <span className="px-3 text-sm text-muted-foreground border-r border-border bg-muted py-2.5">{prefix}</span>
       )}
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder:text-gray-400"
+        className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
       />
     </div>
   );
 }
 
-function Select({ value, onChange, options, placeholder }) {
+function Select({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder?: string;
+}) {
   return (
     <div className="relative">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white appearance-none outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600 transition-all pr-8"
+        className="w-full px-3 py-2.5 text-sm border border-border rounded-lg bg-input-background appearance-none outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-8"
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((o) => (
           <option key={o} value={o}>{o}</option>
         ))}
       </select>
-      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
     </div>
   );
 }
 
-function QuantityControl({ value, onChange }) {
+function QuantityControl({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
   return (
     <div className="flex items-center gap-2">
       <button
         onClick={() => onChange(Math.max(1, value - 1))}
-        className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-500"
+        className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground"
       >
         <Minus className="w-3.5 h-3.5" />
       </button>
-      <div className="flex-1 text-center py-2 text-sm font-semibold border border-gray-200 rounded-lg bg-white">
+      <div className="flex-1 text-center py-2 text-sm font-semibold border border-border rounded-lg bg-input-background">
         {value}
       </div>
       <button
         onClick={() => onChange(Math.min(999, value + 1))}
-        className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-colors text-green-600"
+        className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 hover:border-primary/40 transition-colors text-primary"
       >
         <Plus className="w-3.5 h-3.5" />
       </button>
@@ -600,8 +730,16 @@ function QuantityControl({ value, onChange }) {
   );
 }
 
-function TagSelector({ selected, onChange, options }) {
-  function toggle(tag) {
+function TagSelector({
+  selected,
+  onChange,
+  options,
+}: {
+  selected: string[];
+  onChange: (v: string[]) => void;
+  options: string[];
+}) {
+  function toggle(tag: string) {
     onChange(
       selected.includes(tag) ? selected.filter((t) => t !== tag) : [...selected, tag]
     );
@@ -614,8 +752,8 @@ function TagSelector({ selected, onChange, options }) {
           onClick={() => toggle(tag)}
           className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
             selected.includes(tag)
-              ? "bg-green-600 text-white border-green-600"
-              : "bg-white text-gray-500 border-gray-200 hover:border-green-400 hover:text-green-600"
+              ? "bg-primary text-white border-primary"
+              : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-primary"
           }`}
         >
           {selected.includes(tag) && <Check className="inline w-2.5 h-2.5 mr-1" />}
@@ -626,8 +764,14 @@ function TagSelector({ selected, onChange, options }) {
   );
 }
 
-function AllergenGrid({ selected, onChange }) {
-  function toggle(a) {
+function AllergenGrid({
+  selected,
+  onChange,
+}: {
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) {
+  function toggle(a: string) {
     onChange(
       selected.includes(a) ? selected.filter((x) => x !== a) : [...selected, a]
     );
@@ -640,38 +784,38 @@ function AllergenGrid({ selected, onChange }) {
             onClick={() => toggle(a)}
             className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
               selected.includes(a)
-                ? "bg-green-600 border-green-600"
-                : "border-gray-200 group-hover:border-green-400"
+                ? "bg-primary border-primary"
+                : "border-border group-hover:border-primary/50"
             }`}
           >
             {selected.includes(a) && <Check className="w-2.5 h-2.5 text-white" />}
           </div>
-          <span className="text-sm text-gray-900">{a}</span>
+          <span className="text-sm text-foreground">{a}</span>
         </label>
       ))}
     </div>
   );
 }
 
-function QualityChecklist({ checked, onChange }) {
+function QualityChecklist({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   const items = [
     "Produk masih dalam kondisi layak konsumsi",
     "Disimpan sesuai standar kebersihan (HACCP)",
     "Belum melewati batas aman konsumsi (Expiry)",
   ];
   return (
-    <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+    <div className="bg-secondary rounded-xl p-4 border border-primary/20">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
+        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
           <Shield className="w-3.5 h-3.5 text-white" />
         </div>
-        <span className="text-sm font-semibold text-green-700">Jaminan Kualitas</span>
+        <span className="text-sm font-semibold text-primary">Jaminan Kualitas</span>
       </div>
       <ul className="space-y-2 mb-3">
         {items.map((item) => (
           <li key={item} className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-            <span className="text-xs text-gray-700">{item}</span>
+            <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <span className="text-xs text-foreground/80">{item}</span>
           </li>
         ))}
       </ul>
@@ -679,13 +823,13 @@ function QualityChecklist({ checked, onChange }) {
         <div
           onClick={() => onChange(!checked)}
           className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-            checked ? "bg-green-600 border-green-600" : "border-green-400"
+            checked ? "bg-primary border-primary" : "border-primary/50"
           }`}
         >
           {checked && <Check className="w-2.5 h-2.5 text-white" />}
         </div>
-        <span className="text-xs text-gray-600 leading-relaxed">
-          Saya menjamin bahwa produk ini memenuhi standar keamanan pangan Savora.
+        <span className="text-xs text-foreground/70 leading-relaxed">
+          Saya menjamin bahwa produk ini memenuhi standar keamanan pangan Lestari Market.
         </span>
       </label>
     </div>
@@ -694,7 +838,13 @@ function QualityChecklist({ checked, onChange }) {
 
 // ─── Product Preview Card ─────────────────────────────────────────────────────
 
-function ProductPreviewCard({ form, score }) {
+function ProductPreviewCard({
+  form,
+  score,
+}: {
+  form;
+  score: number | null;
+}) {
   const isMystery = form.productType === "mystery";
   const name = isMystery
     ? (form.mysteryName || "Mystery Food Box")
@@ -702,47 +852,40 @@ function ProductPreviewCard({ form, score }) {
   const category = isMystery
     ? (form.mysteryCategory || "Bakery & Pastry")
     : (form.category || "Kategori");
-  const rescuePrice = form.rescuePrice;
+  const rescuePrice = isMystery ? form.rescuePrice : form.rescuePrice;
+  const normalPrice = isMystery ? form.mysteryEstWeight : form.normalPrice;
 
   const discount = form.normalPrice && form.rescuePrice
     ? Math.round((1 - parseInt(form.rescuePrice.replace(/\D/g, ""), 10) / parseInt(form.normalPrice.replace(/\D/g, ""), 10)) * 100)
     : 0;
 
-  const completeness = Math.round(
-    ([
-      form.name || form.mysteryName,
-      form.photoUrl,
-      form.description,
-      form.category || form.mysteryCategory,
-      form.rescuePrice,
-      form.expiryDate,
-    ].filter(Boolean).length / 6) * 100
-  );
-
   return (
     <div className="sticky top-24">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">Preview Produk</h3>
-        <div className="flex items-center gap-1 text-xs text-green-600">
+        <h3 className="text-sm font-semibold text-foreground">Preview Produk</h3>
+        <div className="flex items-center gap-1 text-xs text-primary">
           <Eye className="w-3.5 h-3.5" />
           Live Preview
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-        <div className="relative bg-gray-100" style={{ height: 160 }}>
+      {/* Card preview */}
+      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        {/* Image area */}
+        <div className="relative bg-muted" style={{ height: 160 }}>
           {form.photoUrl ? (
             <img src={form.photoUrl} alt="product" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
-                <Camera className="w-8 h-8 text-gray-300 mx-auto mb-1" />
-                <p className="text-xs text-gray-400">Tambah foto produk</p>
+                <Camera className="w-8 h-8 text-muted-foreground/40 mx-auto mb-1" />
+                <p className="text-xs text-muted-foreground/40">Tambah foto produk</p>
               </div>
             </div>
           )}
+          {/* Badges */}
           <div className="absolute top-2 left-2 flex gap-1.5">
-            <span className="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
               FOOD RESCUE
             </span>
             {isMystery && (
@@ -759,37 +902,40 @@ function ProductPreviewCard({ form, score }) {
           {score !== null && (
             <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">
               <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-              <span className="text-[10px] font-bold text-gray-900">{score}</span>
+              <span className="text-[10px] font-bold text-foreground">{score}</span>
             </div>
           )}
         </div>
 
         <div className="p-4">
+          {/* Tags */}
           {form.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {form.tags.slice(0, 3).map((t) => (
-                <span key={t} className="text-[10px] font-medium bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
+                <span key={t} className="text-[10px] font-medium bg-secondary text-primary px-2 py-0.5 rounded-full">
                   {t}
                 </span>
               ))}
             </div>
           )}
 
-          <h4 className="font-bold text-gray-900 text-sm mb-0.5 leading-tight">{name}</h4>
-          <p className="text-xs text-gray-500 mb-3">{category}</p>
+          <h4 className="font-bold text-foreground text-sm mb-0.5 leading-tight">{name}</h4>
+          <p className="text-xs text-muted-foreground mb-3">{category}</p>
 
+          {/* Price */}
           <div className="mb-3">
-            <div className="text-base font-bold text-green-600">
+            <div className="text-base font-bold text-primary">
               Rp {rescuePrice ? fmt(rescuePrice) : "–"}
             </div>
             {form.normalPrice && !isMystery && (
-              <div className="text-xs text-gray-500 line-through">
+              <div className="text-xs text-muted-foreground line-through">
                 Rp {fmt(form.normalPrice)}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-gray-500 border-t border-gray-200 pt-2.5">
+          {/* Meta */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground border-t border-border pt-2.5">
             {!isMystery ? (
               <>
                 {form.portion && (
@@ -831,19 +977,47 @@ function ProductPreviewCard({ form, score }) {
         </div>
       </div>
 
-      <div className="mt-4 bg-white rounded-xl border border-gray-200 p-3">
+      {/* Completeness */}
+      <div className="mt-4 bg-card rounded-xl border border-border p-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-gray-900">Kelengkapan Data</span>
-          <span className="text-xs font-bold text-green-600">{completeness}%</span>
+          <span className="text-xs font-semibold text-foreground">Kelengkapan Data</span>
+          <span className="text-xs font-bold text-primary">
+            {Math.round(
+              ([
+                form.name || form.mysteryName,
+                form.photoUrl,
+                form.description,
+                form.category || form.mysteryCategory,
+                form.rescuePrice,
+                form.expiryDate,
+              ].filter(Boolean).length /
+                6) *
+                100
+            )}%
+          </span>
         </div>
-        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-green-600 rounded-full transition-all"
-            style={{ width: `${completeness}%` }}
+            className="h-full bg-primary rounded-full transition-all"
+            style={{
+              width: `${Math.round(
+                ([
+                  form.name || form.mysteryName,
+                  form.photoUrl,
+                  form.description,
+                  form.category || form.mysteryCategory,
+                  form.rescuePrice,
+                  form.expiryDate,
+                ].filter(Boolean).length /
+                  6) *
+                  100
+              )}%`,
+            }}
           />
         </div>
       </div>
 
+      {/* Tips */}
       <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
         <div className="flex items-start gap-2">
           <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -861,30 +1035,43 @@ function ProductPreviewCard({ form, score }) {
 
 // ─── Step 1 Component ─────────────────────────────────────────────────────────
 
-function Step1Form({ form, setForm, onNext }) {
+function Step1Form({
+  form,
+  setForm,
+  onNext,
+}: {
+  form;
+  setForm: React.Dispatch<React.SetStateAction<FormData>>;
+  onNext: () => void;
+}) {
   const isMystery = form.productType === "mystery";
 
-  function set(key, value) {
+  function set<K extends keyof FormData>(key: K, value[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   return (
     <div className="grid grid-cols-5 gap-6">
+      {/* Left: Form */}
       <div className="col-span-3 space-y-5">
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <h2 className="text-base font-bold text-gray-900 mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Section card: Jenis Produk */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <h2 className="text-base font-bold text-foreground mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
             Informasi Produk
           </h2>
-          <p className="text-sm text-gray-500 mb-4">Pilih jenis produk yang akan kamu tambahkan.</p>
+          <p className="text-sm text-muted-foreground mb-4">Pilih jenis produk yang akan kamu tambahkan.</p>
+
           <FormField label="Jenis Produk">
             <ProductTypeToggle value={form.productType} onChange={(v) => set("productType", v)} />
           </FormField>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-gray-900" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Section card: Foto & Nama */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>
             Foto & Detail Produk
           </h3>
+
           <FormField label="Foto Produk" hint="Upload 1–3 foto terbaik produk kamu">
             <PhotoUpload url={form.photoUrl} onChange={(v) => set("photoUrl", v)} />
           </FormField>
@@ -892,7 +1079,11 @@ function Step1Form({ form, setForm, onNext }) {
           {!isMystery ? (
             <>
               <FormField label="Nama Produk">
-                <Input value={form.name} onChange={(v) => set("name", v)} placeholder="Contoh: Nasi Goreng Kampung Spesial" />
+                <Input
+                  value={form.name}
+                  onChange={(v) => set("name", v)}
+                  placeholder="Contoh: Nasi Goreng Kampung Spesial"
+                />
               </FormField>
               <FormField label="Deskripsi Produk" hint="Jelaskan detail bahan, porsi, dan alasan rescue produk">
                 <textarea
@@ -900,14 +1091,18 @@ function Step1Form({ form, setForm, onNext }) {
                   onChange={(e) => set("description", e.target.value)}
                   placeholder="Jelaskan detail bahan, porsi, dan alasan rescue produk ini..."
                   rows={3}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600 transition-all resize-none placeholder:text-gray-400"
+                  className="w-full px-3 py-2.5 text-sm border border-border rounded-lg bg-input-background outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none placeholder:text-muted-foreground/60"
                 />
               </FormField>
             </>
           ) : (
             <>
               <FormField label="Nama Mystery Box">
-                <Input value={form.mysteryName} onChange={(v) => set("mysteryName", v)} placeholder="Contoh: Mystery Food Box" />
+                <Input
+                  value={form.mysteryName}
+                  onChange={(v) => set("mysteryName", v)}
+                  placeholder="Contoh: Mystery Food Box"
+                />
               </FormField>
               <FormField label="Deskripsi Singkat" hint="Ceritakan keunikan atau kejutan box">
                 <textarea
@@ -915,15 +1110,16 @@ function Step1Form({ form, setForm, onNext }) {
                   onChange={(e) => set("description", e.target.value)}
                   placeholder="Ceritakan keunikan kejutan box Anda..."
                   rows={3}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600 transition-all resize-none placeholder:text-gray-400"
+                  className="w-full px-3 py-2.5 text-sm border border-border rounded-lg bg-input-background outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none placeholder:text-muted-foreground/60"
                 />
               </FormField>
             </>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Section card: Kategori & Tanggal */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-foreground mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
             Kategori & Waktu Produksi
           </h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -936,40 +1132,55 @@ function Step1Form({ form, setForm, onNext }) {
               />
             </FormField>
             <FormField label="Jam Produksi" hint="Jam saat makanan selesai diproduksi">
-              <Input value={form.productionTime} onChange={(v) => set("productionTime", v)} type="time" placeholder="14:00" />
+              <Input
+                value={form.productionTime}
+                onChange={(v) => set("productionTime", v)}
+                type="time"
+                placeholder="14:00"
+              />
             </FormField>
           </div>
           <div className="grid grid-cols-1 gap-4">
             <FormField label="Tanggal Kedaluwarsa">
-              <Input value={form.expiryDate} onChange={(v) => set("expiryDate", v)} type="date" />
+              <Input
+                value={form.expiryDate}
+                onChange={(v) => set("expiryDate", v)}
+                type="date"
+              />
             </FormField>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Section card: Harga & Stok */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-foreground mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
             Harga & Stok
           </h3>
           {!isMystery ? (
             <>
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <FormField label="Harga Normal (Rp)">
-                  <Input value={form.normalPrice} onChange={(v) => set("normalPrice", v)} placeholder="45.000" prefix="Rp" />
+                  <Input
+                    value={form.normalPrice}
+                    onChange={(v) => set("normalPrice", v)}
+                    placeholder="45.000"
+                    prefix="Rp"
+                  />
                 </FormField>
                 <FormField label="Harga Rescue (Rp)">
                   <div className="space-y-1.5">
-                    <div className="flex items-center border border-green-400 rounded-lg bg-green-50 overflow-hidden focus-within:ring-2 focus-within:ring-green-200 transition-all">
-                      <span className="px-3 text-sm text-green-600 border-r border-green-200 bg-green-100 py-2.5 font-medium">Rp</span>
+                    <div className="flex items-center border border-primary/60 rounded-lg bg-primary/5 overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                      <span className="px-3 text-sm text-primary border-r border-primary/20 bg-primary/10 py-2.5 font-medium">Rp</span>
                       <input
                         value={form.rescuePrice}
                         onChange={(e) => set("rescuePrice", e.target.value)}
                         placeholder="22.500"
-                        className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder:text-gray-400 text-green-700 font-semibold"
+                        className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder:text-muted-foreground/60 text-primary font-semibold"
                       />
                     </div>
                     {form.normalPrice && form.rescuePrice && (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-gray-500">Diskon:</span>
+                        <span className="text-xs text-muted-foreground">Diskon:</span>
                         <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
                           -{Math.round((1 - parseInt(form.rescuePrice.replace(/\D/g, ""), 10) / parseInt(form.normalPrice.replace(/\D/g, ""), 10)) * 100)}%
                         </span>
@@ -978,7 +1189,12 @@ function Step1Form({ form, setForm, onNext }) {
                   </div>
                 </FormField>
                 <FormField label="Harga Minimum (Rp)" hint="Batas harga terendah yang bisa diterima">
-                  <Input value={form.minimumPrice} onChange={(v) => set("minimumPrice", v)} placeholder="15.000" prefix="Rp" />
+                  <Input
+                    value={form.minimumPrice}
+                    onChange={(v) => set("minimumPrice", v)}
+                    placeholder="15.000"
+                    prefix="Rp"
+                  />
                 </FormField>
               </div>
               <div className="grid grid-cols-3 gap-4">
@@ -997,17 +1213,22 @@ function Step1Form({ form, setForm, onNext }) {
             <>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <FormField label="Nilai Produk (Rp)">
-                  <Input value={form.normalPrice} onChange={(v) => set("normalPrice", v)} placeholder="100.000" prefix="Rp" />
+                  <Input
+                    value={form.normalPrice}
+                    onChange={(v) => set("normalPrice", v)}
+                    placeholder="100.000"
+                    prefix="Rp"
+                  />
                 </FormField>
                 <FormField label="Harga Rescue (Rp)">
                   <div className="space-y-1.5">
-                    <div className="flex items-center border border-green-400 rounded-lg bg-green-50 overflow-hidden">
-                      <span className="px-3 text-sm text-green-600 border-r border-green-200 bg-green-100 py-2.5 font-medium">Rp</span>
+                    <div className="flex items-center border border-primary/60 rounded-lg bg-primary/5 overflow-hidden">
+                      <span className="px-3 text-sm text-primary border-r border-primary/20 bg-primary/10 py-2.5 font-medium">Rp</span>
                       <input
                         value={form.rescuePrice}
                         onChange={(e) => set("rescuePrice", e.target.value)}
                         placeholder="50.000"
-                        className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder:text-gray-400 text-green-700 font-semibold"
+                        className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder:text-muted-foreground/60 text-primary font-semibold"
                       />
                     </div>
                     {form.normalPrice && form.rescuePrice && (
@@ -1035,39 +1256,54 @@ function Step1Form({ form, setForm, onNext }) {
                   onChange={(e) => set("mysteryContents", e.target.value)}
                   placeholder="Contoh: Aneka Croissant, Danish, atau Sourdough bread..."
                   rows={2}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600 transition-all resize-none placeholder:text-gray-400"
+                  className="w-full px-3 py-2.5 text-sm border border-border rounded-lg bg-input-background outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none placeholder:text-muted-foreground/60"
                 />
               </FormField>
             </>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-gray-900" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Section card: Tag & Alergen */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>
             Tag & Informasi Tambahan
           </h3>
+
           <FormField label="Tag Produk" hint="Pilih semua yang sesuai">
-            <TagSelector selected={form.tags} onChange={(v) => set("tags", v)} options={PRODUCT_TAGS} />
+            <TagSelector
+              selected={form.tags}
+              onChange={(v) => set("tags", v)}
+              options={PRODUCT_TAGS}
+            />
           </FormField>
+
           <div className="pt-1">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <label className="text-sm font-semibold text-gray-900">Informasi Alergen</label>
+              <label className="text-sm font-semibold text-foreground">Informasi Alergen</label>
             </div>
-            <AllergenGrid selected={form.allergens} onChange={(v) => set("allergens", v)} />
+            <AllergenGrid
+              selected={form.allergens}
+              onChange={(v) => set("allergens", v)}
+            />
           </div>
         </div>
 
-        <QualityChecklist checked={form.qualityChecked} onChange={(v) => set("qualityChecked", v)} />
+        {/* Jaminan Kualitas */}
+        <QualityChecklist
+          checked={form.qualityChecked}
+          onChange={(v) => set("qualityChecked", v)}
+        />
 
+        {/* Action buttons */}
         <div className="flex items-center justify-between pt-2 pb-8">
-          <button className="px-5 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-gray-500">
+          <button className="px-5 py-2.5 text-sm font-semibold border border-border rounded-xl hover:bg-muted transition-colors text-muted-foreground">
             Simpan Draft
           </button>
           <button
             onClick={onNext}
             disabled={!form.qualityChecked}
-            className="px-6 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+            className="px-6 py-2.5 text-sm font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
           >
             Lanjut Penilaian
             <ChevronRight className="w-4 h-4" />
@@ -1075,6 +1311,7 @@ function Step1Form({ form, setForm, onNext }) {
         </div>
       </div>
 
+      {/* Right: Preview */}
       <div className="col-span-2">
         <ProductPreviewCard form={form} score={null} />
       </div>
@@ -1084,10 +1321,20 @@ function Step1Form({ form, setForm, onNext }) {
 
 // ─── Step 2: Assessment ───────────────────────────────────────────────────────
 
-function AssessmentRadioGroup({ label, options, value, onChange }) {
+function AssessmentRadioGroup({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { value: string; label: string; icon?: React.ReactNode }[];
+  value: string | null;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="space-y-2.5">
-      <label className="block text-sm font-semibold text-gray-900">{label}</label>
+      <label className="block text-sm font-semibold text-foreground">{label}</label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button
@@ -1095,8 +1342,8 @@ function AssessmentRadioGroup({ label, options, value, onChange }) {
             onClick={() => onChange(o.value)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
               value === o.value
-                ? "bg-green-600 text-white border-green-600"
-                : "bg-white border-gray-200 text-gray-900 hover:border-green-400"
+                ? "bg-primary text-white border-primary"
+                : "bg-card border-border text-foreground hover:border-primary/40"
             }`}
           >
             {o.icon}
@@ -1108,12 +1355,28 @@ function AssessmentRadioGroup({ label, options, value, onChange }) {
   );
 }
 
-function SliderField({ label, value, onChange, min = 0, max = 10, leftLabel, rightLabel }) {
+function SliderField({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 10,
+  leftLabel,
+  rightLabel,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  leftLabel?: string;
+  rightLabel?: string;
+}) {
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-semibold text-gray-900">{label}</label>
-        <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">{value}</span>
+        <label className="text-sm font-semibold text-foreground">{label}</label>
+        <span className="text-sm font-bold text-primary bg-secondary px-2 py-0.5 rounded-lg">{value}</span>
       </div>
       <input
         type="range"
@@ -1121,10 +1384,10 @@ function SliderField({ label, value, onChange, min = 0, max = 10, leftLabel, rig
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-green-600"
+        className="w-full accent-primary"
       />
       {(leftLabel || rightLabel) && (
-        <div className="flex justify-between text-xs text-gray-500">
+        <div className="flex justify-between text-xs text-muted-foreground">
           <span>{leftLabel}</span>
           <span>{rightLabel}</span>
         </div>
@@ -1133,12 +1396,22 @@ function SliderField({ label, value, onChange, min = 0, max = 10, leftLabel, rig
   );
 }
 
-function Step2Assessment({ data, setData, onBack, onNext }) {
-  function set(key, value) {
+function Step2Assessment({
+  data,
+  setData,
+  onBack,
+  onNext,
+}: {
+  data;
+  setData: React.Dispatch<React.SetStateAction<AssessmentData>>;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  function set<K extends keyof AssessmentData>(key: K, value[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
   }
 
-  function toggleClean(item) {
+  function toggleClean(item: string) {
     setData((prev) => ({
       ...prev,
       cleanlinessItems: prev.cleanlinessItems.includes(item)
@@ -1154,25 +1427,27 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
     data.shelfLife !== "" &&
     data.confirmSafe;
 
+  // Check if any safety gate is triggered
   const hasSafetyGateIssue = data.hasMoldOrSlime || data.hasAbnormalAroma || data.hasPackagingLeakSevere || data.hasColdChainBroken;
 
   return (
     <div className="grid grid-cols-5 gap-6">
       <div className="col-span-3 space-y-5">
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-green-600" />
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900" style={{ fontFamily: "Manrope, sans-serif" }}>
+              <h2 className="text-base font-bold text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>
                 Penilaian Kelayakan Pangan
               </h2>
-              <p className="text-xs text-gray-500">Pastikan makanan masih memenuhi standar keamanan pangan sebelum dipublikasikan.</p>
+              <p className="text-xs text-muted-foreground">Pastikan makanan masih memenuhi standar keamanan pangan sebelum dipublikasikan.</p>
             </div>
           </div>
         </div>
 
+        {/* CRITICAL SAFETY GATES - BARU */}
         <div className="bg-red-50 border border-red-200 rounded-2xl p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-5 h-5 text-red-600" />
@@ -1185,6 +1460,7 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
           </p>
           
           <div className="space-y-3">
+            {/* Checkbox 1: Jamur/Lendir */}
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl bg-white border border-red-100 hover:bg-red-50/50 transition-colors">
               <div
                 onClick={() => set("hasMoldOrSlime", !data.hasMoldOrSlime)}
@@ -1195,11 +1471,12 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                 {data.hasMoldOrSlime && <Check className="w-3 h-3 text-white" />}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Ada Jamur atau Lendir</p>
-                <p className="text-xs text-gray-500">Produk menunjukkan tanda-tanda jamur atau lendir</p>
+                <p className="text-sm font-semibold text-foreground">Ada Jamur atau Lendir</p>
+                <p className="text-xs text-muted-foreground">Produk menunjukkan tanda-tanda jamur atau lendir</p>
               </div>
             </label>
 
+            {/* Checkbox 2: Aroma Tidak Normal */}
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl bg-white border border-red-100 hover:bg-red-50/50 transition-colors">
               <div
                 onClick={() => set("hasAbnormalAroma", !data.hasAbnormalAroma)}
@@ -1210,11 +1487,12 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                 {data.hasAbnormalAroma && <Check className="w-3 h-3 text-white" />}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Aroma Tidak Normal</p>
-                <p className="text-xs text-gray-500">Aroma busuk, asam, tengik, atau basi</p>
+                <p className="text-sm font-semibold text-foreground">Aroma Tidak Normal</p>
+                <p className="text-xs text-muted-foreground">Aroma busuk, asam, tengik, atau basi</p>
               </div>
             </label>
 
+            {/* Checkbox 3: Kemasan Bocor Parah */}
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl bg-white border border-red-100 hover:bg-red-50/50 transition-colors">
               <div
                 onClick={() => set("hasPackagingLeakSevere", !data.hasPackagingLeakSevere)}
@@ -1225,11 +1503,12 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                 {data.hasPackagingLeakSevere && <Check className="w-3 h-3 text-white" />}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Kemasan Bocor Parah</p>
-                <p className="text-xs text-gray-500">Kemasan rusak berat, segel terbuka, atau bocor signifikan</p>
+                <p className="text-sm font-semibold text-foreground">Kemasan Bocor Parah</p>
+                <p className="text-xs text-muted-foreground">Kemasan rusak berat, segel terbuka, atau bocor signifikan</p>
               </div>
             </label>
 
+            {/* Checkbox 4: Cold Chain Terputus */}
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl bg-white border border-red-100 hover:bg-red-50/50 transition-colors">
               <div
                 onClick={() => set("hasColdChainBroken", !data.hasColdChainBroken)}
@@ -1240,12 +1519,13 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                 {data.hasColdChainBroken && <Check className="w-3 h-3 text-white" />}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Cold Chain Terputus</p>
-                <p className="text-xs text-gray-500">Produk yang seharusnya dingin pernah tidak disimpan di suhu yang tepat</p>
+                <p className="text-sm font-semibold text-foreground">Cold Chain Terputus</p>
+                <p className="text-xs text-muted-foreground">Produk yang seharusnya dingin pernah tidak disimpan di suhu yang tepat</p>
               </div>
             </label>
           </div>
 
+          {/* Warning jika ada yang checked */}
           {hasSafetyGateIssue && (
             <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg flex items-start gap-2">
               <CircleAlert className="w-4 h-4 text-red-700 flex-shrink-0 mt-0.5" />
@@ -1256,11 +1536,12 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+        {/* Kondisi Kemasan */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
           <AssessmentRadioGroup
             label="1. Kondisi Kemasan"
             value={data.packaging}
-            onChange={(v) => set("packaging", v)}
+            onChange={(v) => set("packaging", v as AssessmentData["packaging"])}
             options={[
               { value: "sangat_baik", label: "Sangat Baik", icon: <CheckCircle2 className="w-4 h-4" /> },
               { value: "cukup", label: "Cukup", icon: <Info className="w-4 h-4" /> },
@@ -1269,7 +1550,8 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
           />
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+        {/* Penampilan */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
           <SliderField
             label="2. Penampilan Makanan"
             value={data.appearance}
@@ -1279,9 +1561,10 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
           />
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+        {/* Aroma */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
           <div className="space-y-2.5">
-            <label className="block text-sm font-semibold text-gray-900">3. Aroma</label>
+            <label className="block text-sm font-semibold text-foreground">3. Aroma</label>
             <div className="space-y-2">
               {[
                 { value: "segar", label: "Segar & Wangi Khas" },
@@ -1290,29 +1573,30 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
               ].map((opt) => (
                 <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
                   <div
-                    onClick={() => set("aroma", opt.value)}
+                    onClick={() => set("aroma", opt.value as AssessmentData["aroma"])}
                     className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                       data.aroma === opt.value
-                        ? "border-green-600"
-                        : "border-gray-200 group-hover:border-green-400"
+                        ? "border-primary"
+                        : "border-border group-hover:border-primary/50"
                     }`}
                   >
                     {data.aroma === opt.value && (
-                      <div className="w-2 h-2 rounded-full bg-green-600" />
+                      <div className="w-2 h-2 rounded-full bg-primary" />
                     )}
                   </div>
-                  <span className="text-sm text-gray-900">{opt.label}</span>
+                  <span className="text-sm text-foreground">{opt.label}</span>
                 </label>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-5">
+        {/* Suhu & Masa Simpan */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm space-y-5">
           <AssessmentRadioGroup
             label="4. Suhu Penyimpanan"
             value={data.storage}
-            onChange={(v) => set("storage", v)}
+            onChange={(v) => set("storage", v as AssessmentData["storage"])}
             options={[
               { value: "dingin", label: "Dingin (Chilled)", icon: <Thermometer className="w-4 h-4" /> },
               { value: "suhu_ruang", label: "Suhu Ruang", icon: <Thermometer className="w-4 h-4" /> },
@@ -1320,12 +1604,12 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
             ]}
           />
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-gray-900">5. Sisa Masa Simpan</label>
+            <label className="block text-sm font-semibold text-foreground">5. Sisa Masa Simpan</label>
             <div className="relative">
               <select
                 value={data.shelfLife}
                 onChange={(e) => set("shelfLife", e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white appearance-none outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600 transition-all pr-8"
+                className="w-full px-3 py-2.5 text-sm border border-border rounded-lg bg-input-background appearance-none outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-8"
               >
                 <option value="">Pilih durasi...</option>
                 <option value="lt2">Kurang dari 2 jam</option>
@@ -1334,33 +1618,35 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                 <option value="1-3d">1–3 hari</option>
                 <option value="gt3d">Lebih dari 3 hari</option>
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <label className="block text-sm font-semibold text-gray-900 mb-3">6. Bebas Kontaminasi</label>
-          <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+        {/* Kontaminasi */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <label className="block text-sm font-semibold text-foreground mb-3">6. Bebas Kontaminasi</label>
+          <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
             <div
               onClick={() => set("freeContamination", !data.freeContamination)}
               className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                data.freeContamination ? "bg-green-600 border-green-600" : "border-gray-200"
+                data.freeContamination ? "bg-primary border-primary" : "border-border"
               }`}
             >
               {data.freeContamination && <Check className="w-2.5 h-2.5 text-white" />}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Bebas Kontaminasi</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm font-semibold text-foreground">Bebas Kontaminasi</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Saya menjamin tidak ada benda asing (rambut, debu, dsb) atau tanda-tanda kerusakan biologis.
               </p>
             </div>
           </label>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <label className="block text-sm font-semibold text-gray-900 mb-3">7. Checklist Kebersihan</label>
+        {/* Kebersihan */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <label className="block text-sm font-semibold text-foreground mb-3">7. Checklist Kebersihan</label>
           <div className="space-y-2.5">
             {CLEANLIST.map((item) => (
               <label key={item} className="flex items-center gap-3 cursor-pointer group">
@@ -1368,49 +1654,51 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                   onClick={() => toggleClean(item)}
                   className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                     data.cleanlinessItems.includes(item)
-                      ? "bg-green-600 border-green-600"
-                      : "border-gray-200 group-hover:border-green-400"
+                      ? "bg-primary border-primary"
+                      : "border-border group-hover:border-primary/50"
                   }`}
                 >
                   {data.cleanlinessItems.includes(item) && <Check className="w-2.5 h-2.5 text-white" />}
                 </div>
-                <span className="text-sm text-gray-900">{item}</span>
+                <span className="text-sm text-foreground">{item}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <label className="block text-sm font-semibold text-gray-900 mb-3">8. Karakteristik Produk</label>
-          <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+        {/* Ada Kuah/Saus - FIELD BARU */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <label className="block text-sm font-semibold text-foreground mb-3">8. Karakteristik Produk</label>
+          <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
             <div
               onClick={() => set("hasSauceOrGravy", !data.hasSauceOrGravy)}
               className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                data.hasSauceOrGravy ? "bg-green-600 border-green-600" : "border-gray-200"
+                data.hasSauceOrGravy ? "bg-primary border-primary" : "border-border"
               }`}
             >
               {data.hasSauceOrGravy && <Check className="w-2.5 h-2.5 text-white" />}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Produk Berkuah atau Mengandung Saus</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm font-semibold text-foreground">Produk Berkuah atau Mengandung Saus</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Centang jika produk memiliki kuah, saus, atau cairan yang dapat mempengaruhi daya tahan
               </p>
             </div>
           </label>
         </div>
 
-        <div className="bg-green-50 rounded-2xl border border-green-200 p-5">
+        {/* Konfirmasi */}
+        <div className="bg-secondary rounded-2xl border border-primary/20 p-5">
           <label className="flex items-start gap-3 cursor-pointer">
             <div
               onClick={() => set("confirmSafe", !data.confirmSafe)}
               className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                data.confirmSafe ? "bg-green-600 border-green-600" : "border-green-400"
+                data.confirmSafe ? "bg-primary border-primary" : "border-primary/50"
               }`}
             >
               {data.confirmSafe && <Check className="w-3 h-3 text-white" />}
             </div>
-            <p className="text-sm text-gray-900 leading-relaxed">
+            <p className="text-sm text-foreground leading-relaxed">
               Saya memastikan makanan masih aman dan layak dikonsumsi sesuai standar Savora Food Rescue Platform.
             </p>
           </label>
@@ -1419,7 +1707,7 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
         <div className="flex items-center justify-between pt-2 pb-8">
           <button
             onClick={onBack}
-            className="px-5 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-gray-500 flex items-center gap-2"
+            className="px-5 py-2.5 text-sm font-semibold border border-border rounded-xl hover:bg-muted transition-colors text-muted-foreground flex items-center gap-2"
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
             Kembali
@@ -1427,7 +1715,7 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
           <button
             onClick={onNext}
             disabled={!canProceed}
-            className="px-6 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+            className="px-6 py-2.5 text-sm font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
           >
             Lihat Skor
             <BarChart2 className="w-4 h-4" />
@@ -1435,12 +1723,13 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
         </div>
       </div>
 
+      {/* Right guide */}
       <div className="col-span-2">
         <div className="sticky top-24 space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+          <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
-              <Info className="w-4 h-4 text-green-600" />
-              <h3 className="text-sm font-semibold text-gray-900">Panduan Penilaian</h3>
+              <Info className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Panduan Penilaian</h3>
             </div>
             <div className="space-y-3">
               {[
@@ -1452,8 +1741,8 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
                 <div key={g.title} className="flex items-start gap-3">
                   <div className="mt-0.5 flex-shrink-0">{g.icon}</div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-900">{g.title}</p>
-                    <p className="text-xs text-gray-500">{g.desc}</p>
+                    <p className="text-xs font-semibold text-foreground">{g.title}</p>
+                    <p className="text-xs text-muted-foreground">{g.desc}</p>
                   </div>
                 </div>
               ))}
@@ -1471,6 +1760,29 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
               </div>
             </div>
           </div>
+
+          {/* Progress */}
+          <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+            <p className="text-xs font-semibold text-foreground mb-3">Progress Penilaian</p>
+            <div className="space-y-2">
+              {[
+                { label: "Kondisi Kemasan", done: data.packaging !== null },
+                { label: "Penampilan", done: data.appearance > 0 },
+                { label: "Aroma", done: data.aroma !== null },
+                { label: "Suhu Penyimpanan", done: data.storage !== null },
+                { label: "Sisa Masa Simpan", done: data.shelfLife !== "" },
+                { label: "Bebas Kontaminasi", done: data.freeContamination },
+                { label: "Konfirmasi", done: data.confirmSafe },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${item.done ? "bg-primary" : "bg-muted border border-border"}`}>
+                    {item.done && <Check className="w-2.5 h-2.5 text-white" />}
+                  </div>
+                  <span className={`text-xs ${item.done ? "text-foreground" : "text-muted-foreground"}`}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1479,7 +1791,54 @@ function Step2Assessment({ data, setData, onBack, onNext }) {
 
 // ─── Step 3: Results ──────────────────────────────────────────────────────────
 
-function Step3Results({ form, assessment, onBack, onPublish }) {
+function ScoreRing({ score }: { score: number }) {
+  const status = scoreStatus(score);
+  const r = 54;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - score / 100);
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative w-36 h-36">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r={r} fill="none" stroke="currentColor" strokeWidth="10" className="text-muted" />
+          <circle
+            cx="60"
+            cy="60"
+            r={r}
+            fill="none"
+            stroke={score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : "#ef4444"}
+            strokeWidth="10"
+            strokeDasharray={circ}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s ease" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-black text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>{score}</span>
+          <span className="text-xs text-muted-foreground font-medium">/ 100</span>
+        </div>
+      </div>
+      <div className={`px-4 py-1.5 rounded-full border text-sm font-semibold ${status.bg} ${status.color} ${status.border}`}>
+        {status.label}
+      </div>
+    </div>
+  );
+}
+
+function Step3Results({
+  form,
+  assessment,
+  onBack,
+  onPublish,
+}: {
+  form;
+  assessment;
+  onBack: () => void;
+  onPublish: () => void;
+}) {
+  // Hitung Food Trust Index (BARU) dengan Safety Gates
   const trustResult = calculateFoodTrustIndex(
     form.category,
     form.productionTime,
@@ -1488,17 +1847,21 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
     assessment.appearance,
     assessment.aroma,
     assessment.hasSauceOrGravy,
+    // Critical Safety Gates
     assessment.hasMoldOrSlime,
     assessment.hasAbnormalAroma,
     assessment.hasPackagingLeakSevere,
     assessment.hasColdChainBroken
   );
 
+  // Hitung Dynamic Discount (BARU)
   const normalPrice = parseInt(form.normalPrice.replace(/\D/g, ""), 10) || 0;
   const minimumPrice = parseInt(form.minimumPrice.replace(/\D/g, ""), 10) || 0;
   const discountResult = calculateDynamicDiscount(trustResult.status, normalPrice, minimumPrice);
 
+  // Backward compatibility: tetap hitung score lama untuk bagian yang belum diupdate
   const score = calcRescueScore(assessment);
+  const status = scoreStatus(score);
 
   const summaryItems = [
     { label: "Kondisi Kemasan", val: assessment.packaging === "sangat_baik" ? "Sangat Baik" : assessment.packaging === "cukup" ? "Cukup" : "Rusak", ok: assessment.packaging !== "rusak" },
@@ -1507,9 +1870,10 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
     { label: "Suhu Penyimpanan", val: assessment.storage === "dingin" ? "Dingin" : assessment.storage === "suhu_ruang" ? "Suhu Ruang" : "Panas", ok: true },
     { label: "Bebas Kontaminasi", val: assessment.freeContamination ? "Ya" : "Tidak", ok: assessment.freeContamination },
     { label: "Kebersihan", val: `${assessment.cleanlinessItems.length}/${CLEANLIST.length} poin`, ok: assessment.cleanlinessItems.length >= 3 },
-    { label: "Berkuah/Saus", val: assessment.hasSauceOrGravy ? "Ya" : "Tidak", ok: true },
+    { label: "Berkuah/Saus", val: assessment.hasSauceOrGravy ? "Ya" : "Tidak", ok: true }, // BARU
   ];
 
+  // Rekomendasi berdasarkan Food Trust Index (BARU)
   const recommendations = trustResult.status === "Fresh"
     ? ["Produk dalam kondisi fresh dan siap dipublikasikan.", "Harga rescue sudah optimal untuk produk fresh.", "Tambahkan foto berkualitas untuk menarik pembeli."]
     : trustResult.status === "Layak Dijual"
@@ -1523,11 +1887,13 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
   return (
     <div className="grid grid-cols-5 gap-6">
       <div className="col-span-3 space-y-5">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-base font-bold text-gray-900 mb-5" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Food Trust Index Card - BARU */}
+        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+          <h2 className="text-base font-bold text-foreground mb-5" style={{ fontFamily: "Manrope, sans-serif" }}>
             Food Trust Index
           </h2>
           <div className="space-y-4">
+            {/* Status Badge */}
             <div className="flex items-center gap-3">
               <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 ${trustResult.badge.border} ${trustResult.badge.bg}`}>
                 <div className={`w-3 h-3 rounded-full ${trustResult.badge.dot}`} />
@@ -1548,12 +1914,14 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
               )}
             </div>
 
-            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-              <p className="text-sm text-gray-900 leading-relaxed">
+            {/* Reason */}
+            <div className="p-4 rounded-xl bg-muted/30 border border-border">
+              <p className="text-sm text-foreground leading-relaxed">
                 <strong>Alasan:</strong> {trustResult.reason}
               </p>
             </div>
 
+            {/* Disclaimer WAJIB dari PRD */}
             <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
               <div className="flex items-start gap-3">
                 <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -1570,15 +1938,16 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Dynamic Pricing Card - BARU */}
+        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+          <h3 className="text-sm font-bold text-foreground mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
             Rekomendasi Pricing
           </h3>
           
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-4 rounded-xl bg-gray-50 border border-gray-200">
-              <p className="text-xs text-gray-500 mb-1">Harga Normal</p>
-              <p className="text-lg font-bold text-gray-900">
+            <div className="text-center p-4 rounded-xl bg-muted/50 border border-border">
+              <p className="text-xs text-muted-foreground mb-1">Harga Normal</p>
+              <p className="text-lg font-bold text-foreground">
                 Rp {normalPrice ? fmt(String(normalPrice)) : "–"}
               </p>
             </div>
@@ -1586,9 +1955,9 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
               <p className="text-xs text-red-600 mb-1">Diskon</p>
               <p className="text-2xl font-bold text-red-600">{discountResult.discount}%</p>
             </div>
-            <div className="text-center p-4 rounded-xl bg-green-50 border border-green-300">
-              <p className="text-xs text-green-700 mb-1">Harga Rescue</p>
-              <p className="text-lg font-bold text-green-700">
+            <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/30">
+              <p className="text-xs text-primary mb-1">Harga Rescue</p>
+              <p className="text-lg font-bold text-primary">
                 Rp {discountResult.rescuePrice ? fmt(String(discountResult.rescuePrice)) : "–"}
               </p>
             </div>
@@ -1607,16 +1976,17 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
           </div>
 
           {minimumPrice > 0 && (
-            <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
-              <p className="text-xs text-gray-600">
+            <div className="mt-3 p-3 rounded-lg bg-muted/50 border border-border">
+              <p className="text-xs text-muted-foreground">
                 <strong>Harga Minimum UMKM:</strong> Rp {fmt(String(minimumPrice))}
               </p>
             </div>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Summary */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-foreground mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>
             Ringkasan Penilaian
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -1627,7 +1997,7 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
                     ? <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                     : <CircleAlert className="w-4 h-4 text-red-500 flex-shrink-0" />
                   }
-                  <span className="text-xs font-medium text-gray-900">{item.label}</span>
+                  <span className="text-xs font-medium text-foreground">{item.label}</span>
                 </div>
                 <span className={`text-xs font-semibold ${item.ok ? "text-emerald-600" : "text-red-600"}`}>{item.val}</span>
               </div>
@@ -1635,16 +2005,17 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-gray-900" style={{ fontFamily: "Manrope, sans-serif" }}>
+        {/* Insight & Rekomendasi */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>
             Insight & Rekomendasi Sistem
           </h3>
-          <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+          <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
             <div className="flex items-start gap-3">
-              <Zap className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <Zap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-green-700 mb-1">Insight Otomatis</p>
-                <p className="text-xs text-gray-600 leading-relaxed">
+                <p className="text-sm font-semibold text-primary mb-1">Insight Otomatis</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {trustResult.status === "Fresh"
                     ? "Produk dalam kondisi prima! Segera publikasikan untuk mendapatkan eksposur maksimal di platform Savora."
                     : trustResult.status === "Layak Dijual"
@@ -1661,28 +2032,29 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
           <div className="space-y-2">
             {recommendations.map((r, i) => (
               <div key={i} className="flex items-start gap-2.5">
-                <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-[10px] font-bold text-green-700">{i + 1}</span>
+                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-[10px] font-bold text-primary">{i + 1}</span>
                 </div>
-                <p className="text-sm text-gray-900">{r}</p>
+                <p className="text-sm text-foreground">{r}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+        {/* Publish */}
+        <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${trustResult.canPublish ? "bg-green-50" : "bg-red-100"}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${trustResult.canPublish ? "bg-primary/10" : "bg-red-100"}`}>
               {trustResult.canPublish
-                ? <CheckCircle2 className="w-5 h-5 text-green-600" />
+                ? <CheckCircle2 className="w-5 h-5 text-primary" />
                 : <AlertTriangle className="w-5 h-5 text-red-500" />
               }
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900">
+              <p className="text-sm font-bold text-foreground">
                 {trustResult.canPublish ? "Produk siap dipublikasikan" : "Produk tidak dapat dipublikasikan"}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {trustResult.canPublish
                   ? "Semua data telah diverifikasi dan produk memenuhi standar Savora Food Rescue Platform."
                   : "Produk tidak memenuhi standar kelayakan. Pertimbangkan jalur recovery lain."}
@@ -1692,7 +2064,7 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="px-5 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-gray-500 flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-semibold border border-border rounded-xl hover:bg-muted transition-colors text-muted-foreground flex items-center gap-2"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
               Kembali
@@ -1700,7 +2072,7 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
             <button
               onClick={onPublish}
               disabled={!trustResult.canPublish}
-              className="flex-1 px-6 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-2.5 text-sm font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               <CheckCircle2 className="w-4 h-4" />
               Publikasikan Produk
@@ -1710,6 +2082,7 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
         <div className="pb-8" />
       </div>
 
+      {/* Right: Preview */}
       <div className="col-span-2">
         <ProductPreviewCard form={form} score={score} />
       </div>
@@ -1719,29 +2092,29 @@ function Step3Results({ form, assessment, onBack, onPublish }) {
 
 // ─── Success Modal ────────────────────────────────────────────────────────────
 
-function SuccessModal({ onClose }) {
+function SuccessModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-xl max-w-sm w-full text-center">
-        <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
+      <div className="bg-card rounded-2xl border border-border p-8 shadow-xl max-w-sm w-full text-center">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle2 className="w-8 h-8 text-primary" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: "Manrope, sans-serif" }}>
+        <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: "Manrope, sans-serif" }}>
           Produk Berhasil Dipublikasikan!
         </h3>
-        <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           Produk kamu sudah tampil di platform Savora dan siap ditemukan pembeli.
         </p>
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2.5 text-sm font-semibold border border-border rounded-xl hover:bg-muted transition-colors"
           >
             Lihat Produk
           </button>
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all"
+            className="flex-1 px-4 py-2.5 text-sm font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 transition-all"
           >
             Tambah Lagi
           </button>
@@ -1760,10 +2133,10 @@ const DEFAULT_FORM = {
   description: "",
   category: "",
   expiryDate: "",
-  productionTime: "",
+  productionTime: "", // BARU
   normalPrice: "",
   rescuePrice: "",
-  minimumPrice: "",
+  minimumPrice: "", // BARU
   quantity: 1,
   weight: "",
   portion: "",
@@ -1778,10 +2151,13 @@ const DEFAULT_FORM = {
 };
 
 const DEFAULT_ASSESSMENT = {
+  // Critical Safety Gates - default false (produk aman)
   hasMoldOrSlime: false,
   hasAbnormalAroma: false,
   hasPackagingLeakSevere: false,
   hasColdChainBroken: false,
+  
+  // Regular assessment
   packaging: null,
   appearance: 5,
   aroma: null,
@@ -1793,10 +2169,10 @@ const DEFAULT_ASSESSMENT = {
   hasSauceOrGravy: false,
 };
 
-export default function TambahProdukPage() {
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState(DEFAULT_FORM);
-  const [assessment, setAssessment] = useState(DEFAULT_ASSESSMENT);
+export default function App() {
+  const [step, setStep] = useState<Step>(1);
+  const [form, setForm] = useState<FormData>(DEFAULT_FORM);
+  const [assessment, setAssessment] = useState<AssessmentData>(DEFAULT_ASSESSMENT);
   const [published, setPublished] = useState(false);
 
   function handlePublish() {
@@ -1811,17 +2187,19 @@ export default function TambahProdukPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-background" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
       <Sidebar />
       <TopNav step={step} />
 
+      {/* Main content */}
       <main className="ml-60 pt-14 min-h-screen">
         <div className="px-8 py-6">
+          {/* Page header */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-gray-900" style={{ fontFamily: "Manrope, sans-serif" }}>
+            <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "Manrope, sans-serif" }}>
               Tambah Produk
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {step === 1 && "Lengkapi informasi produk food rescue yang akan kamu jual."}
               {step === 2 && "Lakukan penilaian kelayakan pangan sebelum mempublikasikan produk."}
               {step === 3 && "Lihat hasil penilaian dan putuskan untuk mempublikasikan produk."}
