@@ -38,4 +38,12 @@ func SetupRoutes(app *fiber.App) {
 	// Waste Logs
 	api.Get("/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
 	api.Post("/waste-logs", handlers.CreateWasteLog)
+
+	// Reviews & Keywords
+	api.Post("/reviews", handlers.CreateReview)
+	api.Get("/reviews/umkm/:umkm_id", handlers.GetReviewsByUMKM)
+	api.Get("/keywords/badge/:umkm_id", handlers.GetKeywordSafetyBadge)
+
+	// Dynamic Discount
+	api.Post("/discount/calculate", handlers.CalculateDynamicDiscount)
 }

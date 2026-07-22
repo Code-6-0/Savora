@@ -199,7 +199,7 @@ export default function ProdukPage() {
             )}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => { setIsModalOpen(true); setAddMode('manual'); setEditingProductId(null); setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" }); }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => router.push('/produk/tambah')} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
               <Plus size={16} /> Tambah Produk
             </button>
           </div>
