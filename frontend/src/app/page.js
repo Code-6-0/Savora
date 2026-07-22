@@ -9,7 +9,6 @@ import {
   Clock,
   Star,
   ChevronRight,
-  ChevronDown,
   Leaf,
   DollarSign,
   Footprints,
@@ -27,7 +26,6 @@ export default function BerandaPage() {
   const [products, setProducts] = useState([]);
   const [elapsed, setElapsed] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedFaq, setExpandedFaq] = useState(null);
 
   useEffect(() => {
     fetchMarketplaceProducts().then((result) => {
@@ -96,34 +94,36 @@ export default function BerandaPage() {
 
   const faqs = [
     {
-      category: "Umum",
-      question: "Apa itu Savora?",
-      answer:
-        "Savora adalah platform food rescue yang menghubungkan customer dengan UMKM kuliner untuk membeli makanan surplus berkualitas dengan harga lebih terjangkau.",
+      tag: "Pengambilan",
+      question: "Bagaimana jika merchant tidak bisa memenuhi pesanan?",
     },
     {
-      category: "Pembelian",
-      question: "Bagaimana cara membeli produk?",
-      answer:
-        "Pilih produk di marketplace, lakukan checkout cashless via Midtrans, lalu ambil dengan kode pickup di lokasi UMKM.",
+      tag: "Refund",
+      question: "Bagaimana proses refund jika ada masalah?",
     },
     {
-      category: "Pembayaran",
-      question: "Metode pembayaran apa saja yang tersedia?",
-      answer:
-        "Savora menggunakan pembayaran cashless only melalui Midtrans. Service fee 5% otomatis ditambahkan ke total pembayaran.",
+      tag: "Keamanan Makanan",
+      question: "Apakah makanannya aman untuk dimakan?",
     },
     {
-      category: "Food Score",
-      question: "Apa itu Food Score dan Rescue Timer?",
-      answer:
-        "Food Score (0-100) menurun seiring waktu mendekati expired. Rescue Timer menunjukkan sisa waktu dengan warna: merah < 1 jam, kuning 1-3 jam, hijau > 3 jam.",
+      tag: "Kemasan",
+      question: "Kemasan apa yang akan digunakan untuk makanan saya?",
     },
     {
-      category: "Keamanan",
-      question: "Bagaimana saya tahu makanan aman dikonsumsi?",
-      answer:
-        "Setiap produk dilengkapi Food Trust Index dan badge keyword safety dari review customer. Periksa kondisi makanan saat pickup.",
+      tag: "Food Trust Score",
+      question: "Apa itu Food Trust Score?",
+    },
+    {
+      tag: "Pengambilan",
+      question: "Berapa lama saya bisa mengambil pesanan?",
+    },
+    {
+      tag: "Refund",
+      question: "Apa saja syarat untuk mendapatkan refund?",
+    },
+    {
+      tag: "Keamanan Makanan",
+      question: "Bagaimana cara memeriksa kondisi makanan saat pickup?",
     },
   ];
 
@@ -473,41 +473,27 @@ export default function BerandaPage() {
         </div>
       </section>
 
-      {/* 10. FAQ Accordion */}
+      {/* 10. FAQ 2-Column */}
       <section className="beranda-section">
-        <div className="beranda-container beranda-faq-container">
-          <h2 className="beranda-section-title-center">Frequently Asked Questions</h2>
-          <div className="beranda-faq-categories">
-            <span className="beranda-faq-tag">Umum</span>
-            <span className="beranda-faq-tag">Pembelian</span>
-            <span className="beranda-faq-tag">Pembayaran</span>
-            <span className="beranda-faq-tag">Food Score</span>
-            <span className="beranda-faq-tag">Keamanan</span>
-          </div>
-          <div className="beranda-faq-list">
-            {faqs.map((faq, index) => (
-              <div key={index} className="beranda-faq-item">
-                <button
-                  className="beranda-faq-question"
-                  onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                >
-                  <span>{faq.question}</span>
-                  <ChevronDown
-                    size={20}
-                    className={expandedFaq === index ? "beranda-faq-icon-open" : ""}
-                  />
-                </button>
-                {expandedFaq === index && (
-                  <div className="beranda-faq-answer">{faq.answer}</div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="beranda-faq-support">
-            <p>Tidak menemukan jawaban yang kamu cari?</p>
-            <Link href="/marketplace" className="beranda-link">
-              Hubungi support <ChevronRight size={16} />
-            </Link>
+        <div className="beranda-container">
+          <div className="beranda-faq-two-column">
+            <div className="beranda-faq-left">
+              <h2>Pertanyaan yang sering diajukan</h2>
+              <p className="beranda-faq-subtitle">
+                Semua yang perlu kamu ketahui tentang menyelamatkan makanan di Savora.
+              </p>
+              <Link href="/marketplace" className="beranda-link">
+                Hubungi support <ChevronRight size={16} />
+              </Link>
+            </div>
+            <div className="beranda-faq-right">
+              {faqs.map((faq, index) => (
+                <div key={index} className="beranda-faq-flat-item">
+                  <span className="beranda-faq-chip">{faq.tag}</span>
+                  <p className="beranda-faq-question-text">{faq.question}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

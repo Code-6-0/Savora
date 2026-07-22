@@ -2233,84 +2233,64 @@ body {
 }
 
 /* FAQ */
-.beranda-faq-container {
-  max-width: 800px;
+.beranda-faq-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
 }
 
-.beranda-faq-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 32px;
+@media (max-width: 768px) {
+  .beranda-faq-two-column {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
 }
 
-.beranda-faq-tag {
-  padding: 6px 14px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
+.beranda-faq-left h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.beranda-faq-subtitle {
+  font-size: 16px;
   color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
 
-.beranda-faq-list {
+.beranda-faq-right {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: 20px;
 }
 
-.beranda-faq-item {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.beranda-faq-question {
-  width: 100%;
+.beranda-faq-flat-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  background: none;
-  border: none;
-  text-align: left;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.beranda-faq-chip {
+  display: inline-block;
+  width: fit-content;
+  padding: 4px 12px;
+  background-color: #dcf7e6;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+.beranda-faq-question-text {
   font-size: 15px;
   font-weight: 600;
   color: #1a202c;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.beranda-faq-question:hover {
-  background: #f9fafb;
-}
-
-.beranda-faq-icon-open {
-  transform: rotate(180deg);
-  transition: transform 0.2s;
-}
-
-.beranda-faq-answer {
-  padding: 0 24px 20px;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.7;
-}
-
-.beranda-faq-support {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.beranda-faq-support p {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 12px;
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* Footer */
