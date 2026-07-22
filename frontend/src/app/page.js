@@ -12,6 +12,7 @@ import {
   Leaf,
   DollarSign,
   Footprints,
+  ShoppingCart,
 } from "lucide-react";
 import { fetchMarketplaceProducts, computeProductScore } from "@/lib/marketplace";
 
@@ -47,9 +48,9 @@ export default function BerandaPage() {
 
   const getTimerColor = (seconds) => {
     const hours = seconds / 3600;
-    if (hours < 1) return "#ef4444";
-    if (hours < 3) return "#f59e0b";
-    return "#10b981";
+    if (hours < 1) return "#ba1a1a";
+    if (hours < 3) return "#fcc304";
+    return "#16a34a";
   };
 
   const getFoodScoreBadge = (score) => {
@@ -235,43 +236,55 @@ export default function BerandaPage() {
               const timerColor = getTimerColor(remainingSeconds);
 
               return (
-                <Link
-                  key={product.id}
-                  href={`/marketplace/${product.id}`}
-                  className="beranda-product-card"
-                >
-                  <div className="beranda-product-image">
-                    <img src={product.photo_url} alt={product.name} />
-                    <div className="beranda-product-badges">
-                      <span className="beranda-badge-score" style={{ backgroundColor: badge.color }}>
-                        {badge.text}
-                      </span>
-                      <span
-                        className="beranda-badge-timer"
-                        style={{ backgroundColor: timerColor, color: "#fff" }}
-                      >
-                        <Clock size={12} /> {formatTimer(remainingSeconds)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="beranda-product-info">
-                    <h3>{product.name}</h3>
-                    <p className="beranda-product-vendor">{product.vendor}</p>
-                    <div className="beranda-product-footer">
-                      <div className="beranda-product-price">
-                        <span className="beranda-price-original">
-                          Rp {product.original_price.toLocaleString("id-ID")}
+                <div key={product.id} className="beranda-product-card">
+                  <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
+                    <div className="beranda-product-image">
+                      <img src={product.photo_url} alt={product.name} />
+                      <div className="beranda-product-badges">
+                        <span
+                          className="beranda-badge-timer"
+                          style={{ backgroundColor: timerColor, color: "#fff" }}
+                        >
+                          <Clock size={12} /> {formatTimer(remainingSeconds)}
                         </span>
-                        <span className="beranda-price-rescue">
-                          Rp {product.rescue_price.toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                      <div className="beranda-product-score">
-                        Food Score: <strong>{score}</strong>
+                        {product.discountPercent > 0 && (
+                          <span className="beranda-badge-discount">
+                            {product.discountPercent}% OFF
+                          </span>
+                        )}
                       </div>
                     </div>
-                  </div>
-                </Link>
+                    <div className="beranda-product-info">
+                      <h3>{product.name}</h3>
+                      <p className="beranda-product-vendor">
+                        <span>{product.vendor}</span>
+                        <span className="beranda-product-distance">
+                          <MapPin size={14} /> {product.distanceKm} km
+                        </span>
+                      </p>
+                      <div className="beranda-product-footer">
+                        <div className="beranda-product-price">
+                          <span className="beranda-price-original">
+                            Rp {product.original_price.toLocaleString("id-ID")}
+                          </span>
+                          <span className="beranda-price-rescue">
+                            Rp {product.rescue_price.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  <button
+                    className="beranda-product-cart"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.href = `/marketplace/${product.id}`;
+                    }}
+                    aria-label="Tambah ke keranjang"
+                  >
+                    <ShoppingCart size={20} />
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -361,7 +374,7 @@ export default function BerandaPage() {
             <div className="beranda-impact-personal">
               <h3>Pencapaian Kamu</h3>
               <div className="beranda-achievement-card">
-                <Leaf size={32} color="#0d8a4d" />
+                <Leaf size={32} color="#16a34a" />
                 <p>Mulai kontribusi dengan membeli rescue deal pertama kamu!</p>
                 <Link href="/marketplace" className="beranda-achievement-btn">
                   Lihat Deals
@@ -378,7 +391,7 @@ export default function BerandaPage() {
           <div className="beranda-info-cards">
             <div className="beranda-info-card">
               <div className="beranda-info-icon" style={{ backgroundColor: "#d1fae5" }}>
-                <Leaf size={28} color="#0d8a4d" />
+                <Leaf size={28} color="#16a34a" />
               </div>
               <h3>Jaga Planet Kita</h3>
               <p>

@@ -1316,7 +1316,7 @@ body {
 .beranda-logo {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #0d8a4d 0%, #10b981 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #10b981 100%);
   color: white;
   border-radius: 8px;
   display: flex;
@@ -1347,7 +1347,7 @@ body {
 }
 
 .beranda-nav a:hover {
-  color: #0d8a4d;
+  color: #16a34a;
 }
 
 .beranda-location {
@@ -1365,9 +1365,9 @@ body {
 
 .beranda-btn-secondary {
   padding: 8px 20px;
-  border: 1.5px solid #0d8a4d;
+  border: 1.5px solid #16a34a;
   border-radius: 8px;
-  color: #0d8a4d;
+  color: #16a34a;
   font-weight: 600;
   font-size: 14px;
   text-decoration: none;
@@ -1380,7 +1380,7 @@ body {
 
 .beranda-btn-primary {
   padding: 8px 20px;
-  background: linear-gradient(135deg, #0d8a4d 0%, #10b981 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #10b981 100%);
   border: none;
   border-radius: 8px;
   color: white;
@@ -1600,7 +1600,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #0d8a4d;
+  color: #16a34a;
   font-weight: 600;
   text-decoration: none;
   transition: gap 0.2s;
@@ -1635,7 +1635,7 @@ body {
 .beranda-category:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  border-color: #0d8a4d;
+  border-color: #16a34a;
 }
 
 .beranda-category-icon {
@@ -1650,6 +1650,7 @@ body {
 }
 
 .beranda-product-card {
+  position: relative;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -1709,6 +1710,21 @@ body {
   gap: 4px;
 }
 
+.beranda-badge-discount {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ba1a1a;
+  color: white;
+}
+
+.beranda-product-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .beranda-product-info {
   padding: 16px;
 }
@@ -1724,6 +1740,18 @@ body {
   font-size: 13px;
   color: #6b7280;
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.beranda-product-distance {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #9ca3af;
 }
 
 .beranda-product-footer {
@@ -1747,7 +1775,7 @@ body {
 .beranda-price-rescue {
   font-size: 16px;
   font-weight: 700;
-  color: #0d8a4d;
+  color: #16a34a;
 }
 
 .beranda-product-score {
@@ -1758,6 +1786,29 @@ body {
 .beranda-product-score strong {
   color: #1a202c;
   font-weight: 700;
+}
+
+.beranda-product-cart {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: #16a34a;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.beranda-product-cart:hover {
+  background: #0a6d3d;
+  transform: scale(1.05);
 }
 
 /* Restaurants */
@@ -1788,7 +1839,7 @@ body {
 .beranda-restaurant-avatar {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #0d8a4d 0%, #10b981 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #10b981 100%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -1856,9 +1907,9 @@ body {
   display: inline-block;
   padding: 10px 24px;
   background: white;
-  border: 1.5px solid #0d8a4d;
+  border: 1.5px solid #16a34a;
   border-radius: 8px;
-  color: #0d8a4d;
+  color: #16a34a;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s;
@@ -1905,7 +1956,7 @@ body {
 .beranda-impact-number {
   font-size: 32px;
   font-weight: 800;
-  color: #0d8a4d;
+  color: #16a34a;
   margin-bottom: 6px;
 }
 
@@ -1940,7 +1991,7 @@ body {
 
 .beranda-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #0d8a4d 0%, #10b981 100%);
+  background: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
   transition: width 0.3s ease;
 }
 
@@ -1966,7 +2017,7 @@ body {
 .beranda-achievement-btn {
   display: inline-block;
   padding: 10px 24px;
-  background: #0d8a4d;
+  background: #16a34a;
   color: white;
   border-radius: 8px;
   font-weight: 600;
