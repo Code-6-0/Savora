@@ -38,54 +38,6 @@ import {
   ShoppingCart,
 } from "lucide-react";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type ProductType = "reguler" | "mystery";
-type Step = 1 | 2 | 3;
-
-type FormData = {
-  productType;
-  photoUrl: string | null;
-  name: string;
-  description: string;
-  category: string;
-  expiryDate: string;
-  productionTime: string; // BARU: Jam produksi (HH:MM)
-  normalPrice: string;
-  rescuePrice: string;
-  minimumPrice: string; // BARU: Harga minimum UMKM
-  quantity: number;
-  weight: string;
-  portion: string;
-  tags: string[];
-  allergens: string[];
-  qualityChecked: boolean;
-  mysteryName: string;
-  mysteryEstWeight: string;
-  mysteryEstPortion: string;
-  mysteryContents: string;
-  mysteryCategory: string;
-};
-
-type AssessmentData = {
-  // CRITICAL SAFETY GATES - Hard-fail checks (BARU)
-  hasMoldOrSlime: boolean;       // Ada jamur atau lendir
-  hasAbnormalAroma: boolean;     // Aroma tidak normal (busuk/asam/basi)
-  hasPackagingLeakSevere: boolean; // Kemasan bocor parah
-  hasColdChainBroken: boolean;   // Cold chain terputus
-  
-  // Regular assessment fields
-  packaging: "sangat_baik" | "cukup" | "rusak" | null;
-  appearance: number;
-  aroma: "segar" | "normal" | "berkurang" | null;
-  storage: "dingin" | "suhu_ruang" | "panas" | null;
-  shelfLife: string;
-  freeContamination: boolean;
-  cleanlinessItems: string[];
-  confirmSafe: boolean;
-  hasSauceOrGravy: boolean; // Ada kuah/saus?
-};
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
@@ -1791,7 +1743,7 @@ function Step2Assessment({
 
 // ─── Step 3: Results ──────────────────────────────────────────────────────────
 
-function ScoreRing({ score }: { score: number }) {
+function ScoreRing({ score }) {
   const status = scoreStatus(score);
   const r = 54;
   const circ = 2 * Math.PI * r;
@@ -2092,7 +2044,7 @@ function Step3Results({
 
 // ─── Success Modal ────────────────────────────────────────────────────────────
 
-function SuccessModal({ onClose }: { onClose: () => void }) {
+function SuccessModal({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-card rounded-2xl border border-border p-8 shadow-xl max-w-sm w-full text-center">
