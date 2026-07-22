@@ -42,8 +42,8 @@ export default function BerandaPage() {
   const formatTimer = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
-    if (h > 0) return `${h}j ${m}m`;
-    return `${m}m`;
+    const s = seconds % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
   const getTimerColor = (seconds) => {
@@ -58,6 +58,12 @@ export default function BerandaPage() {
     if (score >= 60) return { text: "Layak", color: "#3b82f6" };
     if (score >= 35) return { text: "Segera Ambil", color: "#f59e0b" };
     return { text: "Kritis", color: "#ef4444" };
+  };
+
+  const getFoodScoreColor = (score) => {
+    if (score >= 70) return "#16a34a";
+    if (score >= 40) return "#fcc304";
+    return "#ba1a1a";
   };
 
   const topProducts = products.slice(0, 8);
@@ -186,12 +192,9 @@ export default function BerandaPage() {
       {/* 3. Running Text Banner */}
       <div className="beranda-marquee">
         <div className="beranda-marquee-content">
-          <span>🎉 Hemat hingga 50% untuk rescue deals hari ini!</span>
-          <span>🌍 Bantu kurangi food waste bersama Savora</span>
-          <span>⭐ 1.2M+ makanan terselamatkan</span>
-          <span>🎉 Hemat hingga 50% untuk rescue deals hari ini!</span>
-          <span>🌍 Bantu kurangi food waste bersama Savora</span>
-          <span>⭐ 1.2M+ makanan terselamatkan</span>
+          <span>⚡ Semua Menu Favoritmu Ada di Sini! Nikmati berbagai menu favorit dengan harga spesial. Berlaku hari ini, jangan sampai terlewat!</span>
+          <span>⚡ Semua Menu Favoritmu Ada di Sini! Nikmati berbagai menu favorit dengan harga spesial. Berlaku hari ini, jangan sampai terlewat!</span>
+          <span>⚡ Semua Menu Favoritmu Ada di Sini! Nikmati berbagai menu favorit dengan harga spesial. Berlaku hari ini, jangan sampai terlewat!</span>
         </div>
       </div>
 
@@ -259,12 +262,16 @@ export default function BerandaPage() {
                         >
                           <Clock size={12} /> {formatTimer(remainingSeconds)}
                         </span>
-                        {product.discountPercent > 0 && (
-                          <span className="beranda-badge-discount">
-                            {product.discountPercent}% OFF
-                          </span>
-                        )}
                       </div>
+                      {score !== undefined && (
+                        <span
+                          className="beranda-badge-foodscore"
+                          style={{ backgroundColor: getFoodScoreColor(score) }}
+                        >
+                          <span className="beranda-badge-foodscore-icon">●</span>
+                          FS {Math.round(score)}%
+                        </span>
+                      )}
                     </div>
                     <div className="beranda-product-info">
                       <h3>{product.name}</h3>

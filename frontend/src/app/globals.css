@@ -1536,8 +1536,8 @@ body {
 
 /* Marquee Banner */
 .beranda-marquee {
-  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
-  padding: 16px 0;
+  background: #faf17b;
+  padding: 15px 0;
   overflow: hidden;
   position: relative;
 }
@@ -1550,9 +1550,9 @@ body {
 }
 
 .beranda-marquee-content span {
-  color: white;
-  font-weight: 600;
-  font-size: 15px;
+  color: #5c4d1a;
+  font-weight: 500;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -1733,6 +1733,25 @@ body {
   font-weight: 600;
   background: #ba1a1a;
   color: white;
+}
+
+.beranda-badge-foodscore {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.beranda-badge-foodscore-icon {
+  font-size: 8px;
+  line-height: 1;
 }
 
 .beranda-product-link {
