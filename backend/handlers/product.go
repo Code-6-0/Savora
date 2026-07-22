@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/savora/backend/database"
+	"github.com/savora/backend/services"
 	"github.com/savora/backend/models"
 )
 
@@ -13,7 +13,7 @@ func GetProductsByUMKM(c *fiber.Ctx) error {
 	umkmID := c.Params("umkm_id")
 	var products []models.Product
 
-	if err := database.DB.Where("umkm_id = ?", umkmID).Order("created_at desc").Find(&products).Error; err != nil {
+	if err := services.GetDB().Where("umkm_id = ?", umkmID).Order("created_at desc").Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -24,7 +24,7 @@ func GetProductsByUMKM(c *fiber.Ctx) error {
 func GetActiveMarketplaceProducts(c *fiber.Ctx) error {
 	var products []models.Product
 
-	if err := database.DB.Where("status = ?", "Aktif").Order("created_at desc").Find(&products).Error; err != nil {
+	if err := services.GetDB().Where("status = ?", "Aktif").Order("created_at desc").Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -45,7 +45,7 @@ func CreateProduct(c *fiber.Ctx) error {
 		product.Status = "Limbah"
 	}
 
-	if err := database.DB.Create(&product).Error; err != nil {
+	if err := services.GetDB().Create(&product).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -59,7 +59,7 @@ func CreateProduct(c *fiber.Ctx) error {
 			Reason:          "Otomatis oleh sistem: Tidak Layak Konsumsi (Berdasarkan Food Trust Index)",
 			PhotoURL:        product.PhotoURL,
 		}
-		database.DB.Create(&wasteLog)
+		services.GetDB().Create(&wasteLog)
 
 		notification := models.Notification{
 			UserID:   product.UmkmID,
@@ -67,7 +67,7 @@ func CreateProduct(c *fiber.Ctx) error {
 			Title:    "Produk Ditolak Sistem",
 			Message:  "Produk " + product.Name + " terdeteksi Tidak Layak Konsumsi dan otomatis dialihkan ke Waste Log.",
 		}
-		database.DB.Create(&notification)
+		services.GetDB().Create(&notification)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(product)
@@ -78,7 +78,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var product models.Product
 
-	if err := database.DB.First(&product, id).Error; err != nil {
+	if err := services.GetDB().First(&product, id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Product not found"})
 	}
 
@@ -93,7 +93,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 		updateData.Status = "Limbah"
 	}
 
-	database.DB.Model(&product).Updates(updateData)
+	services.GetDB().Model(&product).Updates(updateData)
 
 	if updateData.Status == "Limbah" && product.Status != "Limbah" {
 		estimatedWeight := float64(product.Stock) * product.WeightPerPortion / 1000.0
@@ -105,7 +105,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 			Reason:          "Otomatis oleh sistem: Update produk menjadi Tidak Layak Konsumsi",
 			PhotoURL:        product.PhotoURL,
 		}
-		database.DB.Create(&wasteLog)
+		services.GetDB().Create(&wasteLog)
 
 		notification := models.Notification{
 			UserID:   product.UmkmID,
@@ -113,7 +113,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 			Title:    "Produk Menjadi Limbah",
 			Message:  "Produk " + product.Name + " telah diubah menjadi Tidak Layak Konsumsi dan masuk ke Waste Log.",
 		}
-		database.DB.Create(&notification)
+		services.GetDB().Create(&notification)
 	}
 
 	return c.JSON(product)
@@ -124,11 +124,11 @@ func DeleteProduct(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var product models.Product
 
-	if err := database.DB.First(&product, id).Error; err != nil {
+	if err := services.GetDB().First(&product, id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Product not found"})
 	}
 
-	database.DB.Delete(&product)
+	services.GetDB().Delete(&product)
 
 	return c.JSON(fiber.Map{"message": "Product successfully deleted"})
 }

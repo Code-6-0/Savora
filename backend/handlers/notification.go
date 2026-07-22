@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/savora/backend/database"
+	"github.com/savora/backend/services"
 	"github.com/savora/backend/models"
 )
 
@@ -18,7 +18,7 @@ func GetNotificationsByUser(c *fiber.Ctx) error {
 	role := c.Query("role", "customer")
 
 	var notifications []models.Notification
-	if err := database.DB.Where("user_id = ? AND user_role = ?", userID, role).
+	if err := services.GetDB().Where("user_id = ? AND user_role = ?", userID, role).
 		Order("created_at desc").
 		Limit(50).
 		Find(&notifications).Error; err != nil {
@@ -38,7 +38,7 @@ func GetUnreadCount(c *fiber.Ctx) error {
 	role := c.Query("role", "customer")
 
 	var count int64
-	if err := database.DB.Model(&models.Notification{}).
+	if err := services.GetDB().Model(&models.Notification{}).
 		Where("user_id = ? AND user_role = ? AND is_read = ?", userID, role, false).
 		Count(&count).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
@@ -51,7 +51,7 @@ func GetUnreadCount(c *fiber.Ctx) error {
 func MarkAsRead(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	if err := database.DB.Model(&models.Notification{}).
+	if err := services.GetDB().Model(&models.Notification{}).
 		Where("id = ?", id).
 		Update("is_read", true).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
@@ -69,7 +69,7 @@ func MarkAllAsRead(c *fiber.Ctx) error {
 
 	role := c.Query("role", "customer")
 
-	if err := database.DB.Model(&models.Notification{}).
+	if err := services.GetDB().Model(&models.Notification{}).
 		Where("user_id = ? AND user_role = ? AND is_read = ?", userID, role, false).
 		Update("is_read", true).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
