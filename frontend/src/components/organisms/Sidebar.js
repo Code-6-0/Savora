@@ -1,13 +1,14 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { 
+import {
   LayoutDashboard, Package, ShoppingCart, BarChart2, Lightbulb, Bell, Settings,
   Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft
 } from "lucide-react";
 
-export default function Sidebar({ onClose }) {
+function SidebarContent({ onClose }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'bantuan';
@@ -116,5 +117,14 @@ export default function Sidebar({ onClose }) {
         </ul>
       </div>
     </div>
+  );
+}
+
+// Wrap with Suspense to fix Next.js 13+ useSearchParams prerender requirement
+export default function Sidebar({ onClose }) {
+  return (
+    <Suspense fallback={null}>
+      <SidebarContent onClose={onClose} />
+    </Suspense>
   );
 }
