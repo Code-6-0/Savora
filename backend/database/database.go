@@ -50,6 +50,10 @@ func ConnectDB() {
 		&models.Order{},
 		&models.OrderItem{},
 		&models.Review{},
+		&models.Advertisement{},    // Task 5: Iklan
+		&models.AdMetrics{},        // Task 5: Iklan Metrics
+		&models.PlatformRevenue{},  // Task 5 & 6: Revenue Platform
+		&models.HelpTicket{},       // Task 7: Help Center
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
@@ -126,7 +130,20 @@ func SeedDatabase(db *gorm.DB) {
 		mitra.SetPassword("mitra123")
 		db.Create(&mitra)
 
+		// Create Mitra Donasi profile (PENDING for verification testing - Task 4)
+		mitraProfile := models.MitraDonasiProfile{
+			UserID:             mitra.ID,
+			OrgName:            "Yayasan Peduli Sesama",
+			Phone:              "082134567890",
+			Address:            "Jl. Sosial No. 15, Jakarta Selatan",
+			Description:        "Yayasan sosial yang fokus pada penyaluran makanan untuk masyarakat kurang mampu. Telah beroperasi sejak 2020 dengan jangkauan 5 kelurahan di Jakarta Selatan.",
+			DocumentURL:        "https://drive.google.com/file/d/example-akta-yayasan",
+			VerificationStatus: models.VerificationPending,
+		}
+		db.Create(&mitraProfile)
+
 		log.Println("✓ Seeded 4 demo users: admin@savora.com, customer@savora.com, umkm@savora.com, mitra@savora.com (all password: <role>123)")
+		log.Println("✓ Seeded 1 pending mitra donasi profile for verification testing")
 	}
 
 	// Simple seeder to ensure we have mock data
