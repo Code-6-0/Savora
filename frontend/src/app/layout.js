@@ -19,7 +19,7 @@ const inter = Inter({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" className={inter.variable} suppressHydrationWarning>
       <body>
         <UmkmProvider>
           <NotificationProvider userId={1} userRole="umkm">
