@@ -199,7 +199,7 @@ export default function ProdukPage() {
             )}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => { setIsModalOpen(true); setEditingProductId(null); setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" }); }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => { setIsModalOpen(true); setAddMode('manual'); setEditingProductId(null); setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" }); }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
               <Plus size={16} /> Tambah Produk
             </button>
           </div>
@@ -527,38 +527,7 @@ export default function ProdukPage() {
               <button onClick={() => { setIsModalOpen(false); setAddMode(null); setEditingProductId(null); }} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6B7280' }}>&times;</button>
             </div>
             
-            {!addMode ? (
-              <div className="grid-2">
-                <div 
-                  onClick={() => setAddMode('ai')}
-                  style={{ border: '2px solid #10B981', borderRadius: '12px', padding: '25px', textAlign: 'center', cursor: 'pointer', backgroundColor: '#F0FDF4' }}>
-                  <div style={{ width: '60px', height: '60px', backgroundColor: '#D1FAE5', color: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto' }}>
-                    <Sparkles size={30} />
-                  </div>
-                  <h4 style={{ margin: '0 0 10px 0' }}>AI Auto-Scan</h4>
-                  <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Upload foto produk, AI akan otomatis mengisi detail dan saran harga rescue.</p>
-                </div>
-                <div 
-                  onClick={() => setAddMode('manual')}
-                  style={{ border: '1px solid #D1D5DB', borderRadius: '12px', padding: '25px', textAlign: 'center', cursor: 'pointer' }}>
-                  <div style={{ width: '60px', height: '60px', backgroundColor: '#F3F4F6', color: '#6B7280', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto' }}>
-                    <Plus size={30} />
-                  </div>
-                  <h4 style={{ margin: '0 0 10px 0' }}>Input Manual</h4>
-                  <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Isi form detail produk dan kelayakan secara manual dari awal.</p>
-                </div>
-              </div>
-            ) : (
-              <div>
-                {addMode === 'ai' && (
-                  <div style={{ marginBottom: '20px', padding: '20px', border: '2px dashed #D1D5DB', borderRadius: '10px', textAlign: 'center', backgroundColor: '#F9FAFB' }}>
-                    <Camera size={40} color="#9CA3AF" style={{ marginBottom: '10px' }} />
-                    <div style={{ fontWeight: 600, color: '#374151', marginBottom: '5px' }}>Upload foto produk</div>
-                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>AI akan memindai dan mengisi detail form otomatis</div>
-                    <button className="btn-secondary" style={{ marginTop: '15px' }}>Pilih Foto</button>
-                  </div>
-                )}
-                
+            <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Nama Produk</label>
@@ -629,8 +598,7 @@ export default function ProdukPage() {
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
         </div>
       )}
     </>

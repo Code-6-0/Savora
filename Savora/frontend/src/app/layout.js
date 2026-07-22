@@ -15,13 +15,17 @@ const inter = Inter({
   variable: '--font-sans',
 })
 
+import { UmkmProvider } from '@/context/UmkmContext'
+
 export default function RootLayout({ children }) {
   return (
     <html lang="id" className={inter.variable}>
       <body>
-        <DashboardLayout>
-          {children}
-        </DashboardLayout>
+        <UmkmProvider>
+          <DashboardLayout>
+            {children}
+          </DashboardLayout>
+        </UmkmProvider>
       </body>
     </html>
   )

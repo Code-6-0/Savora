@@ -6,11 +6,13 @@ import {
   LayoutDashboard, Package, ShoppingCart, BarChart2, Bell, Settings,
   Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft, Megaphone
 } from "lucide-react";
+import { useUmkm } from '@/context/UmkmContext';
 
 export default function Sidebar({ onClose }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'bantuan';
+  const { umkmData } = useUmkm();
 
   if (pathname === "/marketplace") return null;
 
@@ -94,10 +96,12 @@ export default function Sidebar({ onClose }) {
       </ul>
       <div className="sidebar-footer">
         <div className="profile-section">
-          <div className="avatar" style={{ backgroundColor: '#10B981', color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>BL</div>
+          <div className="avatar" style={{ backgroundColor: '#10B981', color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+            {umkmData?.users?.name ? umkmData.users.name.charAt(0).toUpperCase() : 'U'}
+          </div>
           <div>
-            <div style={{fontWeight: 700, fontSize: '0.875rem', color: '#111827'}}>Bu Lestari</div>
-            <div style={{fontSize: '0.75rem', color: '#6B7280'}}>Gold Rescuer</div>
+            <div style={{fontWeight: 700, fontSize: '0.875rem', color: '#111827'}}>{umkmData?.users?.name || 'User'}</div>
+            <div style={{fontSize: '0.75rem', color: '#6B7280'}}>{umkmData?.umkm_profiles?.level || 'UMKM'}</div>
           </div>
         </div>
         <ul className="sidebar-footer-menu">

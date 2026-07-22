@@ -9,11 +9,13 @@ import TopHeader from "@/components/organisms/TopHeader";
 import SummaryCard from "@/components/molecules/SummaryCard";
 import Badge from "@/components/atoms/Badge";
 import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
+import { useUmkm } from '@/context/UmkmContext';
 
 const COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1D5DB'];
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { umkmData } = useUmkm();
   const [data, setData] = useState({
     sales_today: 2450000,
     sales_trend: 12.4,
@@ -66,7 +68,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <TopHeader title="Halo, Warung Bu Lestari 👋" subtitle="Kamis, 9 Juli 2026" />
+      <TopHeader title={`Halo, ${umkmData?.umkm_profiles?.business_name} 👋`} subtitle="Kamis, 9 Juli 2026" />
 
       <div className="content-area">
         {/* KPI Cards */}
@@ -114,7 +116,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
                 <h3 style={{ marginBottom: '5px' }}>Grafik Penjualan</h3>
-                <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>Tren pendapatan harian Warung Bu Lestari</p>
+                <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>Tren pendapatan harian {umkmData?.umkm_profiles?.business_name}</p>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <Badge status="Aktif" customStyle={{ borderRadius: '20px' }}>7 Hari</Badge>
