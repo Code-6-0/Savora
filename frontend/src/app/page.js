@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   MapPin,
@@ -340,25 +341,22 @@ export default function BerandaPage() {
       {/* 7. Slot Iklan */}
       <section className="beranda-section beranda-section-gray">
         <div className="beranda-container">
+          <h3 className="text-lg font-semibold mb-4">Iklan</h3>
           <div className="beranda-ads">
-            <div className="beranda-ad-banner">
-              <div className="beranda-ad-content">
-                <h3>Iklan Premium UMKM</h3>
-                <p>Ruang iklan untuk UMKM verified dengan approval admin.</p>
-                <Link href="/dashboard" className="beranda-ad-btn">
-                  Pasang Iklan
-                </Link>
-              </div>
-            </div>
-            <div className="beranda-ad-banner">
-              <div className="beranda-ad-content">
-                <h3>Sponsor Partner</h3>
-                <p>Slot iklan pihak ketiga yang sudah disetujui.</p>
-                <Link href="/marketplace" className="beranda-ad-btn">
-                  Jelajahi Deals
-                </Link>
-              </div>
-            </div>
+            <Image
+              src="/ads/satara.png"
+              alt="Iklan Satara" loading="eager"
+              width={631}
+              height={200}
+              className="rounded-lg"
+            />
+            <Image
+              src="/ads/asha-clean.png"
+              alt="Iklan Asha Clean" loading="eager"
+              width={283}
+              height={200}
+              className="rounded-lg"
+            />
           </div>
         </div>
       </section>

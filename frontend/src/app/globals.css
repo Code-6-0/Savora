@@ -1908,8 +1908,8 @@ body {
 /* Ad Banners */
 .beranda-ads {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: 631fr 283fr;
+  gap: 30px;
 }
 
 .beranda-ad-banner {
@@ -2398,4 +2398,9 @@ body {
   .beranda-impact-stats {
     grid-template-columns: 1fr;
   }
+}
+
+.beranda-ads img {
+  width: 100%;
+  height: auto;
 }
