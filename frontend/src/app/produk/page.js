@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Search, Filter, ArrowUpDown, Clock, CheckCircle2, AlertTriangle, AlertCircle, BarChart2, Lightbulb, TrendingUp, Sparkles, Image as ImageIcon, Camera, Package, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -8,6 +9,7 @@ import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
 
 export default function ProdukPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addMode, setAddMode] = useState(null); // 'manual' or 'ai'
