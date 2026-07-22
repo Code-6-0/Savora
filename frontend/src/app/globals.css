@@ -50,8 +50,7 @@
   --sidebar-ring: #1D6840;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 
-:root {
-  /* Brand hijau food-rescue */
+  /* Brand hijau food-rescue (legacy tokens for old components) */
   --primary-color: #0d8a4d;
   --primary-dark: #096336;
   --primary-light: #34b877;
