@@ -54,7 +54,7 @@ export default function AdminSidebar({ onClose }) {
       name: "Manajemen Iklan",
       href: "/admin/iklan",
       icon: <Megaphone size={20} />,
-      active: false // Placeholder (Task 5)
+      active: true // Task 5 selesai
     },
     {
       name: "Keuangan Platform",

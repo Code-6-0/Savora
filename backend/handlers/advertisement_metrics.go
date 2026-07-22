@@ -15,8 +15,9 @@ func GetActiveAdsHandler(c *fiber.Ctx) error {
 	now := time.Now()
 
 	var activeAds []models.Advertisement
+	// Query iklan APPROVED atau ACTIVE yang berada dalam rentang waktu tayang
 	err := database.DB.
-		Where("status = ?", models.AdStatusActive).
+		Where("status IN (?)", []string{models.AdStatusApproved, models.AdStatusActive}).
 		Where("starts_at <= ?", now).
 		Where("expires_at > ?", now).
 		Order("created_at desc").
@@ -30,19 +31,22 @@ func GetActiveAdsHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Periksa dan update status EXPIRED untuk iklan yang sudah lewat masa aktif
-	for i := range activeAds {
-		if activeAds[i].ExpiresAt != nil && activeAds[i].ExpiresAt.Before(now) {
-			activeAds[i].Status = models.AdStatusExpired
-			database.DB.Save(&activeAds[i])
+	// Update status iklan berdasarkan waktu (APPROVED → ACTIVE, ACTIVE → EXPIRED)
+	updateAdStatuses(activeAds)
+
+	// Filter hanya iklan yang benar-benar ACTIVE setelah status update
+	var activeOnly []models.Advertisement
+	for _, ad := range activeAds {
+		if ad.Status == models.AdStatusActive {
+			activeOnly = append(activeOnly, ad)
 		}
 	}
 
 	return c.JSON(APIResponse{
 		Success: true,
 		Data: fiber.Map{
-			"advertisements": activeAds,
-			"total":          len(activeAds),
+			"advertisements": activeOnly,
+			"total":          len(activeOnly),
 		},
 		Error: nil,
 	})

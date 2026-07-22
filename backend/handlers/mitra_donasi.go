@@ -271,28 +271,7 @@ func VerifyMitraDonasiHandler(c *fiber.Ctx) error {
 	if req.Status == models.VerificationRejected {
 		action = "VERIFY_MITRA_DONASI_REJECTED"
 	}
-
-	// Import middleware package untuk LogAudit
-	// middleware.LogAudit(actorID, action, targetType, targetID, note)
-	// Menggunakan inline audit log creation karena middleware.LogAudit tidak exported di context ini
-	auditLog := struct {
-		ActorID    uint   `gorm:"column:actor_id"`
-		Action     string `gorm:"column:action"`
-		TargetType string `gorm:"column:target_type"`
-		TargetID   uint   `gorm:"column:target_id"`
-		Note       string `gorm:"column:note"`
-		CreatedAt  time.Time `gorm:"column:created_at"`
-	}{
-		ActorID:    claims.UserID,
-		Action:     action,
-		TargetType: "MITRA_DONASI",
-		TargetID:   uint(mitraID),
-		Note:       req.Note,
-		CreatedAt:  time.Now(),
-	}
-
-	// Save audit log async (tidak blokir response)
-	go database.DB.Table("audit_logs").Create(&auditLog)
+	createAuditLog(claims.UserID, action, "MITRA_DONASI", uint(mitraID), req.Note)
 
 	return c.JSON(APIResponse{
 		Success: true,

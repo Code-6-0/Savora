@@ -9,6 +9,30 @@ import (
 	"github.com/savora/backend/models"
 )
 
+// updateAdStatuses checks and updates advertisement statuses based on time
+// APPROVED → ACTIVE when now >= starts_at
+// ACTIVE → EXPIRED when now >= expires_at
+// (Revenue sudah dicatat saat approve, tidak perlu dicatat di sini)
+func updateAdStatuses(ads []models.Advertisement) {
+	now := time.Now()
+	for i := range ads {
+		ad := &ads[i]
+
+		// Check APPROVED → ACTIVE transition (tanpa revenue creation)
+		if ad.Status == models.AdStatusApproved && ad.StartsAt != nil && !now.Before(*ad.StartsAt) {
+			ad.Status = models.AdStatusActive
+			database.DB.Model(ad).Update("status", models.AdStatusActive)
+		}
+
+		// Check ACTIVE → EXPIRED transition
+		if ad.Status == models.AdStatusActive && ad.ExpiresAt != nil && now.After(*ad.ExpiresAt) {
+			ad.Status = models.AdStatusExpired
+			database.DB.Model(ad).Update("status", models.AdStatusExpired)
+		}
+	}
+}
+
+
 // SubmitAdRequest body
 type SubmitAdRequest struct {
 	Title          string  `json:"title"`
@@ -152,6 +176,9 @@ func GetAdsHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	// Update status iklan berdasarkan waktu (APPROVED → ACTIVE, ACTIVE → EXPIRED)
+	updateAdStatuses(ads)
+
 	return c.JSON(APIResponse{
 		Success: true,
 		Data: fiber.Map{
@@ -231,14 +258,14 @@ func ApproveRejectAdHandler(c *fiber.Ctx) error {
 	ad.ApprovedBy = &adminID
 	ad.ApprovedAt = &now
 
-	// Jika APPROVED, set starts_at dan expires_at, dan ubah status ke ACTIVE
+	// Jika APPROVED, set starts_at dan expires_at (status tetap APPROVED)
+	// Transisi ke ACTIVE terjadi otomatis saat query ketika now >= starts_at
 	if req.Status == models.AdStatusApproved {
 		ad.StartsAt = &now
 		expiresAt := now.AddDate(0, 0, ad.DurationDays)
 		ad.ExpiresAt = &expiresAt
-		ad.Status = models.AdStatusActive
 
-		// Catat revenue ke platform_revenue
+		// Catat revenue ke platform_revenue SAAT APPROVE (kriteria task: approve = bayar = revenue tercatat)
 		revenue := models.PlatformRevenue{
 			SourceType:       models.RevenueSourceAdvertisement,
 			SourceID:         ad.ID,
