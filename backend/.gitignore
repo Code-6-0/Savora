@@ -1,0 +1,76 @@
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+
+# Xendit credentials
+*xendit*.key
+*xendit*.secret
+
+# Build artifacts
+savora-backend
+savora-backend.exe
+savora-backend-verify.exe
+*.exe
+*.dll
+*.so
+*.dylib
+dist/
+build/
+
+# Go
+*.test
+*.out
+vendor/
+go.work
+go.work.sum
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
+logs/
+log/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Test coverage
+coverage.txt
+coverage.html
+*.coverprofile
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Node modules (if any frontend tooling)
+node_modules/
+
+# Documentation build artifacts
+docs/_build/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
