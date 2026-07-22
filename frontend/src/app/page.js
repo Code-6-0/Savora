@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import { redirect } from 'next/navigation';
-
-export default function Home() {
-  redirect('/produk');
-=======
 import Link from "next/link";
 import {
   ArrowRight,
@@ -229,5 +223,4 @@ export default function LandingPage() {
       </footer>
     </div>
   );
->>>>>>> feat/customer-pages
 }

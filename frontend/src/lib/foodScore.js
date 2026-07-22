@@ -2,15 +2,6 @@
 //
 // Food Score adalah indikator kelayakan makanan yang menurun seiring sisa
 // waktu rescue makin sedikit menuju batas expired. Model ini rule-based dan
-<<<<<<< HEAD
-// mengacu pada konsep freshness index / shelf-life pada makanan perishable:
-// kesegaran cenderung bertahan di awal masa simpan lalu turun lebih cepat
-// menjelang batas layak konsumsi (kurva sedikit konveks).
-//
-// Referensi konsep (dipakai di dokumentasi rumus, bukan klaim lab):
-// - Freshness index vs waktu penyimpanan (MDPI Foods 2020).
-// - Dynamic pricing perishable food berbasis waktu ke expired (POMS/Wiley).
-=======
 // mengikuti spesifikasi PRD Section 12.6 (sumber kebenaran tunggal): power
 // decay dengan eksponen γ = 0,65 terhadap fraksi sisa masa layak.
 //
@@ -25,17 +16,11 @@
 //   nature.com/articles/s41598-026-44579-1). Savora mengadopsi prinsip
 //   non-linear-nya secara heuristik berbasis waktu, tanpa sensor.
 // - Literatur kinetic shelf-life makanan perishable (Food Chemistry, 2023).
->>>>>>> feat/customer-pages
 
 // Batas skor tampilan.
 const MIN_SCORE = 0;
 const MAX_SCORE = 100;
 
-<<<<<<< HEAD
-// Eksponen decay (< 1 = konveks: skor bertahan di awal, turun cepat di akhir).
-const DECAY_EXPONENT = 0.65;
-
-=======
 // Eksponen decay (< 1 = cekung/concave: skor bertahan di awal, turun cepat di akhir).
 const DECAY_EXPONENT = 0.65;
 
@@ -56,7 +41,6 @@ export function initialFoodScore(status) {
   return INITIAL_SCORE_BY_STATUS[status] ?? null;
 }
 
->>>>>>> feat/customer-pages
 function clampScore(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return MAX_SCORE;
@@ -64,15 +48,6 @@ function clampScore(value) {
 }
 
 /**
-<<<<<<< HEAD
- * Hitung Food Score 0-100 dari sisa waktu rescue.
- *
- * @param {number} remaining sisa waktu (satuan bebas: detik/menit).
- * @param {number} window total jendela rescue dalam satuan yang sama dengan `remaining`.
- *   Biasanya diisi sisa waktu saat produk pertama dimuat, sehingga skor mulai
- *   dari `baseScore` lalu meluruh ke 0 tepat saat expired.
- * @param {number} baseScore skor awal/plafon dari UMKM (mis. Food Trust Index). Default 100.
-=======
  * Hitung Food Score 0-100 dari sisa waktu rescue (basis satuan bebas).
  *
  * Dipakai untuk jalur fallback data demo yang hanya punya `timerMinutes`
@@ -81,7 +56,6 @@ function clampScore(value) {
  * @param {number} remaining sisa waktu (satuan bebas: detik/menit).
  * @param {number} window total jendela rescue dalam satuan yang sama dengan `remaining`.
  * @param {number} baseScore skor awal/plafon (mis. skor awal Food Trust Index). Default 100.
->>>>>>> feat/customer-pages
  * @returns {number} Food Score bulat 0-100.
  */
 export function computeFoodScore(remaining, window, baseScore = MAX_SCORE) {
@@ -93,8 +67,6 @@ export function computeFoodScore(remaining, window, baseScore = MAX_SCORE) {
   return Math.round(base * decay);
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Hitung Food Score 0-100 dari timestamp absolut (PRD 12.6 — sumber kebenaran).
  *
@@ -118,7 +90,6 @@ export function computeFoodScoreFromDates(baseScore, publishAt, expiresAt, now) 
   return Math.round(clampScore(baseScore) * Math.pow(f, DECAY_EXPONENT));
 }
 
->>>>>>> feat/customer-pages
 // Ambang band Food Score → label + kelas warna (dipetakan ke CSS marketplace).
 const SCORE_BANDS = [
   { min: 80, label: "Sangat Layak", tone: "fresh", className: "is-fresh" },
@@ -163,8 +134,6 @@ export function rescueTimeParts(totalSeconds) {
     seconds: String(seconds % 60).padStart(2, "0"),
   };
 }
-<<<<<<< HEAD
-=======
 
 // Color indicator sisa waktu ABSOLUT (PRD 5.1 & 12.6, REVISI #31): merah < 1 jam,
 // kuning 1-3 jam, hijau > 3 jam. Indikator ini PARALEL dengan band skor (fraksi
@@ -183,4 +152,3 @@ export function rescueTimeColor(totalSeconds) {
   if (seconds < 3 * RESCUE_HOUR) return { key: "yellow", label: "1-3 jam", className: "is-yellow" };
   return { key: "green", label: "> 3 jam", className: "is-green" };
 }
->>>>>>> feat/customer-pages

@@ -7,13 +7,10 @@ import {
   SAFETY_LEVELS,
 } from "../src/lib/reviews.js";
 
-<<<<<<< HEAD
-=======
 // ---------------------------------------------------------------------------
 // classifyReviewText — per-review text classification (tidak berubah)
 // ---------------------------------------------------------------------------
 
->>>>>>> feat/customer-pages
 test("classifyReviewText flags severe keywords as Gawat", () => {
   const result = classifyReviewText("Makanannya basi dan ada jamur");
   assert.equal(result.level.key, "gawat");
@@ -21,11 +18,7 @@ test("classifyReviewText flags severe keywords as Gawat", () => {
 });
 
 test("classifyReviewText flags cautionary keywords as Warning", () => {
-<<<<<<< HEAD
-  assert.equal(classifyReviewText("baunya agak aneh").level.key, "warning");
-=======
   assert.equal(classifyReviewText("baunya agak asam").level.key, "warning");
->>>>>>> feat/customer-pages
 });
 
 test("classifyReviewText treats positive keywords as Aman", () => {
@@ -43,27 +36,6 @@ test("classifyReviewText defaults to Aman when no keyword matches", () => {
   assert.deepEqual(result.matched, []);
 });
 
-<<<<<<< HEAD
-test("deriveRestaurantSafety aggregates the worst level across reviews", () => {
-  const reviews = [
-    { comment: "enak dan bersih" },
-    { comment: "baunya sedikit asam" },
-    { comment: "porsi besar" },
-  ];
-  const safety = deriveRestaurantSafety(reviews);
-  assert.equal(safety.level.key, "warning");
-  assert.equal(safety.counts.aman, 1);
-  assert.equal(safety.counts.warning, 1);
-});
-
-test("deriveRestaurantSafety prefers the backend-provided level when present", () => {
-  const reviews = [{ comment: "enak semua" }];
-  const safety = deriveRestaurantSafety(reviews, "Gawat");
-  assert.equal(safety.level.key, "gawat");
-});
-
-test("deriveRestaurantSafety is safe with empty or invalid input", () => {
-=======
 test("classifyReviewText uses PRD 12.7 keyword dictionary", () => {
   // Gawat: basi, bau busuk, berjamur, berlendir, sakit perut, keracunan
   assert.equal(classifyReviewText("bau busuk sekali").level.key, "gawat");
@@ -162,17 +134,11 @@ test("deriveRestaurantSafety: backend level takes priority", () => {
 });
 
 test("deriveRestaurantSafety: safe with empty or invalid input", () => {
->>>>>>> feat/customer-pages
   const safety = deriveRestaurantSafety(null);
   assert.equal(safety.level.key, "aman");
   assert.deepEqual(safety.keywords, []);
 });
 
-<<<<<<< HEAD
-test("normalizeSafetyLevel maps strings case-insensitively and rejects junk", () => {
-  assert.equal(normalizeSafetyLevel("WARNING"), SAFETY_LEVELS.warning);
-  assert.equal(normalizeSafetyLevel("tidak-ada"), null);
-=======
 test("deriveRestaurantSafety: counts reviewer uniqueness correctly", () => {
   // 4 keyword gawat, tetapi dari 1 reviewer (nama sama) → tidak Gawat.
   const reviews = [
@@ -206,5 +172,4 @@ test("normalizeSafetyLevel maps strings case-insensitively and rejects junk", ()
   assert.equal(normalizeSafetyLevel("aman"), SAFETY_LEVELS.aman);
   assert.equal(normalizeSafetyLevel("tidak-ada"), null);
   assert.equal(normalizeSafetyLevel(""), null);
->>>>>>> feat/customer-pages
 });

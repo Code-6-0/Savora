@@ -1,6 +1,5 @@
 "use client";
 
-<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, YAxis, PieChart, Pie, Legend } from "recharts";
 import {
@@ -61,21 +60,6 @@ export default function AnalitikPage() {
     const section = new URLSearchParams(window.location.search).get("section");
     if (section && section.toLowerCase() === "insight") setView("Insight");
   }, []);
-=======
-import { useState } from "react";
-import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, YAxis, PieChart, Pie, Legend } from "recharts";
-import { TrendingUp, Package, DollarSign, Calendar, FileText, Download, Leaf, Users, Star, Activity, ArrowDownRight, ArrowUpRight } from "lucide-react";
-import TopHeader from "@/components/organisms/TopHeader";
-import SummaryCard from "@/components/molecules/SummaryCard";
-import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
-import Badge from "@/components/atoms/Badge";
-
-export default function AnalitikPage() {
-  const [activeTab, setActiveTab] = useState("Penjualan");
-  const [dateFilter, setDateFilter] = useState("Juni 2025");
-  const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const [showExportDropdown, setShowExportDropdown] = useState(false);
->>>>>>> feat/customer-pages
 
   const mockChartData = [
     { name: '1/6', value: 850 }, { name: '7/6', value: 1200 }, { name: '13/6', value: 1800 },
@@ -95,11 +79,7 @@ export default function AnalitikPage() {
 
   const COLORS = ['#10B981', '#FCD34D'];
 
-<<<<<<< HEAD
   const renderAnalitikContent = () => {
-=======
-  const renderTabContent = () => {
->>>>>>> feat/customer-pages
     switch(activeTab) {
       case "Penjualan":
         return (
@@ -119,18 +99,13 @@ export default function AnalitikPage() {
             </div>
           </div>
         );
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> feat/customer-pages
       case "Produk":
         return (
           <div className="grid-2">
             <div className="card">
               <h3 style={{ marginBottom: '15px' }}>Produk Terlaris</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-<<<<<<< HEAD
                 {topProducts.map((product, index) => (
                   <div key={product.product_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -140,16 +115,6 @@ export default function AnalitikPage() {
                     <Badge type="success">Peringkat {index + 1}</Badge>
                   </div>
                 ))}
-=======
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div><div style={{ fontWeight: 600 }}>Nasi Kotak Ayam Teriyaki</div><div style={{ fontSize: '0.75rem', color: '#6B7280' }}>284 terjual</div></div>
-                  <Badge type="success">Peringkat 1</Badge>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div><div style={{ fontWeight: 600 }}>Nasi Gudeg Komplit</div><div style={{ fontSize: '0.75rem', color: '#6B7280' }}>267 terjual</div></div>
-                  <Badge type="success">Peringkat 2</Badge>
-                </div>
->>>>>>> feat/customer-pages
               </div>
             </div>
             <div className="card">
@@ -178,7 +143,6 @@ export default function AnalitikPage() {
 
       case "Food Waste":
         return (
-<<<<<<< HEAD
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="grid-3">
               <div className="card">
@@ -344,30 +308,6 @@ export default function AnalitikPage() {
                   </tbody>
                 </table>
               </div>
-=======
-          <div className="grid-3">
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Terjual</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#10B981' }}>1.847 porsi</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Didonasikan</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#3B82F6' }}>142 porsi</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Total Makanan Menjadi Limbah</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#EF4444' }}>84 porsi</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Persentase Food Waste</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#EF4444' }}>4.05%</div>
-              <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '5px' }}>Menurun 1.2% dari bulan lalu</div>
-            </div>
-            <div className="card">
-              <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Food Rescue Rate</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#10B981' }}>95.95%</div>
-              <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '5px' }}>Tingkat penyelamatan sangat baik</div>
->>>>>>> feat/customer-pages
             </div>
           </div>
         );
@@ -399,11 +339,7 @@ export default function AnalitikPage() {
             </div>
           </div>
         );
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> feat/customer-pages
       case "Sustainability":
         return (
           <div className="grid-2">
@@ -451,11 +387,7 @@ export default function AnalitikPage() {
                 </ResponsiveContainer>
               </div>
             </div>
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> feat/customer-pages
             <div className="card">
               <h3 style={{ marginBottom: '15px' }}>Grafik Food Waste, Donasi & Carbon Impact</h3>
               <div style={{ height: '250px' }}>
@@ -474,17 +406,12 @@ export default function AnalitikPage() {
             </div>
           </div>
         );
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> feat/customer-pages
       default:
         return null;
     }
   };
 
-<<<<<<< HEAD
   const renderInsightContent = () => {
     switch(insightTab) {
       case "Evaluasi Stok":
@@ -753,62 +680,6 @@ export default function AnalitikPage() {
                   fontWeight: currentSubTab === tab ? 600 : 500,
                   backgroundColor: currentSubTab === tab ? '#ECFDF5' : 'transparent',
                   color: currentSubTab === tab ? '#10B981' : '#6B7280',
-=======
-  return (
-    <>
-      <TopHeader title="Analitik Data Bisnis" subtitle="Pusat data performa bisnis, penjualan, dan metrik keberlanjutan.">
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => { setShowDateDropdown(!showDateDropdown); setShowExportDropdown(false); }} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px', borderRadius: '20px', border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', fontSize: '0.875rem' }}>
-              <Calendar size={16} /> {dateFilter}
-            </button>
-            {showDateDropdown && (
-              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '5px', background: 'white', border: '1px solid #D1D5DB', borderRadius: '8px', padding: '10px', zIndex: 10, minWidth: '150px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                {["Juni 2025", "Mei 2025", "April 2025", "Tahun 2025", "Semua Waktu"].map(d => (
-                  <div key={d} style={{ padding: '5px', cursor: 'pointer', color: dateFilter === d ? '#10B981' : 'inherit' }} onClick={() => { setDateFilter(d); setShowDateDropdown(false); }}>{d}</div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => { setShowExportDropdown(!showExportDropdown); setShowDateDropdown(false); }} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 15px', borderRadius: '20px', border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', fontSize: '0.875rem' }}>
-              <Download size={16} /> Export Data
-            </button>
-            {showExportDropdown && (
-              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '5px', background: 'white', border: '1px solid #D1D5DB', borderRadius: '8px', padding: '10px', zIndex: 10, minWidth: '150px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                <div style={{ padding: '5px', cursor: 'pointer' }} onClick={() => { alert('Mengunduh Laporan PDF...'); setShowExportDropdown(false); }}>Export as PDF</div>
-                <div style={{ padding: '5px', cursor: 'pointer' }} onClick={() => { alert('Mengunduh Laporan CSV...'); setShowExportDropdown(false); }}>Export as CSV</div>
-                <div style={{ padding: '5px', cursor: 'pointer' }} onClick={() => { alert('Mengunduh Laporan Excel...'); setShowExportDropdown(false); }}>Export as Excel</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </TopHeader>
-
-      <div className="content-area">
-        {/* Navigation Tabs */}
-        <div style={{ overflowX: 'auto', marginBottom: '25px', paddingBottom: '5px' }}>
-          <div style={{ 
-            display: 'inline-flex', 
-            backgroundColor: '#FFFFFF', 
-            border: '1px solid #E5E7EB', 
-            borderRadius: '9999px', 
-            padding: '4px',
-            gap: '4px'
-          }}>
-            {["Penjualan", "Produk", "Food Waste", "Customer", "Sustainability", "Visualisasi"].map(tab => (
-              <div 
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{ 
-                  padding: '8px 25px', 
-                  cursor: 'pointer',
-                  borderRadius: '9999px',
-                  fontSize: '0.875rem',
-                  fontWeight: activeTab === tab ? 600 : 500,
-                  backgroundColor: activeTab === tab ? '#ECFDF5' : 'transparent',
-                  color: activeTab === tab ? '#10B981' : '#6B7280',
->>>>>>> feat/customer-pages
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap'
                 }}
@@ -820,12 +691,7 @@ export default function AnalitikPage() {
         </div>
 
         {/* Dynamic Content */}
-<<<<<<< HEAD
         {view === "Analitik" ? renderAnalitikContent() : renderInsightContent()}
-=======
-        {renderTabContent()}
-
->>>>>>> feat/customer-pages
       </div>
     </>
   );

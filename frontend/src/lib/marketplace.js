@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=85";
-
-=======
 import {
   computeFoodScore,
   computeFoodScoreFromDates,
@@ -27,7 +23,6 @@ function demoWindow(totalHours, remainingMinutes) {
   };
 }
 
->>>>>>> feat/customer-pages
 export const fallbackMarketplaceProducts = [
   {
     id: "nasi-campur-bali",
@@ -41,10 +36,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Fresh",
     trustScore: 92,
     timerMinutes: 135,
-<<<<<<< HEAD
-=======
     ...demoWindow(8, 135),
->>>>>>> feat/customer-pages
     photo_url: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=85",
     description: "Nasi campur lengkap dengan ayam suwir, telur, sayur urap, dan sambal matah. Disiapkan pagi ini untuk layanan makan siang.",
     pickup_address: "Jl. Kaliurang KM 5, Sleman, Yogyakarta",
@@ -69,10 +61,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Segera Dijual",
     trustScore: 74,
     timerMinutes: 45,
-<<<<<<< HEAD
-=======
     ...demoWindow(4, 45),
->>>>>>> feat/customer-pages
     photo_url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=85",
     description: "Isi 10 gorengan pilihan: bakwan, tahu isi, risol, dan tempe mendoan. Cocok untuk teman belajar atau makan sore.",
     pickup_address: "Pasar Colombo, Depok, Sleman",
@@ -97,10 +86,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Layak Dijual",
     trustScore: 85,
     timerMinutes: 220,
-<<<<<<< HEAD
-=======
     ...demoWindow(14, 220),
->>>>>>> feat/customer-pages
     photo_url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=85",
     description: "Roti sourdough artisan dengan kulit renyah dan tekstur lembut. Dipanggang pagi ini dengan bahan lokal.",
     pickup_address: "Jl. Pandega Marta 34, Depok, Sleman",
@@ -122,10 +108,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Fresh",
     trustScore: 90,
     timerMinutes: 115,
-<<<<<<< HEAD
-=======
     ...demoWindow(7, 115),
->>>>>>> feat/customer-pages
     photo_url: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=1200&q=85",
     description: "Paket ayam bakar bumbu kecap, nasi, lalapan, dan sambal. Porsi lengkap untuk makan siang.",
     pickup_address: "Jl. Gejayan 88, Depok, Sleman",
@@ -147,10 +130,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Layak Dijual",
     trustScore: 84,
     timerMinutes: 250,
-<<<<<<< HEAD
-=======
     ...demoWindow(10, 250),
->>>>>>> feat/customer-pages
     photo_url: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1200&q=85",
     description: "Pastry berlapis dengan isian cokelat dan taburan almond panggang.",
     pickup_address: "Jl. Palagan Tentara Pelajar 12, Sleman",
@@ -172,10 +152,7 @@ export const fallbackMarketplaceProducts = [
     food_trust_status: "Segera Dijual",
     trustScore: 76,
     timerMinutes: 80,
-<<<<<<< HEAD
-=======
     ...demoWindow(5, 80),
->>>>>>> feat/customer-pages
     photo_url: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85",
     description: "Nasi kotak pilihan dari acara siang: ayam bumbu, mie, sayur, dan kerupuk.",
     pickup_address: "Jl. Monjali 7, Mlati, Sleman",
@@ -212,8 +189,6 @@ export function normalizeMarketplaceProduct(raw) {
   const rescuePrice = Number(base.rescue_price) || originalPrice;
   const fallbackDiscount = originalPrice > 0 ? Math.max(0, Math.round(((originalPrice - rescuePrice) / originalPrice) * 100)) : 0;
 
-<<<<<<< HEAD
-=======
   // Timestamp: terima ISO string atau epoch ms dari API. Fallback:
   // published_at ← created_at. Kalau keduanya kosong → undefined (jalur
   // timerMinutes lama dipakai di computeProductScore).
@@ -225,7 +200,6 @@ export function normalizeMarketplaceProduct(raw) {
   // Skor awal dikunci dari status Food Trust Index (PRD 12.6).
   const baseScore = initialFoodScore(base.food_trust_status || defaultMetadata.food_trust_status);
 
->>>>>>> feat/customer-pages
   return {
     ...defaultMetadata,
     ...base,
@@ -242,11 +216,6 @@ export function normalizeMarketplaceProduct(raw) {
     trustScore: Number(base.trustScore ?? defaultMetadata.trustScore),
     timerMinutes: Number(base.timerMinutes ?? defaultMetadata.timerMinutes),
     photo_url: base.photo_url || defaultMetadata.photo_url,
-<<<<<<< HEAD
-  };
-}
-
-=======
     // Timestamp & skor awal terkunci untuk scoring berbasis waktu absolut.
     _publishMs: Number.isFinite(publishMs) ? publishMs : undefined,
     _expiresMs: Number.isFinite(expiresMs) ? expiresMs : undefined,
@@ -285,7 +254,6 @@ export function computeProductScore(product, now, elapsedSeconds = 0) {
   return { score, remainingSeconds };
 }
 
->>>>>>> feat/customer-pages
 export function filterMarketplaceProducts(products, { search = "", category = "Semua", trustStatus = "Semua", sort = "default" } = {}) {
   const term = search.trim().toLowerCase();
   const filtered = products.filter((product) => {
@@ -300,10 +268,6 @@ export function filterMarketplaceProducts(products, { search = "", category = "S
   return filtered;
 }
 
-<<<<<<< HEAD
-export async function fetchMarketplaceProducts() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-=======
 /**
  * Fetch produk marketplace dari API backend. Jika gagal, gunakan data demo.
  *
@@ -323,32 +287,20 @@ export async function fetchMarketplaceProducts() {
     result.source = source;
     return result;
   };
->>>>>>> feat/customer-pages
   try {
     const response = await fetch(`${baseUrl}/api/products/marketplace`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json")) throw new Error("Marketplace API tidak tersedia");
     const data = await response.json();
     if (!Array.isArray(data)) throw new Error("Respons marketplace tidak valid");
-<<<<<<< HEAD
-    return data.map(normalizeMarketplaceProduct);
-  } catch {
-    return fallbackMarketplaceProducts.map(normalizeMarketplaceProduct);
-=======
     return makeResult(data.map(normalizeMarketplaceProduct), "api");
   } catch {
     return makeResult(fallbackMarketplaceProducts.map(normalizeMarketplaceProduct), "fallback");
->>>>>>> feat/customer-pages
   }
 }
 
 export async function fetchMarketplaceProduct(id) {
-<<<<<<< HEAD
-  const products = await fetchMarketplaceProducts();
-  return products.find((product) => product.id === String(id));
-=======
   const result = await fetchMarketplaceProducts();
   const product = result.products.find((product) => product.id === String(id));
   return { product, source: result.source };
->>>>>>> feat/customer-pages
 }

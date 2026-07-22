@@ -2,25 +2,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   computeFoodScore,
-<<<<<<< HEAD
-  foodScoreBand,
-=======
   computeFoodScoreFromDates,
   foodScoreBand,
   initialFoodScore,
   rescueTimeColor,
->>>>>>> feat/customer-pages
   rescueTimeLabel,
   rescueTimeParts,
 } from "../src/lib/foodScore.js";
 
-<<<<<<< HEAD
-=======
 // ---------------------------------------------------------------------------
 // computeFoodScore (jalur fallback — satuan bebas)
 // ---------------------------------------------------------------------------
 
->>>>>>> feat/customer-pages
 test("computeFoodScore returns the base score when the rescue window is full", () => {
   assert.equal(computeFoodScore(120, 120, 92), 92);
 });
@@ -46,8 +39,6 @@ test("computeFoodScore clamps invalid inputs to a safe range", () => {
   assert.ok(score >= 0 && score <= 100);
 });
 
-<<<<<<< HEAD
-=======
 // ---------------------------------------------------------------------------
 // computeFoodScoreFromDates — PRD 12.6 Test Case WAJIB
 // (skor_awal = 100, masa layak = 8 jam)
@@ -132,7 +123,6 @@ test("initialFoodScore returns null for non-eligible statuses", () => {
 // foodScoreBand
 // ---------------------------------------------------------------------------
 
->>>>>>> feat/customer-pages
 test("foodScoreBand maps scores to the correct display band", () => {
   assert.equal(foodScoreBand(92).label, "Sangat Layak");
   assert.equal(foodScoreBand(70).label, "Layak");
@@ -141,8 +131,6 @@ test("foodScoreBand maps scores to the correct display band", () => {
   assert.equal(foodScoreBand(0).label, "Kedaluwarsa");
 });
 
-<<<<<<< HEAD
-=======
 // ---------------------------------------------------------------------------
 // rescueTimeColor — color indicator sisa waktu ABSOLUT (PRD 5.1 & REVISI #31)
 // ---------------------------------------------------------------------------
@@ -182,7 +170,6 @@ test("rescueTimeColor paralel with band skor (PRD REVISI #31 example)", () => {
 // rescueTimeLabel & rescueTimeParts
 // ---------------------------------------------------------------------------
 
->>>>>>> feat/customer-pages
 test("rescueTimeLabel formats hours, minutes, and expiry", () => {
   assert.equal(rescueTimeLabel(2 * 3600 + 15 * 60), "2j 15m");
   assert.equal(rescueTimeLabel(45 * 60), "45m");

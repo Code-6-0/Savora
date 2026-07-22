@@ -4,15 +4,10 @@
 // tingkat kegawatan ulasan per restoran berdasarkan keyword. Mesin
 // klasifikasi utama (rule-based / backend) adalah tanggung jawab modul
 // Score (Ridwan) & Review (Nadi). Di sisi customer, modul ini:
-<<<<<<< HEAD
-//   1. Menghormati level yang sudah dihitung backend bila tersedia.
-//   2. Menyediakan fallback klasifikasi lokal agar UI lomba tetap jalan.
-=======
 //   1. Menghormati level yang sudah dihitung backend bila tersedia
 //      (safety_level dari API = prioritas tertinggi).
 //   2. Menyediakan fallback klasifikasi lokal yang MENIRU threshold
 //      backend sesuai PRD 12.7 (REVISI #16), BUKAN worst-case.
->>>>>>> feat/customer-pages
 
 // Tiga tingkat keamanan, dari paling gawat ke paling aman.
 export const SAFETY_LEVELS = {
@@ -21,14 +16,6 @@ export const SAFETY_LEVELS = {
   aman: { key: "aman", label: "Aman", rank: 1, className: "is-aman" },
 };
 
-<<<<<<< HEAD
-// Kamus keyword → level. Disusun berbahasa Indonesia sesuai konteks kuliner.
-// Dibuat cukup lengkap untuk demo, tetap sederhana untuk dijelaskan ke juri.
-const KEYWORD_MAP = [
-  { level: "gawat", words: ["basi", "berjamur", "jamur", "busuk", "beracun", "keracunan", "berulat", "berlendir", "kadaluarsa", "kadaluwarsa", "expired"] },
-  { level: "warning", words: ["bau", "asam", "tengik", "apek", "lembek", "berair", "kurang segar", "hampir basi", "aneh", "melempem"] },
-  { level: "aman", words: ["enak", "segar", "fresh", "lezat", "mantap", "bersih", "higienis", "wangi", "gurih", "recommended", "rekomendasi"] },
-=======
 // Kamus keyword → level (PRD 12.7, sumber kebenaran tunggal).
 // Disusun berbahasa Indonesia sesuai konteks kuliner. Sinonim lokal
 // ditambahkan selama levelnya konsisten dengan PRD.
@@ -63,7 +50,6 @@ const KEYWORD_MAP = [
       "lezat", "mantap", "higienis", "wangi", "gurih", "recommended", "rekomendasi",
     ],
   },
->>>>>>> feat/customer-pages
 ];
 
 /**
@@ -80,14 +66,11 @@ export function normalizeSafetyLevel(value) {
 /**
  * Klasifikasikan satu teks ulasan menjadi level keamanan + keyword yang cocok.
  * Level paling gawat menang bila beberapa keyword muncul sekaligus.
-<<<<<<< HEAD
-=======
  *
  * Fungsi ini dipakai untuk dua tujuan:
  *   - Highlight keyword pada teks ulasan di halaman detail.
  *   - Input per-review untuk aggregasi threshold di deriveRestaurantSafety.
  *
->>>>>>> feat/customer-pages
  * @param {string} text isi ulasan.
  * @returns {{ level: object, matched: string[] }}
  */
@@ -119,11 +102,6 @@ export function classifyReviewText(text) {
  *
  * Prioritas sumber:
  *   1. `apiLevel` — level yang sudah dihitung backend (paling dipercaya).
-<<<<<<< HEAD
- *   2. Agregasi keyword lokal dari daftar review.
- *
- * @param {Array<{comment?: string, text?: string}>} reviews daftar ulasan.
-=======
  *   2. Agregasi keyword lokal dengan THRESHOLD sesuai PRD 12.7 (REVISI #16).
  *      BUKAN worst-case (1 keyword Gawat langsung badge Gawat) — itu dilarang.
  *
@@ -137,33 +115,10 @@ export function classifyReviewText(text) {
  * fallback lokal hanya menerapkan threshold di atas.
  *
  * @param {Array<{comment?: string, text?: string, name?: string}>} reviews daftar ulasan.
->>>>>>> feat/customer-pages
  * @param {string} [apiLevel] level keamanan dari backend, bila ada.
  * @returns {{ level: object, counts: {gawat:number,warning:number,aman:number}, keywords: string[] }}
  */
 export function deriveRestaurantSafety(reviews, apiLevel) {
-<<<<<<< HEAD
-  const counts = { gawat: 0, warning: 0, aman: 0 };
-  const keywords = new Set();
-  let worst = SAFETY_LEVELS.aman;
-  let worstRank = 0;
-
-  for (const review of Array.isArray(reviews) ? reviews : []) {
-    const { level, matched } = classifyReviewText(review?.comment ?? review?.text);
-    if (matched.length > 0) {
-      counts[level.key] += 1;
-      matched.forEach((word) => keywords.add(word));
-      if (level.rank > worstRank) {
-        worstRank = level.rank;
-        worst = level;
-      }
-    }
-  }
-
-  const fromApi = normalizeSafetyLevel(apiLevel);
-  const level = fromApi || (worstRank === 0 ? SAFETY_LEVELS.aman : worst);
-  return { level, counts, keywords: [...keywords] };
-=======
   const allKeywords = new Set();
 
   // Hitung keyword per level dan lacak reviewer unik yang menyebut keyword gawat.
@@ -229,5 +184,4 @@ export function deriveRestaurantSafety(reviews, apiLevel) {
 
   // Selain itu: Aman.
   return { level: SAFETY_LEVELS.aman, counts, keywords: [...allKeywords] };
->>>>>>> feat/customer-pages
 }
