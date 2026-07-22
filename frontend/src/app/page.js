@@ -321,25 +321,87 @@ export default function BerandaPage() {
       <section className="beranda-section">
         <div className="beranda-container">
           <div className="beranda-section-header">
-            <h2>Restoran Pilihan</h2>
+            <h3>Restoran Pilihan</h3>
             <Link href="/marketplace" className="beranda-link">
-              Lihat Semua <ChevronRight size={16} />
+              Lihat Semua
             </Link>
           </div>
-          <div className="beranda-restaurants">
-            {restaurants.map((resto) => (
-              <Link key={resto.name} href="/marketplace" className="beranda-restaurant">
-                <div className="beranda-restaurant-avatar">{resto.name.charAt(0)}</div>
-                <div className="beranda-restaurant-info">
-                  <h3>{resto.name}</h3>
-                  <div className="beranda-restaurant-rating">
-                    <Star size={14} fill="#f59e0b" color="#f59e0b" />
-                    <span>{resto.rating}</span>
-                    <span className="beranda-restaurant-reviews">({resto.reviews} ulasan)</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+          <div className="beranda-shops">
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/martabak.png"
+                alt="Martabak"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Martabak</h4>
+              <p>Sweet Treats</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.9</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/bakso-soto.png"
+                alt="Bakso & Soto"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Bakso & Soto</h4>
+              <p>Indonesian Comfort</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.8</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/bakery.png"
+                alt="Bakery"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Bakery</h4>
+              <p>Fresh Breads</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.6</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/chinese.png"
+                alt="Chinese"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Chinese</h4>
+              <p>Dim Sum & More</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.7</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/martabak.png"
+                alt="Martabak"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Martabak</h4>
+              <p>Sweet Treats</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.9</span>
+              </div>
+            </Link>
           </div>
         </div>
       </section>

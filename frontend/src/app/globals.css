@@ -1588,6 +1588,12 @@ body {
   color: #1a202c;
 }
 
+.beranda-section-header h3 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 800;
+  color: #151c27;
+}
+
 .beranda-section-title-center {
   text-align: center;
   font-size: 32px;
@@ -1601,7 +1607,8 @@ body {
   align-items: center;
   gap: 6px;
   color: #16a34a;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   text-decoration: none;
   transition: gap 0.2s;
 }
@@ -1903,6 +1910,54 @@ body {
 .beranda-restaurant-reviews {
   color: #9ca3af;
   font-size: 13px;
+}
+
+/* Shop Cards (Restoran Pilihan) */
+.beranda-shops {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 12px;
+}
+
+.beranda-shop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 164px;
+  text-decoration: none;
+  gap: 14px;
+}
+
+.beranda-shop-card img {
+  border-radius: 50%;
+}
+
+.beranda-shop-card h4 {
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  color: #1b1c1c;
+  margin: 0;
+}
+
+.beranda-shop-card p {
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 500;
+  color: #3e4941;
+  margin: 0;
+}
+
+.beranda-shop-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* 4px */
+}
+
+.beranda-shop-rating span {
+  font-size: 0.625rem; /* 10px */
+  font-weight: 700;
+  color: #1b1c1c;
 }
 
 /* Ad Banners */
