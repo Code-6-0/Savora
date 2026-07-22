@@ -34,6 +34,12 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
 
+    // Redirect ke halaman khusus untuk Mitra Donasi
+    if (formData.role === 'MITRA_DONASI') {
+      router.push('/mitra-donasi/register');
+      return;
+    }
+
     // Validasi client-side
     if (!formData.name || !formData.email || !formData.password || !formData.role) {
       setError('Semua field wajib diisi');

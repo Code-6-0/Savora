@@ -245,20 +245,53 @@ func GetProfileHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Ambil profile jika customer
-	var profile *models.CustomerProfile
+	// Ambil profile berdasarkan role
+	var customerProfile *models.CustomerProfile
+	var mitraProfileResponse interface{}
+
 	if user.Role == models.RoleCustomer {
 		var cp models.CustomerProfile
 		if err := database.DB.Where("user_id = ?", user.ID).First(&cp).Error; err == nil {
-			profile = &cp
+			customerProfile = &cp
+		}
+	} else if user.Role == models.RoleMitraDonasi {
+		var mp models.MitraDonasiProfile
+		if err := database.DB.Where("user_id = ?", user.ID).First(&mp).Error; err == nil {
+			// Query audit_logs untuk mendapatkan catatan admin terbaru (dari audit_logs, bukan kolom tabel)
+			var auditLog struct {
+				Note string
+			}
+			database.DB.Table("audit_logs").
+				Select("note").
+				Where("target_type = ? AND target_id = ?", "MITRA_DONASI", mp.ID).
+				Order("created_at DESC").
+				Limit(1).
+				Scan(&auditLog)
+
+			// Buat response map dengan semua field profil + admin_note dari audit_logs
+			mitraProfileResponse = fiber.Map{
+				"id":                  mp.ID,
+				"user_id":             mp.UserID,
+				"org_name":            mp.OrgName,
+				"phone":               mp.Phone,
+				"address":             mp.Address,
+				"description":         mp.Description,
+				"document_url":        mp.DocumentURL,
+				"verification_status": mp.VerificationStatus,
+				"verified_at":         mp.VerifiedAt,
+				"created_at":          mp.CreatedAt,
+				"updated_at":          mp.UpdatedAt,
+				"admin_note":          auditLog.Note, // Dari audit_logs, bukan kolom tabel
+			}
 		}
 	}
 
 	return c.JSON(APIResponse{
 		Success: true,
 		Data: fiber.Map{
-			"user":    sanitizeUser(user),
-			"profile": profile,
+			"user":             sanitizeUser(user),
+			"customer_profile": customerProfile,
+			"mitra_profile":    mitraProfileResponse,
 		},
 		Error: nil,
 	})
