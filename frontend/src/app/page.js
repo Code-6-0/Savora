@@ -63,15 +63,15 @@ export default function BerandaPage() {
   const topProducts = products.slice(0, 8);
 
   const categories = [
-    { name: "Nasi", icon: "🍚" },
-    { name: "Snack", icon: "🍪" },
-    { name: "Bakery", icon: "🥖" },
-    { name: "Catering", icon: "🍱" },
-    { name: "Minuman", icon: "🥤" },
-    { name: "Dessert", icon: "🍰" },
-    { name: "Sayur", icon: "🥗" },
-    { name: "Buah", icon: "🍎" },
-    { name: "Lainnya", icon: "🍽️" },
+    { name: "Bakery", image: "/categories/bakery.jpg" },
+    { name: "Resto", image: "/categories/resto.jpg" },
+    { name: "UMKM", image: "/categories/umkm.jpg" },
+    { name: "Dessert", image: "/categories/dessert.jpg" },
+    { name: "Cafe", image: "/categories/cafe.jpg" },
+    { name: "Snacks", image: "/categories/snacks.jpg" },
+    { name: "Vegan", image: "/categories/vegan.jpg" },
+    { name: "Fruits", image: "/categories/fruits.jpg" },
+    { name: "Drinks", image: "/categories/drinks.jpg" },
   ];
 
   const restaurants = [
@@ -211,8 +211,8 @@ export default function BerandaPage() {
                 href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
                 className="beranda-category"
               >
-                <div className="beranda-category-icon">{cat.icon}</div>
-                <span>{cat.name}</span>
+                <img src={cat.image} alt={cat.name} className="beranda-category-image" />
+                <span className="beranda-category-name">{cat.name}</span>
               </Link>
             ))}
           </div>
