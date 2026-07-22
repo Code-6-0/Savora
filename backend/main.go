@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/savora/backend/database"
+	"github.com/savora/backend/middleware"
 	"github.com/savora/backend/routes"
 )
 
@@ -19,12 +20,15 @@ func main() {
 
 	database.ConnectDB()
 
+	// Initialize audit logs table (from middleware - avoid import cycle)
+	middleware.InitAuditLog()
+
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept",
-		AllowMethods: "GET, POST, PUT, DELETE",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
 	}))
 
 	routes.SetupRoutes(app)

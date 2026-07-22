@@ -1,16 +1,16 @@
 :root {
-  --primary-color: #0d8a4d;
-  --primary-dark: #096336;
+  --primary-color: #16A34A;
+  --primary-dark: #0B7A3B;
   --secondary-color: #e5f5eb;
   --text-main: #111827;
   --text-muted: #6b7280;
-  --bg-color: #f9fafb;
+  --bg-color: #ffffff;
   --card-bg: #ffffff;
   --border-color: #e5e7eb;
-  
+
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
-  --success-color: #10b981;
+  --success-color: #22C55E;
 }
 
 * {
