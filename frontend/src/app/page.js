@@ -63,15 +63,15 @@ export default function BerandaPage() {
   const topProducts = products.slice(0, 8);
 
   const categories = [
-    { name: "Bakery", image: "/categories/bakery.jpg" },
-    { name: "Resto", image: "/categories/resto.jpg" },
-    { name: "UMKM", image: "/categories/umkm.jpg" },
-    { name: "Dessert", image: "/categories/dessert.jpg" },
-    { name: "Cafe", image: "/categories/cafe.jpg" },
-    { name: "Snacks", image: "/categories/snacks.jpg" },
-    { name: "Vegan", image: "/categories/vegan.jpg" },
-    { name: "Fruits", image: "/categories/fruits.jpg" },
-    { name: "Drinks", image: "/categories/drinks.jpg" },
+    { name: "Bakery", icon: "/categories/bakery.svg", bgColor: "#ecfdf5", iconColor: "#059669" },
+    { name: "Resto", icon: "/categories/resto.svg", bgColor: "#fff7ed", iconColor: "#ea580c" },
+    { name: "UMKM", icon: "/categories/umkm.svg", bgColor: "#eff6ff", iconColor: "#2563eb" },
+    { name: "Dessert", icon: "/categories/dessert.svg", bgColor: "#fdf2f8", iconColor: "#db2777" },
+    { name: "Cafe", icon: "/categories/cafe.svg", bgColor: "#fefce8", iconColor: "#ca8a04" },
+    { name: "Snacks", icon: "/categories/snacks.svg", bgColor: "#f0fdf4", iconColor: "#16a34a" },
+    { name: "Vegan", icon: "/categories/vegan.svg", bgColor: "#faf5ff", iconColor: "#9333ea" },
+    { name: "Fruits", icon: "/categories/fruits.svg", bgColor: "#fef2f2", iconColor: "#dc2626" },
+    { name: "Drinks", icon: "/categories/drinks.svg", bgColor: "#ecfeff", iconColor: "#0891b2" },
   ];
 
   const restaurants = [
@@ -211,7 +211,19 @@ export default function BerandaPage() {
                 href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
                 className="beranda-category"
               >
-                <img src={cat.image} alt={cat.name} className="beranda-category-image" />
+                <div
+                  className="beranda-category-circle"
+                  style={{ backgroundColor: cat.bgColor }}
+                >
+                  <span
+                    className="beranda-category-icon"
+                    style={{
+                      backgroundColor: cat.iconColor,
+                      maskImage: `url(${cat.icon})`,
+                      WebkitMaskImage: `url(${cat.icon})`,
+                    }}
+                  />
+                </div>
                 <span className="beranda-category-name">{cat.name}</span>
               </Link>
             ))}
