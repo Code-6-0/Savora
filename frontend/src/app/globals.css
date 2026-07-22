@@ -1962,9 +1962,15 @@ body {
   margin-top: 24px;
 }
 
-.beranda-impact-community,
-.beranda-impact-personal {
+.beranda-impact-community {
   background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.beranda-impact-personal {
+  background: #e9f6ed;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   padding: 32px;
@@ -1985,11 +1991,14 @@ body {
 }
 
 .beranda-impact-stat {
-  text-align: center;
+  text-align: left;
+  background: #d8f4e1;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 .beranda-impact-number {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 800;
   color: #16a34a;
   margin-bottom: 6px;
@@ -2002,9 +2011,7 @@ body {
 }
 
 .beranda-progress {
-  background: #f3f4f6;
-  border-radius: 12px;
-  padding: 20px;
+  margin-top: 24px;
 }
 
 .beranda-progress-header {
@@ -2019,22 +2026,22 @@ body {
 
 .beranda-progress-bar {
   height: 12px;
-  background: #e5e7eb;
-  border-radius: 6px;
+  background: #dce2f3;
+  border-radius: 9999px;
   overflow: hidden;
 }
 
 .beranda-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
+  background: #16a34a;
   transition: width 0.3s ease;
 }
 
 .beranda-achievement-card {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  border-radius: 12px;
-  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
   text-align: center;
 }
 
@@ -2043,25 +2050,149 @@ body {
 }
 
 .beranda-achievement-card p {
-  font-size: 14px;
-  color: #065f46;
+  font-size: 15px;
+  color: #4b5563;
   line-height: 1.6;
+  margin: 0;
+}
+
+.beranda-achievement-link {
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.beranda-achievement-link:hover {
+  color: #0f7a38;
+  text-decoration: underline;
+}
+
+.beranda-impact-subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: #6e7a6e;
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.beranda-impact-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #151c27;
+  margin-bottom: 24px;
+}
+
+.beranda-impact-label-upper {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3e4a3e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.beranda-progress-header-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.beranda-progress-label-left {
+  font-size: 13px;
+  font-weight: 600;
+  color: #151c27;
+}
+
+.beranda-progress-label-right {
+  font-size: 13px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.beranda-achievement-card-horizontal {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
   margin-bottom: 20px;
 }
 
-.beranda-achievement-btn {
-  display: inline-block;
-  padding: 10px 24px;
-  background: #16a34a;
-  color: white;
-  border-radius: 8px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: transform 0.2s;
+.beranda-achievement-badge {
+  width: 96px;
+  height: 96px;
+  background: white;
+  border: 3px solid #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
 }
 
-.beranda-achievement-btn:hover {
-  transform: translateY(-2px);
+.beranda-achievement-level {
+  background: #16a34a;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.beranda-achievement-content {
+  flex: 1;
+}
+
+.beranda-achievement-text {
+  font-size: 15px;
+  color: #151c27;
+  text-align: left;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.beranda-achievement-icons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.beranda-achievement-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.beranda-achievement-button {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  height: 46px;
+  color: #16a34a;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.2s;
+  margin-top: 20px;
+}
+
+.beranda-achievement-button:hover {
+  background: #f0fdf4;
 }
 
 /* Info Cards */
@@ -2072,11 +2203,10 @@ body {
 }
 
 .beranda-info-card {
-  background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 32px;
-  text-align: center;
+  text-align: left;
 }
 
 .beranda-info-icon {
@@ -2086,7 +2216,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin-bottom: 20px;
 }
 
 .beranda-info-card h3 {
@@ -2403,4 +2533,12 @@ body {
 .beranda-ads img {
   width: 100%;
   height: auto;
+}
+
+.beranda-achievement-level {
+  white-space: nowrap;
+}
+
+#tentang {
+  background: #ffffff;
 }

@@ -14,6 +14,12 @@ import {
   DollarSign,
   Footprints,
   ShoppingCart,
+  Award,
+  Trophy,
+  Globe,
+  Trees,
+  Utensils,
+  Lock,
 } from "lucide-react";
 import { fetchMarketplaceProducts, computeProductScore } from "@/lib/marketplace";
 
@@ -365,23 +371,29 @@ export default function BerandaPage() {
       <section id="tentang" className="beranda-section">
         <div className="beranda-container">
           <h2 className="beranda-section-title-center">Dampak Keberlanjutan</h2>
+          <p className="beranda-impact-subtitle">
+            Lihat kontribusimu dalam mengurangi food waste dan menjaga lingkungan.
+          </p>
           <div className="beranda-impact">
             <div className="beranda-impact-community">
-              <h3>Kontribusi Komunitas</h3>
+              <h3 className="beranda-impact-heading">
+                <Globe size={20} color="#16a34a" className="beranda-impact-icon" />
+                Kontribusi Komunitas
+              </h3>
               <div className="beranda-impact-stats">
                 <div className="beranda-impact-stat">
-                  <div className="beranda-impact-number">1.2M+</div>
-                  <div className="beranda-impact-label">Makanan Terselamatkan</div>
+                  <div className="beranda-impact-number" style={{ color: "#16a34a" }}>1.2M+</div>
+                  <div className="beranda-impact-label-upper">TOTAL MEALS SAVED</div>
                 </div>
                 <div className="beranda-impact-stat">
-                  <div className="beranda-impact-number">450T</div>
-                  <div className="beranda-impact-label">CO₂ Dikurangi (kg)</div>
+                  <div className="beranda-impact-number" style={{ color: "#006d2f" }}>450T</div>
+                  <div className="beranda-impact-label-upper">CO2 EMISSION CUT</div>
                 </div>
               </div>
               <div className="beranda-progress">
-                <div className="beranda-progress-header">
-                  <span>Target Zero Waste 2026</span>
-                  <span>65%</span>
+                <div className="beranda-progress-header-split">
+                  <span className="beranda-progress-label-left">Target Zero Waste 2025</span>
+                  <span className="beranda-progress-label-right">65% Achieved</span>
                 </div>
                 <div className="beranda-progress-bar">
                   <div className="beranda-progress-fill" style={{ width: "65%" }}></div>
@@ -389,14 +401,35 @@ export default function BerandaPage() {
               </div>
             </div>
             <div className="beranda-impact-personal">
-              <h3>Pencapaian Kamu</h3>
-              <div className="beranda-achievement-card">
-                <Leaf size={32} color="#16a34a" />
-                <p>Mulai kontribusi dengan membeli rescue deal pertama kamu!</p>
-                <Link href="/marketplace" className="beranda-achievement-btn">
-                  Lihat Deals
-                </Link>
+              <h3 className="beranda-impact-heading">
+                <Star size={20} color="#16a34a" className="beranda-impact-icon" />
+                Pencapaian Kamu
+              </h3>
+              <div className="beranda-achievement-card-horizontal">
+                <div className="beranda-achievement-badge">
+                  <Leaf size={34} color="#16a34a" />
+                  <div className="beranda-achievement-level">LVL 5</div>
+                </div>
+                <div className="beranda-achievement-content">
+                  <p className="beranda-achievement-text">
+                    Kamu sudah menyelamatkan setara dengan <span style={{ color: '#16a34a', fontWeight: '600' }}>3 Pohon</span> minggu ini!
+                  </p>
+                  <div className="beranda-achievement-icons">
+                    <div className="beranda-achievement-icon-badge" style={{ backgroundColor: 'white' }}>
+                      <Trees size={20} color="#16a34a" />
+                    </div>
+                    <div className="beranda-achievement-icon-badge" style={{ backgroundColor: '#f59e0b' }}>
+                      <Utensils size={20} color="white" />
+                    </div>
+                    <div className="beranda-achievement-icon-badge" style={{ backgroundColor: '#e5e7eb' }}>
+                      <Lock size={20} color="#9ca3af" />
+                    </div>
+                  </div>
+                </div>
               </div>
+              <Link href="/dashboard" className="beranda-achievement-button">
+                Lihat Dashboard Lengkap
+              </Link>
             </div>
           </div>
         </div>
@@ -406,7 +439,7 @@ export default function BerandaPage() {
       <section className="beranda-section beranda-section-gray">
         <div className="beranda-container">
           <div className="beranda-info-cards">
-            <div className="beranda-info-card">
+            <div className="beranda-info-card" style={{ backgroundColor: "#e8f6e9" }}>
               <div className="beranda-info-icon" style={{ backgroundColor: "#d1fae5" }}>
                 <Leaf size={28} color="#16a34a" />
               </div>
@@ -416,7 +449,7 @@ export default function BerandaPage() {
                 menjaga lingkungan untuk generasi mendatang.
               </p>
             </div>
-            <div className="beranda-info-card">
+            <div className="beranda-info-card" style={{ backgroundColor: "#fffac3" }}>
               <div className="beranda-info-icon" style={{ backgroundColor: "#fef3c7" }}>
                 <DollarSign size={28} color="#f59e0b" />
               </div>
@@ -426,7 +459,7 @@ export default function BerandaPage() {
                 breakdown service fee 5% sebelum checkout.
               </p>
             </div>
-            <div className="beranda-info-card">
+            <div className="beranda-info-card" style={{ backgroundColor: "#e4f2fd" }}>
               <div className="beranda-info-icon" style={{ backgroundColor: "#dbeafe" }}>
                 <Footprints size={28} color="#3b82f6" />
               </div>
