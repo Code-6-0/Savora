@@ -11,7 +11,10 @@ export default function ProdukPage() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addMode, setAddMode] = useState(null); // 'manual' or 'ai'
+<<<<<<< HEAD
   const [editingProductId, setEditingProductId] = useState(null);
+=======
+>>>>>>> feat/customer-pages
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
@@ -20,7 +23,11 @@ export default function ProdukPage() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Dummy data for visual
+<<<<<<< HEAD
   const [products, setProducts] = useState([
+=======
+  const products = [
+>>>>>>> feat/customer-pages
     { id: 1, name: "Nasi Kotak Ayam Bakar", category: "Makanan Siap Saji", original_price: 35000, rescue_price: 20000, stock: 8, score: 87, timer: "6j", status: "Aktif" },
     { id: 2, name: "Roti Gandum Artisan", category: "Bakeri & Roti", original_price: 25000, rescue_price: 12000, stock: 3, score: 38, timer: "2j", status: "Hampir Habis" },
     { id: 3, name: "Salad Bowl Superfood", category: "Makanan Sehat", original_price: 45000, rescue_price: 28000, stock: 12, score: 74, timer: "8j", status: "Aktif" },
@@ -29,6 +36,7 @@ export default function ProdukPage() {
     { id: 6, name: "Smoothie Bowl Mango", category: "Minuman & Bowl", original_price: 55000, rescue_price: 35000, stock: 6, score: 68, timer: "7j", status: "Aktif" },
     { id: 7, name: "Pizza Margherita Min", category: "Pizza & Pasta", original_price: 65000, rescue_price: 65000, stock: 4, score: 91, timer: "11j", status: "Aktif" },
     { id: 8, name: "Bakso Premium Solo", category: "Makanan Siap Saji", original_price: 40000, rescue_price: 25000, stock: 6, score: 55, timer: "5j", status: "Aktif" },
+<<<<<<< HEAD
   ]);
 
   const [newProduct, setNewProduct] = useState({ 
@@ -127,6 +135,9 @@ export default function ProdukPage() {
   const handleDeleteProduct = (id) => {
     setProducts(products.filter(p => p.id !== id));
   };
+=======
+  ];
+>>>>>>> feat/customer-pages
 
   const formatRupiah = (number) => {
     if (!number) return "—";
@@ -198,11 +209,17 @@ export default function ProdukPage() {
               </div>
             )}
           </div>
+<<<<<<< HEAD
           <div style={{ display: 'flex', gap: '10px' }}>
             <button onClick={() => { setIsModalOpen(true); setAddMode('manual'); setEditingProductId(null); setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" }); }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
               <Plus size={16} /> Tambah Produk
             </button>
           </div>
+=======
+          <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '5px', borderRadius: '20px' }} onClick={() => setIsModalOpen(true)}>
+            <Plus size={16} /> Tambah Produk
+          </button>
+>>>>>>> feat/customer-pages
         </div>
       </TopHeader>
 
@@ -318,6 +335,7 @@ export default function ProdukPage() {
                   <td style={{ color: p.timer === '-' ? '#9CA3AF' : '#D97706', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     {p.timer !== '-' && <Clock size={14} />} {p.timer}
                   </td>
+<<<<<<< HEAD
                   <td style={{ padding: '15px' }}>
                         {p.ftiStatus && (
                            <div style={{ marginBottom: '5px' }}>
@@ -332,6 +350,14 @@ export default function ProdukPage() {
                           <button onClick={() => handleDeleteProduct(p.id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }} title="Hapus"><Trash2 size={16} /></button>
                         </div>
                       </td>
+=======
+                  <td style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      <button style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer' }} title="Edit"><Edit size={16} /></button>
+                      <button style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }} title="Hapus"><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+>>>>>>> feat/customer-pages
                 </tr>
               )) : (
                 <tr>
@@ -523,6 +549,7 @@ export default function ProdukPage() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+<<<<<<< HEAD
               <h3 style={{ margin: 0 }}>{editingProductId ? "Edit Produk" : "Tambah Produk Baru"}</h3>
               <button onClick={() => { setIsModalOpen(false); setAddMode(null); setEditingProductId(null); }} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6B7280' }}>&times;</button>
             </div>
@@ -532,22 +559,74 @@ export default function ProdukPage() {
                   <div>
                     <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Nama Produk</label>
                     <input type="text" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+=======
+              <h3 style={{ margin: 0 }}>Tambah Produk Baru</h3>
+              <button onClick={() => { setIsModalOpen(false); setAddMode(null); }} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6B7280' }}>&times;</button>
+            </div>
+            
+            {!addMode ? (
+              <div className="grid-2">
+                <div 
+                  onClick={() => setAddMode('ai')}
+                  style={{ border: '2px solid #10B981', borderRadius: '12px', padding: '25px', textAlign: 'center', cursor: 'pointer', backgroundColor: '#F0FDF4' }}>
+                  <div style={{ width: '60px', height: '60px', backgroundColor: '#D1FAE5', color: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto' }}>
+                    <Sparkles size={30} />
+                  </div>
+                  <h4 style={{ margin: '0 0 10px 0' }}>AI Auto-Scan</h4>
+                  <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Upload foto produk, AI akan otomatis mengisi detail dan saran harga rescue.</p>
+                </div>
+                <div 
+                  onClick={() => setAddMode('manual')}
+                  style={{ border: '1px solid #D1D5DB', borderRadius: '12px', padding: '25px', textAlign: 'center', cursor: 'pointer' }}>
+                  <div style={{ width: '60px', height: '60px', backgroundColor: '#F3F4F6', color: '#6B7280', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto' }}>
+                    <Plus size={30} />
+                  </div>
+                  <h4 style={{ margin: '0 0 10px 0' }}>Input Manual</h4>
+                  <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: 0 }}>Isi form detail produk dan kelayakan secara manual dari awal.</p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {addMode === 'ai' && (
+                  <div style={{ marginBottom: '20px', padding: '20px', border: '2px dashed #D1D5DB', borderRadius: '10px', textAlign: 'center', backgroundColor: '#F9FAFB' }}>
+                    <Camera size={40} color="#9CA3AF" style={{ marginBottom: '10px' }} />
+                    <div style={{ fontWeight: 600, color: '#374151', marginBottom: '5px' }}>Upload foto produk</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>AI akan memindai dan mengisi detail form otomatis</div>
+                    <button className="btn-secondary" style={{ marginTop: '15px' }}>Pilih Foto</button>
+                  </div>
+                )}
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Nama Produk</label>
+                    <input type="text" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+>>>>>>> feat/customer-pages
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Kategori</label>
+<<<<<<< HEAD
                       <select value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }}>
                         {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+=======
+                      <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }}>
+                        <option>Pilih Kategori</option>
+>>>>>>> feat/customer-pages
                       </select>
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Stok</label>
+<<<<<<< HEAD
                       <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+=======
+                      <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+>>>>>>> feat/customer-pages
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Harga Normal</label>
+<<<<<<< HEAD
                       <input type="number" value={newProduct.original_price} onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
                     </div>
                     <div>
@@ -599,6 +678,38 @@ export default function ProdukPage() {
                 </div>
               </div>
             </div>
+=======
+                      <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px', color: '#10B981' }}>Harga Rescue (AI Suggested)</label>
+                      <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #10B981', backgroundColor: '#F0FDF4' }} />
+                      <Sparkles size={16} color="#10B981" style={{ position: 'absolute', right: '10px', top: '35px' }} />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '10px' }}>Assessment Kelayakan Makanan</div>
+                    <div style={{ padding: '15px', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                         <input type="checkbox" /> <span>Kemasan masih utuh dan tidak rusak</span>
+                       </label>
+                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                         <input type="checkbox" /> <span>Warna, bau, dan tekstur normal</span>
+                       </label>
+                       <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                         <input type="checkbox" /> <span>Belum melewati batas kedaluwarsa maksimal 2 hari</span>
+                       </label>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                    <button className="btn-secondary" onClick={() => { setIsModalOpen(false); setAddMode(null); }}>Batal</button>
+                    <button className="btn-primary">Simpan Produk</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+>>>>>>> feat/customer-pages
         </div>
       )}
     </>

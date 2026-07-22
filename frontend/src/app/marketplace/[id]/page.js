@@ -2,9 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+=======
+import { useEffect, useCallback, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  AlertTriangle,
+>>>>>>> feat/customer-pages
   ArrowLeft,
   Clock3,
   Flame,
@@ -12,15 +19,31 @@ import {
   MapPin,
   Minus,
   Plus,
+<<<<<<< HEAD
+=======
+  RefreshCw,
+>>>>>>> feat/customer-pages
   Search,
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
   Sun,
 } from "lucide-react";
+<<<<<<< HEAD
 import { fallbackMarketplaceProducts, fetchMarketplaceProduct, normalizeMarketplaceProduct } from "@/lib/marketplace";
 import { computeFoodScore, foodScoreBand, rescueTimeParts } from "@/lib/foodScore";
 import { classifyReviewText, deriveRestaurantSafety } from "@/lib/reviews";
+=======
+import {
+  computeProductScore,
+  fallbackMarketplaceProducts,
+  fetchMarketplaceProduct,
+  normalizeMarketplaceProduct,
+} from "@/lib/marketplace";
+import { foodScoreBand, rescueTimeColor, rescueTimeParts } from "@/lib/foodScore";
+import { classifyReviewText, deriveRestaurantSafety } from "@/lib/reviews";
+import { computeCheckoutPricing } from "@/lib/pricing";
+>>>>>>> feat/customer-pages
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
@@ -38,6 +61,7 @@ function safetyIcon(levelKey) {
   return <ShieldCheck size={13} aria-hidden="true" />;
 }
 
+<<<<<<< HEAD
 // Detik berlalu sejak halaman dibuka. Satu sumber untuk timer sekaligus Food
 // Score, sehingga skor meluruh persis mengikuti Rescue Time. Counter murni
 // (hanya menambah) agar tidak memicu setState sinkron di dalam effect.
@@ -48,6 +72,17 @@ function useElapsedSeconds() {
     return () => window.clearInterval(interval);
   }, []);
   return elapsed;
+=======
+// Timestamp Date.now() di-refresh tiap detik. Skor & sisa waktu dihitung dari
+// timestamp absolut sehingga TIDAK reset saat halaman dimuat ulang.
+function useNow() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+  return now;
+>>>>>>> feat/customer-pages
 }
 
 function MarketplaceHeader() {
@@ -61,7 +96,11 @@ function MarketplaceHeader() {
         <Search size={17} aria-hidden="true" />
         <input placeholder="Cari nasi, roti, warung, atau UMKM..." aria-label="Cari produk atau UMKM" readOnly />
       </label>
+<<<<<<< HEAD
       <nav className="savora-main-nav" aria-label="Navigasi marketplace"><Link href="/marketplace">Rescue Deals</Link><a href="#assessment">Food Score</a><a href="#pickup">Pickup</a></nav>
+=======
+      <nav className="savora-main-nav" aria-label="Navigasi marketplace"><Link href="/marketplace">Rescue Deals</Link><a href="#assessment">Food Score</a><a href="#pickup">Pickup</a><Link href="/akun">Riwayat &amp; Impact</Link></nav>
+>>>>>>> feat/customer-pages
       <button className="savora-icon-button" type="button" aria-label="Tema terang demo"><Sun size={18} /></button>
       <button className="savora-cart" type="button" aria-label="Keranjang demo"><ShoppingBag size={19} /> <b>2</b></button>
       <button className="savora-login" type="button">Masuk</button>
@@ -72,8 +111,16 @@ function MarketplaceHeader() {
 
 function TimerDisplay({ seconds }) {
   const time = rescueTimeParts(seconds);
+<<<<<<< HEAD
   return (
     <div className={`savora-rescue-timer${seconds <= 900 ? " is-hot" : ""}`}>
+=======
+  // Color indicator sisa waktu ABSOLUT (PRD 5.1 & REVISI #31): paralel dengan
+  // band skor, keduanya boleh berbeda.
+  const timeColor = rescueTimeColor(seconds);
+  return (
+    <div className={`savora-rescue-timer ${timeColor.className}`}>
+>>>>>>> feat/customer-pages
       <span><Clock3 size={14} aria-hidden="true" /> Smart Rescue Timer</span>
       <div><b>{time.hours}</b><small>jam</small><b>{time.minutes}</b><small>menit</small><b>{time.seconds}</b><small>detik</small></div>
     </div>
@@ -109,6 +156,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(() => fallbackMarketplaceProducts.map(normalizeMarketplaceProduct).find((item) => item.id === id));
   const [quantity, setQuantity] = useState(1);
   const [notice, setNotice] = useState("");
+<<<<<<< HEAD
 
   useEffect(() => {
     let alive = true;
@@ -119,15 +167,68 @@ export default function ProductDetailPage() {
   const windowSeconds = Math.max(1, Math.round((Number(product?.timerMinutes) || 0) * 60));
   const elapsed = useElapsedSeconds();
   const remaining = Math.max(0, windowSeconds - elapsed);
+=======
+  const [dataSource, setDataSource] = useState("fallback");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
+
+  const loadProduct = useCallback(async () => {
+    try {
+      const result = await fetchMarketplaceProduct(id);
+      setProduct(result.product);
+      setDataSource(result.source);
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
+
+  const handleRetry = () => {
+    setIsRefetching(true);
+    loadProduct();
+  };
+
+  const now = useNow();
+>>>>>>> feat/customer-pages
   const safety = useMemo(
     () => deriveRestaurantSafety(product?.reviews, product?.safety_level),
     [product],
   );
 
+<<<<<<< HEAD
+=======
+  // Loading state: tampilkan skeleton
+  if (isLoading) {
+    return (
+      <div className="savora-marketplace">
+        <MarketplaceHeader />
+        <main className="savora-detail-main">
+          <div className="savora-skeleton-line" style={{ width: "120px", height: "20px", marginBottom: "25px" }} />
+          <div className="savora-detail-layout">
+            <div>
+              <div className="savora-skeleton-pulse" style={{ width: "100%", height: "391px", borderRadius: "24px" }} />
+            </div>
+            <div>
+              <div className="savora-skeleton-line" style={{ width: "70%", height: "32px", marginBottom: "12px" }} />
+              <div className="savora-skeleton-line" style={{ width: "90%", height: "16px", marginBottom: "8px" }} />
+              <div className="savora-skeleton-line" style={{ width: "60%", height: "24px" }} />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+>>>>>>> feat/customer-pages
   if (!product) {
     return <div className="savora-marketplace"><MarketplaceHeader /><main className="savora-not-found"><h1>Produk tidak ditemukan</h1><p>Rescue deal ini mungkin sudah habis atau tidak aktif.</p><Link href="/marketplace" className="savora-primary-action">Kembali ke marketplace</Link></main></div>;
   }
 
+<<<<<<< HEAD
   const savings = product.original_price - product.rescue_price;
   const reviewAverage = product.reviews?.length ? (product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length).toFixed(1) : "4.8";
   const score = computeFoodScore(remaining, windowSeconds, product.trustScore);
@@ -138,6 +239,32 @@ export default function ProductDetailPage() {
   function updateQuantity(delta) { setQuantity((current) => Math.min(product.stock, Math.max(1, current + delta))); }
   function reserveProduct() {
     if (expired) { setNotice("Rescue Time sudah habis. Deal ini tidak lagi tersedia."); return; }
+=======
+  const { score, remainingSeconds } = computeProductScore(product, now);
+  const band = foodScoreBand(score);
+  const expired = score <= 0 || remainingSeconds <= 0;
+  const showSafety = safety.level.key !== "aman" || safety.keywords.length > 0;
+
+  // Produk expired: tampilkan state "deal berakhir" (PRD 12.6).
+  if (expired) {
+    return (
+      <div className="savora-marketplace savora-detail-page">
+        <MarketplaceHeader />
+        <main className="savora-not-found">
+          <h1>Rescue deal telah berakhir</h1>
+          <p>Food Score untuk <strong>{product.name}</strong> dari {product.vendor} telah mencapai 0. Deal ini sudah kedaluwarsa dan tidak lagi tersedia.</p>
+          <Link href="/marketplace" className="savora-primary-action">← Kembali ke marketplace</Link>
+        </main>
+      </div>
+    );
+  }
+
+  const savings = product.original_price - product.rescue_price;
+  const reviewAverage = product.reviews?.length ? (product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length).toFixed(1) : "4.8";
+
+  function updateQuantity(delta) { setQuantity((current) => Math.min(product.stock, Math.max(1, current + delta))); }
+  function reserveProduct() {
+>>>>>>> feat/customer-pages
     setNotice(`${quantity} porsi ${product.name} berhasil dipilih. Lanjutkan ke Checkout untuk pembayaran.`);
   }
 
@@ -146,6 +273,18 @@ export default function ProductDetailPage() {
       <MarketplaceHeader />
       <main className="savora-detail-main">
         <button type="button" className="savora-back" onClick={() => router.back()}><ArrowLeft size={16} /> Kembali ke marketplace</button>
+<<<<<<< HEAD
+=======
+        {dataSource === "fallback" && (
+          <div className="savora-fallback-banner" role="status">
+            <AlertTriangle size={15} aria-hidden="true" />
+            <span>Menampilkan data demo — server tidak terjangkau</span>
+            <button type="button" onClick={handleRetry} disabled={isRefetching}>
+              <RefreshCw size={13} className={isRefetching ? "savora-spin" : ""} aria-hidden="true" /> Coba lagi
+            </button>
+          </div>
+        )}
+>>>>>>> feat/customer-pages
         <section className="savora-detail-layout">
           <div className="savora-detail-left">
             <div className="savora-detail-image">
@@ -164,7 +303,11 @@ export default function ProductDetailPage() {
                 <div><span>◷ Masa simpan</span><b>{product.shelfLife}</b></div>
                 <div><span>✦ Skor Trust</span><b>{product.food_trust_status} ({product.trustScore}/100)</b></div>
               </div>
+<<<<<<< HEAD
               <p className="savora-disclaimer"><b>Kenapa skor ini?</b> Food Score dihitung dari Skor Trust UMKM lalu menurun otomatis mengikuti Rescue Time menuju batas layak konsumsi. Food Score bukan sertifikasi lab; periksa kondisi makanan saat pickup.</p>
+=======
+              <p className="savora-disclaimer"><b>Kenapa skor ini?</b> Food Score dihitung dari status Food Trust Index saat listing dipublikasikan (Fresh=100, Layak Dijual=85, Segera Dijual=70) lalu menurun otomatis mengikuti sisa waktu menuju batas layak konsumsi. Food Score bukan sertifikasi lab; periksa kondisi makanan saat pickup.</p>
+>>>>>>> feat/customer-pages
             </section>
 
             <section className="savora-reviews" aria-labelledby="reviews-title">
@@ -203,6 +346,7 @@ export default function ProductDetailPage() {
             <div className={`savora-score-panel ${band.className}`}>
               <div className="savora-score-panel-head">
                 <span><Gauge size={15} aria-hidden="true" /> Food Score</span>
+<<<<<<< HEAD
                 <b>{expired ? "0" : score}<small>/100</small></b>
               </div>
               <div className="savora-score-meter" role="img" aria-label={`Food Score ${expired ? 0 : score} dari 100, ${band.label}`}>
@@ -214,6 +358,28 @@ export default function ProductDetailPage() {
             <TimerDisplay seconds={remaining} />
             <div className="savora-quantity"><span>Sisa {product.stock} porsi</span><div><button type="button" onClick={() => updateQuantity(-1)} disabled={quantity <= 1} aria-label="Kurangi jumlah"><Minus size={15} /></button><b>{quantity}</b><button type="button" onClick={() => updateQuantity(1)} disabled={quantity >= product.stock} aria-label="Tambah jumlah"><Plus size={15} /></button></div></div>
             <button type="button" className="savora-main-rescue" onClick={reserveProduct} disabled={expired}>{expired ? "Rescue Time habis" : <>Selamatkan sekarang — <span>{formatRupiah(product.rescue_price * quantity)}</span></>}</button>
+=======
+                <b>{score}<small>/100</small></b>
+              </div>
+              <div className="savora-score-meter" role="img" aria-label={`Food Score ${score} dari 100, ${band.label}`}>
+                <span style={{ width: `${score}%` }} />
+              </div>
+              <p>{band.label} — skor menurun otomatis mengikuti sisa waktu.</p>
+            </div>
+
+            <TimerDisplay seconds={remainingSeconds} />
+            <div className="savora-quantity"><span>Sisa {product.stock} porsi</span><div><button type="button" onClick={() => updateQuantity(-1)} disabled={quantity <= 1} aria-label="Kurangi jumlah"><Minus size={15} /></button><b>{quantity}</b><button type="button" onClick={() => updateQuantity(1)} disabled={quantity >= product.stock} aria-label="Tambah jumlah"><Plus size={15} /></button></div></div>
+
+            {/* Rincian harga final — PRD 13.3: harga harus jelas sebelum checkout.
+                Service fee 5% ditambahkan ke total pembayaran customer (PRD 14.4). */}
+            <div className="savora-price-breakdown">
+              <div className="savora-price-row"><span>Subtotal ({quantity}×)</span><span>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).subtotal)}</span></div>
+              <div className="savora-price-row"><span>Service fee 5%</span><span>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).serviceFee)}</span></div>
+              <div className="savora-price-row savora-price-total"><span>Total</span><b>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).total)}</b></div>
+            </div>
+
+            <button type="button" className="savora-main-rescue" onClick={reserveProduct}>Selamatkan sekarang — <span>{formatRupiah(computeCheckoutPricing(product.rescue_price, quantity).total)}</span></button>
+>>>>>>> feat/customer-pages
             <div className="savora-pickup" id="pickup"><b><MapPin size={15} /> Lokasi Pickup</b><span>{product.pickup_address}</span><small>Tunjukkan pickup code saat tiba. Batas pickup mengikuti Smart Rescue Timer.</small></div>
           </aside>
         </section>
