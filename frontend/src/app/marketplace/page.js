@@ -284,7 +284,7 @@ export default function MarketplacePage() {
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
-              const rating = product.rating || (4.7 + (product.id % 3) * 0.1);
+              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               return (
@@ -367,7 +367,7 @@ export default function MarketplacePage() {
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
-              const rating = product.rating || (4.7 + (product.id % 3) * 0.1);
+              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               return (
