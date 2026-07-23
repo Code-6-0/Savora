@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -289,6 +289,7 @@ function CheckoutForm({ product, quantity, onSubmit }) {
 }
 
 export default function CheckoutPage() {
+  const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -297,7 +298,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const productId = parseInt(searchParams?.get("product_id"));
+  // Product ID now comes from the route param [id]
+  const productId = parseInt(params?.id);
   const initialQty = parseInt(searchParams?.get("qty")) || 1;
 
   useEffect(() => {

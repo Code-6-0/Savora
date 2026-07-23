@@ -224,8 +224,8 @@ export default function ProductDetailPage() {
 
   function updateQuantity(delta) { setQuantity((current) => Math.min(product.stock, Math.max(1, current + delta))); }
   function reserveProduct() {
-    // Redirect ke checkout page dengan query params product_id dan qty
-    router.push(`/marketplace/checkout?product_id=${product.id}&qty=${quantity}`);
+    // Redirect ke checkout page /marketplace/[id]/checkout
+    router.push(`/marketplace/${product.id}/checkout?qty=${quantity}`);
   }
 
   return (
