@@ -1,85 +1,152 @@
-﻿package handlers
+package handlers
 
 import (
-	"strings"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/savora/backend/database"
 	"github.com/savora/backend/models"
 	"github.com/savora/backend/services"
 )
 
-// CreateReview - Customer membuat review dengan keyword
-func CreateReview(c *fiber.Ctx) error {
-	type CreateReviewRequest struct {
-		OrderID      uint     `json:"order_id"`
-		ReviewerID   uint     `json:"reviewer_id"`
-		TargetID     uint     `json:"target_id"` // UMKM ID
-		CustomerName string   `json:"customer_name"`
-		Rating       int      `json:"rating"`
-		Comment      string   `json:"comment"`
-		Keywords     []string `json:"keywords"` // Array keyword dari customer
-	}
+type ReviewHandler struct {
+	classifier services.KeywordClassifier
+}
 
-	var req CreateReviewRequest
+func NewReviewHandler() *ReviewHandler {
+	return &ReviewHandler{
+		classifier: services.NewSimpleKeywordClassifier(),
+	}
+}
+
+// CreateReview - POST /reviews (Customer submit review setelah order completed)
+func (h *ReviewHandler) CreateReview(c *fiber.Ctx) error {
+	db := services.GetDB()
+	
+	// TODO: Extract customerID dari JWT
+	customerID := uint(1)
+	
+	var req services.CreateReviewRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse JSON"})
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
 	}
 
-	// Classify keywords menggunakan service
-	classifiedKeywords := services.ClassifyKeywords(req.Keywords)
-
-	// Create review
-	review := models.Review{
-		OrderID:      req.OrderID,
-		ReviewerID:   req.ReviewerID,
-		TargetID:     req.TargetID,
-		CustomerName: req.CustomerName,
-		Rating:       req.Rating,
-		Comment:      req.Comment,
-		Keywords:     strings.Join(req.Keywords, ", "), // Denormalized snapshot
+	err := services.CreateReview(db, customerID, req, h.classifier)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	if err := database.DB.Create(&review).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	// Save classified keywords
-	for _, kw := range classifiedKeywords {
-		kw.ReviewID = review.ID
-		database.DB.Create(&kw)
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "Review created successfully",
-		"review":  review,
-		"classified_keywords": classifiedKeywords,
+	return c.JSON(fiber.Map{
+		"message": "Review berhasil disimpan",
 	})
 }
 
-// GetKeywordSafetyBadge - Get badge safety untuk UMKM tertentu
-func GetKeywordSafetyBadge(c *fiber.Ctx) error {
+// GetKeywordSafety - GET /reviews/keywords/:umkm_id (Public, untuk badge)
+func (h *ReviewHandler) GetKeywordSafety(c *fiber.Ctx) error {
+	db := services.GetDB()
 	umkmID := c.Params("umkm_id")
-
-	var reviews []models.Review
-	if err := database.DB.Where("target_id = ?", umkmID).Preload("ReviewKeywords").Find(&reviews).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	
+	var umkm models.UmkmProfile
+	if err := db.First(&umkm, umkmID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "UMKM tidak ditemukan",
+		})
 	}
 
-	// Calculate badge menggunakan service
-	result := services.CalculateKeywordSafety(reviews)
+	score, err := services.GetKeywordSafetyScore(db, umkm.ID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
-	return c.JSON(result)
+	return c.JSON(score)
 }
 
-// GetReviewsByUMKM - Get semua review untuk UMKM tertentu
-func GetReviewsByUMKM(c *fiber.Ctx) error {
+// GetReviewsByUmkm - GET /reviews/umkm/:umkm_id (Public, untuk detail produk)
+func (h *ReviewHandler) GetReviewsByUmkm(c *fiber.Ctx) error {
+	db := services.GetDB()
 	umkmID := c.Params("umkm_id")
-
+	
 	var reviews []models.Review
-	if err := database.DB.Where("target_id = ?", umkmID).Preload("ReviewKeywords").Order("created_at desc").Find(&reviews).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	if err := db.Where("target_id = ?", umkmID).
+		Preload("ReviewKeywords").
+		Order("created_at desc").
+		Limit(50).
+		Find(&reviews).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	return c.JSON(reviews)
+	// Hitung statistik rating
+	var stats struct {
+		AverageRating float64 `json:"average_rating"`
+		TotalReviews  int64   `json:"total_reviews"`
+		Rating1       int64   `json:"rating_1"`
+		Rating2       int64   `json:"rating_2"`
+		Rating3       int64   `json:"rating_3"`
+		Rating4       int64   `json:"rating_4"`
+		Rating5       int64   `json:"rating_5"`
+	}
+
+	db.Model(&models.Review{}).
+		Where("target_id = ?", umkmID).
+		Select("AVG(rating) as average_rating, COUNT(*) as total_reviews").
+		Scan(&stats)
+
+	db.Model(&models.Review{}).
+		Where("target_id = ? AND rating = ?", umkmID, 1).
+		Count(&stats.Rating1)
+
+	db.Model(&models.Review{}).
+		Where("target_id = ? AND rating = ?", umkmID, 2).
+		Count(&stats.Rating2)
+
+	db.Model(&models.Review{}).
+		Where("target_id = ? AND rating = ?", umkmID, 3).
+		Count(&stats.Rating3)
+
+	db.Model(&models.Review{}).
+		Where("target_id = ? AND rating = ?", umkmID, 4).
+		Count(&stats.Rating4)
+
+	db.Model(&models.Review{}).
+		Where("target_id = ? AND rating = ?", umkmID, 5).
+		Count(&stats.Rating5)
+
+	return c.JSON(fiber.Map{
+		"reviews": reviews,
+		"stats":   stats,
+	})
+}
+
+// GetReviewsByProduct - GET /reviews/product/:product_id (Public)
+func (h *ReviewHandler) GetReviewsByProduct(c *fiber.Ctx) error {
+	db := services.GetDB()
+	productID := c.Params("product_id")
+	
+	var product models.Product
+	if err := db.First(&product, productID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Produk tidak ditemukan",
+		})
+	}
+
+	var reviews []models.Review
+	if err := db.Where("target_id = ?", product.UmkmID).
+		Preload("ReviewKeywords").
+		Order("created_at desc").
+		Limit(20).
+		Find(&reviews).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"product": product,
+		"reviews": reviews,
+	})
 }

@@ -165,6 +165,52 @@ export const fallbackMarketplaceProducts = [
       { name: "Sinta L.", rating: 4, comment: "Nasinya enak dan masih hangat." },
     ],
   },
+  {
+    id: "soto-ayam",
+    name: "Soto Ayam Lamongan",
+    category: "Nasi",
+    vendor: "Depot Pak Bambang",
+    distanceKm: 1.8,
+    original_price: 22000,
+    rescue_price: 11000,
+    stock: 7,
+    food_trust_status: "Fresh",
+    trustScore: 88,
+    timerMinutes: 150,
+    ...demoWindow(6, 150),
+    photo_url: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1200&q=85",
+    description: "Soto ayam kuah bening dengan suwiran ayam, telur, dan pelengkap. Disajikan dengan nasi putih hangat.",
+    pickup_address: "Jl. Seturan Raya 45, Depok, Sleman",
+    productionTime: "Hari ini, 09:30 WIB",
+    shelfLife: "6 jam sejak produksi",
+    storage: "Hangat, tertutup",
+    packaging: "Mangkok food-grade, baru",
+    reviews: [],
+  },
+  {
+    id: "sandwich-club",
+    name: "Club Sandwich + Kentang",
+    category: "Snack",
+    vendor: "Cafe Corner",
+    distanceKm: 2.5,
+    original_price: 30000,
+    rescue_price: 15000,
+    stock: 4,
+    food_trust_status: "Layak Dijual",
+    trustScore: 82,
+    timerMinutes: 180,
+    ...demoWindow(9, 180),
+    photo_url: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=85",
+    description: "Club sandwich isi ayam, telur, selada, tomat dengan kentang goreng. Cocok untuk makan siang ringan.",
+    pickup_address: "Jl. Affandi 12, Caturtunggal, Sleman",
+    productionTime: "Hari ini, 08:00 WIB",
+    shelfLife: "9 jam sejak produksi",
+    storage: "Etalase tertutup, suhu ruang",
+    packaging: "Paper box baru",
+    reviews: [
+      { name: "Andi K.", rating: 5, comment: "Sandwich masih fresh dan kentangnya renyah." },
+    ],
+  },
 ];
 
 const defaultMetadata = {
@@ -288,7 +334,9 @@ export async function fetchMarketplaceProducts() {
     return result;
   };
   try {
-    const response = await fetch(`${baseUrl}/api/products/marketplace`);
+    const response = await fetch(`${baseUrl}/api/products/marketplace`, {
+      signal: AbortSignal.timeout(3000),
+    });
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json")) throw new Error("Marketplace API tidak tersedia");
     const data = await response.json();

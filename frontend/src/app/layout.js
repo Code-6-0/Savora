@@ -1,6 +1,8 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 import DashboardLayout from '@/components/templates/DashboardLayout'
+import { UmkmProvider } from '@/context/UmkmContext'
+import { NotificationProvider } from '@/context/NotificationContext'
 
 export const metadata = {
   title: 'Savora - UMKM Dashboard',
@@ -15,16 +17,16 @@ const inter = Inter({
   variable: '--font-sans',
 })
 
-import { UmkmProvider } from '@/context/UmkmContext'
-
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" className={inter.variable} suppressHydrationWarning>
       <body>
         <UmkmProvider>
-          <DashboardLayout>
-            {children}
-          </DashboardLayout>
+          <NotificationProvider userId={1} userRole="umkm">
+            <DashboardLayout>
+              {children}
+            </DashboardLayout>
+          </NotificationProvider>
         </UmkmProvider>
       </body>
     </html>

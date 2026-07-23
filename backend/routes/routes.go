@@ -19,6 +19,12 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/orders/umkm/:umkm_id", handlers.GetOrdersByUMKM)
 	api.Put("/orders/:id/status", handlers.UpdateOrderStatus)
 
+	// Notifications
+	api.Get("/notifications/user/:user_id", handlers.GetNotificationsByUser)
+	api.Get("/notifications/unread/:user_id", handlers.GetUnreadCount)
+	api.Put("/notifications/:id/read", handlers.MarkAsRead)
+	api.Put("/notifications/read-all/:user_id", handlers.MarkAllAsRead)
+
 	// Analytics
 	api.Get("/analytics/dashboard/:umkm_id", handlers.GetAnalyticsDashboard)
 	api.Get("/analytics/sales/:umkm_id", handlers.GetAnalyticsSales)

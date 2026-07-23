@@ -1,1 +1,41 @@
+# Project Archives
 savora.zip
+
+# graphify knowledge graph output
+/graphify-out
+
+# Environment Variables - NEVER COMMIT
+.env
+.env.local
+.env*.local
+backend/.env
+frontend/.env.local
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel
+
+# Go
+backend/savora-backend
+backend/savora-backend.exe
+backend/tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
