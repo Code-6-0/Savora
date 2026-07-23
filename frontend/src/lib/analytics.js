@@ -110,7 +110,7 @@ export async function fetchUmkmInsight(umkmId = DEFAULT_UMKM_ID) {
 /**
  * Ambil tren penjualan per periode. Fallback ke array kosong.
  * @param {number} [umkmId]
- * @param {"daily"|"weekly"|"monthly"} [granularity]
+ * @param {string} [granularity] - "daily", "weekly", atau "monthly"
  */
 export async function fetchSalesTrend(umkmId = DEFAULT_UMKM_ID, granularity = "daily") {
   try {

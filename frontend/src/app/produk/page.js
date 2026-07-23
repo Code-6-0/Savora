@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Search, Filter, ArrowUpDown, Clock, CheckCircle2, AlertTriangle, AlertCircle, BarChart2, Lightbulb, TrendingUp, Sparkles, Image as ImageIcon, Camera, Package, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -8,6 +9,7 @@ import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
 
 export default function ProdukPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addMode, setAddMode] = useState(null); // 'manual' or 'ai'
@@ -199,7 +201,7 @@ export default function ProdukPage() {
             )}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => { setIsModalOpen(true); setAddMode('manual'); setEditingProductId(null); setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" }); }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => router.push('/produk/tambah')} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
               <Plus size={16} /> Tambah Produk
             </button>
           </div>
