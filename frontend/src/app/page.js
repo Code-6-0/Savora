@@ -6,6 +6,7 @@ import Image from "next/image";
 import {
   Search,
   MapPin,
+  ChevronDown,
   Clock,
   Star,
   ChevronRight,
@@ -67,7 +68,7 @@ export default function BerandaPage() {
 
   const getFoodScoreColor = (score) => {
     if (score >= 70) return "#16a34a";
-    if (score >= 40) return "#fcc304";
+    if (score >= 40) return "#f0d944";
     return "#ba1a1a";
   };
 
@@ -133,19 +134,20 @@ export default function BerandaPage() {
       <header className="beranda-navbar">
         <div className="beranda-navbar-container">
           <div className="beranda-brand">
-            <div className="beranda-logo">S</div>
+            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
             <span className="beranda-brand-text">Savora</span>
           </div>
           <nav className="beranda-nav">
-            <Link href="/">Beranda</Link>
+            <Link href="/" className="nav-active">Home</Link>
             <Link href="/marketplace">Marketplace</Link>
-            <a href="#kategori">Kategori</a>
+            <a href="#mitra">Mitra</a>
             <a href="#tentang">Tentang</a>
           </nav>
-          <div className="beranda-location">
-            <MapPin size={16} />
-            <span>Sleman, Yogyakarta</span>
-          </div>
+          <button className="beranda-location">
+            <MapPin size={14} />
+            <span>Masukkan Alamat Kamu</span>
+            <ChevronDown size={13} />
+          </button>
           <div className="beranda-actions">
             <Link href="/dashboard" className="beranda-btn-secondary">
               Masuk
@@ -159,11 +161,18 @@ export default function BerandaPage() {
 
       {/* 2. Hero Hijau */}
       <section className="beranda-hero">
+        {/* Decorative icons */}
+        <img src="/hero/deco-1.svg" className="hero-deco hero-deco-1" alt="" />
+        <img src="/hero/deco-2.svg" className="hero-deco hero-deco-2" alt="" />
+        <img src="/hero/deco-3.svg" className="hero-deco hero-deco-3" alt="" />
+        <img src="/hero/deco-4.svg" className="hero-deco hero-deco-4" alt="" />
+        <img src="/hero/deco-screen.png" className="hero-deco hero-deco-5" alt="" />
+
         <div className="beranda-hero-bowl beranda-hero-bowl-left">
-          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop" alt="Food bowl" />
+          <img src="/hero/bowl-1.png" alt="Food bowl" />
         </div>
         <div className="beranda-hero-bowl beranda-hero-bowl-right">
-          <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop" alt="Food bowl" />
+          <img src="/hero/bowl-2.png" alt="Food bowl" />
         </div>
         <div className="beranda-hero-container">
           <div className="beranda-hero-content">
@@ -255,7 +264,9 @@ export default function BerandaPage() {
               const now = Date.now();
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
-              const timerColor = getTimerColor(remainingSeconds);
+              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
+              const rating = product.rating || (4.7 + (product.id % 3) * 0.1);
+              const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               return (
                 <div key={product.id} className="beranda-product-card">
@@ -273,26 +284,32 @@ export default function BerandaPage() {
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
-                          style={{ backgroundColor: getFoodScoreColor(score) }}
+                          style={{ backgroundColor: score >= 70 ? "#16a34a" : "#f0d944" }}
                         >
                           <span className="beranda-badge-foodscore-icon">●</span>
-                          FS {Math.round(score)}%
+                          FRS {Math.round(score)}%
                         </span>
                       )}
                     </div>
                     <div className="beranda-product-info">
-                      <h3>{product.name}</h3>
+                      <div className="beranda-product-title-row">
+                        <h3>{product.name}</h3>
+                        <div className="beranda-product-rating">
+                          <Star size={9} fill="#16a34a" color="#16a34a" />
+                          <span>{rating.toFixed(1)}</span>
+                        </div>
+                      </div>
                       <p className="beranda-product-vendor">
-                        <span>{product.vendor}</span>
-                        <span className="beranda-product-distance">
-                          <MapPin size={14} /> {product.distanceKm} km
-                        </span>
+                        <MapPin size={9} /> {product.vendor} • {product.distanceKm} km
                       </p>
                       <div className="beranda-product-footer">
                         <div className="beranda-product-price">
-                          <span className="beranda-price-original">
-                            Rp {product.original_price.toLocaleString("id-ID")}
-                          </span>
+                          <div className="beranda-price-old-row">
+                            <span className="beranda-price-original">
+                              Rp {product.original_price.toLocaleString("id-ID")}
+                            </span>
+                            <span className="beranda-price-discount">-{discountPercent}%</span>
+                          </div>
                           <span className="beranda-price-rescue">
                             Rp {product.rescue_price.toLocaleString("id-ID")}
                           </span>
@@ -308,7 +325,7 @@ export default function BerandaPage() {
                     }}
                     aria-label="Tambah ke keranjang"
                   >
-                    <ShoppingCart size={20} />
+                    <ShoppingCart size={17} />
                   </button>
                 </div>
               );

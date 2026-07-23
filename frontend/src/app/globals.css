@@ -1300,7 +1300,7 @@ body {
 .beranda-navbar-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 16px 40px;
+  padding: 20px 40px;
   display: flex;
   align-items: center;
   gap: 32px;
@@ -1313,49 +1313,61 @@ body {
   text-decoration: none;
 }
 
-.beranda-logo {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #16a34a 0%, #10b981 100%);
-  color: white;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 18px;
+.beranda-logo-img {
+  height: 43px;
+  width: auto;
 }
 
 .beranda-brand-text {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a202c;
+  font-size: 21.5px;
+  font-weight: 400;
+  color: #16a34a;
 }
 
 .beranda-nav {
   display: flex;
-  gap: 28px;
+  gap: 29px;
   flex: 1;
 }
 
 .beranda-nav a {
-  color: #4b5563;
+  color: #151c27;
+  opacity: 0.7;
   text-decoration: none;
-  font-weight: 500;
-  font-size: 15px;
-  transition: color 0.2s;
+  font-weight: 600;
+  font-size: 12.5px;
+  transition: color 0.2s, opacity 0.2s;
 }
 
 .beranda-nav a:hover {
+  opacity: 1;
+}
+
+.beranda-nav a.nav-active {
   color: #16a34a;
+  opacity: 1;
+  font-weight: 700;
 }
 
 .beranda-location {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #6b7280;
-  font-size: 14px;
+  gap: 8px;
+  padding: 8px 16px;
+  width: 215px;
+  height: 36px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 24px;
+  color: #444444;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.beranda-location:hover {
+  border-color: #9ca3af;
 }
 
 .beranda-actions {
@@ -1366,40 +1378,85 @@ body {
 .beranda-btn-secondary {
   padding: 8px 20px;
   border: 1.5px solid #16a34a;
-  border-radius: 8px;
-  color: #16a34a;
+  border-radius: 24px;
+  color: #1d1d1d;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .beranda-btn-secondary:hover {
-  background-color: #ecfdf5;
+  background: #f9fafb;
 }
 
 .beranda-btn-primary {
   padding: 8px 20px;
-  background: linear-gradient(135deg, #16a34a 0%, #10b981 100%);
+  background: #0b7a3b;
   border: none;
-  border-radius: 8px;
+  border-radius: 24px;
   color: white;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 13px;
   text-decoration: none;
   transition: transform 0.2s;
 }
 
 .beranda-btn-primary:hover {
-  transform: translateY(-1px);
+  transform: scale(1.02);
 }
 
 /* Hero Section */
 .beranda-hero {
   background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%);
   padding: 80px 40px 100px;
+  min-height: 447px;
   position: relative;
   overflow: hidden;
+}
+
+/* Decorative icons */
+.hero-deco {
+  position: absolute;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-deco-1 {
+  width: 60px;
+  height: 60px;
+  top: 40px;
+  left: 15%;
+}
+
+.hero-deco-2 {
+  width: 50px;
+  height: 50px;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hero-deco-3 {
+  width: 55px;
+  height: 55px;
+  top: 50px;
+  right: 12%;
+}
+
+.hero-deco-4 {
+  width: 67px;
+  height: 67px;
+  bottom: 60px;
+  left: 20%;
+}
+
+.hero-deco-5 {
+  width: 65px;
+  height: 65px;
+  bottom: 50px;
+  right: 18%;
 }
 
 .beranda-hero-container {
@@ -1676,7 +1733,7 @@ body {
   position: relative;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 30px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -1747,7 +1804,7 @@ body {
   bottom: 10px;
   left: 10px;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: 9px;
   font-size: 11px;
   font-weight: 700;
   color: white;
@@ -1768,24 +1825,40 @@ body {
 }
 
 .beranda-product-info {
-  padding: 16px;
+  padding: 15px;
 }
 
 .beranda-product-info h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #1a202c;
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-bottom: 3px;
+  color: #151c27;
+}
+
+.beranda-product-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.beranda-product-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #16a34a;
 }
 
 .beranda-product-vendor {
-  font-size: 13px;
-  color: #6b7280;
+  font-size: 9px;
+  font-weight: 400;
+  color: #3e4a3e;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
 }
 
 .beranda-product-distance {
@@ -1809,15 +1882,31 @@ body {
 }
 
 .beranda-price-original {
-  font-size: 12px;
-  color: #9ca3af;
-  text-decoration: line-through;
+  font-size: 9px;
+  font-weight: 400;
+  color: #6e7a6e;
 }
 
 .beranda-price-rescue {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: #16a34a;
+}
+
+.beranda-price-old-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.beranda-price-discount {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #ba1a1a;
+  background: rgba(186, 26, 26, 0.10);
+  border-radius: 6px;
+  padding: 1.5px 6px;
 }
 
 .beranda-product-score {
@@ -1834,11 +1923,11 @@ body {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 33px;
   background: #16a34a;
   border: none;
-  border-radius: 50%;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
