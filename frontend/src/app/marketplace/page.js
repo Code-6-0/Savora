@@ -1,318 +1,605 @@
 "use client";
 
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import {
-  AlertTriangle,
-  ArrowRight,
-  ArrowUpDown,
-  Clock3,
-  Flame,
-  Gauge,
-  Leaf,
-  Megaphone,
-  RefreshCw,
   Search,
-  ShieldAlert,
-  ShieldCheck,
-  ShoppingBag,
+  MapPin,
+  ChevronDown,
+  Clock,
+  Star,
+  ChevronRight,
   SlidersHorizontal,
-  Sun,
+  ShoppingCart,
 } from "lucide-react";
-import {
-  computeProductScore,
-  fallbackMarketplaceProducts,
-  fetchMarketplaceProducts,
-  filterMarketplaceProducts,
-  normalizeMarketplaceProduct,
-} from "@/lib/marketplace";
-import { foodScoreBand, rescueTimeColor, rescueTimeLabel } from "@/lib/foodScore";
-import { deriveRestaurantSafety } from "@/lib/reviews";
-import { fallbackAds, fetchAds } from "@/lib/ads";
-
-const categories = ["Semua", "Nasi", "Bakery", "Snack", "Catering"];
-const trustOptions = ["Semua", "Fresh", "Layak Dijual", "Segera Dijual"];
-
-function formatRupiah(value) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-// Ticker bersama: satu timestamp Date.now() di-refresh tiap detik. Semua kartu
-// menghitung Food Score & sisa waktu terhadap timestamp ini sehingga skor TIDAK
-// reset saat halaman dimuat ulang (berbasis waktu absolut, bukan elapsed).
-function useNow() {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const interval = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(interval);
-  }, []);
-  return now;
-}
-
-function safetyIcon(levelKey) {
-  if (levelKey === "gawat") return <Flame size={11} aria-hidden="true" />;
-  if (levelKey === "warning") return <ShieldAlert size={11} aria-hidden="true" />;
-  return <ShieldCheck size={11} aria-hidden="true" />;
-}
-
-function MarketplaceHeader({ search, onSearchChange }) {
-  return (
-    <header className="savora-topbar">
-      <Link className="savora-brand" href="/marketplace" aria-label="Savora marketplace">
-        <span className="savora-brand-mark">S</span>
-        <span> Savora <small>FOOD RESCUE</small></span>
-      </Link>
-      <label className="savora-search">
-        <Search size={17} aria-hidden="true" />
-        <input
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Cari nasi, roti, warung, atau UMKM..."
-          aria-label="Cari produk atau UMKM"
-        />
-      </label>
-      <nav className="savora-main-nav" aria-label="Navigasi marketplace">
-        <a href="#rescue-deals">Rescue Deals</a>
-        <a href="#cara-kerja">Cara Kerja</a>
-        <a href="#untuk-umkm">UMKM</a>
-        <Link href="/akun">Riwayat &amp; Impact</Link>
-      </nav>
-      <button className="savora-icon-button" type="button" aria-label="Tema terang demo">
-        <Sun size={18} />
-      </button>
-      <button className="savora-cart" type="button" aria-label="Keranjang demo">
-        <ShoppingBag size={19} /> <b>2</b>
-      </button>
-      <button className="savora-login" type="button">Masuk</button>
-      <button className="savora-signup" type="button">Daftar</button>
-    </header>
-  );
-}
-
-function AdRail({ ads }) {
-  if (!ads.length) return null;
-  return (
-    <aside className="savora-ad-rail" aria-label="Iklan dan promosi">
-      {ads.map((ad) => {
-        const linkProps = ad.external
-          ? { href: ad.href, target: "_blank", rel: "nofollow sponsored noopener" }
-          : { href: ad.href };
-        const Wrapper = ad.external ? "a" : Link;
-        return (
-          <Wrapper key={ad.id} className={`savora-ad-card is-${ad.type}`} {...linkProps}>
-            <div className="savora-ad-media">
-              <Image src={ad.photo_url} alt={ad.sponsor} fill sizes="(max-width: 900px) 100vw, 33vw" />
-              <span className="savora-ad-flag"><Megaphone size={11} aria-hidden="true" /> {ad.type === "umkm" ? "Promoted" : "Iklan"}</span>
-            </div>
-            <div className="savora-ad-body">
-              <b>{ad.sponsor}</b>
-              <p>{ad.headline}</p>
-              <span className="savora-ad-cta">{ad.cta} <ArrowRight size={13} aria-hidden="true" /></span>
-            </div>
-          </Wrapper>
-        );
-      })}
-    </aside>
-  );
-}
-
-function FoodCard({ product, now }) {
-  const savings = product.original_price - product.rescue_price;
-  const { score, remainingSeconds } = computeProductScore(product, now);
-  const band = foodScoreBand(score);
-  // Color indicator sisa waktu ABSOLUT (PRD 5.1 & REVISI #31): paralel dengan
-  // band skor, keduanya boleh berbeda.
-  const timeColor = rescueTimeColor(remainingSeconds);
-  const safety = product.safety;
-  const showSafety = safety.level.key !== "aman" || safety.keywords.length > 0;
-
-  return (
-    <Link href={`/marketplace/${product.id}`} className="savora-food-card" aria-label={`Buka detail ${product.name}`}>
-      <div className="savora-food-image">
-        <Image src={product.photo_url} alt={product.name} fill sizes="(max-width: 570px) 100vw, (max-width: 900px) 50vw, 33vw" />
-        <span className={`savora-score-badge ${band.className}`} title={`Food Score ${score}/100 — ${band.label}`}>
-          <Gauge size={12} aria-hidden="true" /> {score}<small>/100</small>
-        </span>
-        {product.discountPercent > 0 && <span className="savora-discount">-{product.discountPercent}%</span>}
-        <span className={`savora-timer ${timeColor.className}`}>
-          <Clock3 size={12} aria-hidden="true" /> {rescueTimeLabel(remainingSeconds)}
-        </span>
-      </div>
-      <div className="savora-food-content">
-        <p className="savora-vendor">
-          {product.vendor}<span>•</span>{product.distanceKm.toFixed(1)} km
-          {showSafety && (
-            <span className={`savora-safety-pill ${safety.level.className}`} title={`Ulasan keyword: ${safety.level.label}`}>
-              {safetyIcon(safety.level.key)} {safety.level.label}
-            </span>
-          )}
-        </p>
-        <h3>{product.name}</h3>
-        <div className={`savora-score-meter ${band.className}`} role="img" aria-label={`Food Score ${score} dari 100, ${band.label}`}>
-          <span style={{ width: `${score}%` }} />
-        </div>
-        <div className="savora-score-caption"><b>{band.label}</b> <span>Food Score {score}/100</span></div>
-        <div className="savora-prices">
-          <strong>{formatRupiah(product.rescue_price)}</strong>
-          {product.original_price > product.rescue_price && <s>{formatRupiah(product.original_price)}</s>}
-        </div>
-        <div className="savora-card-bottom">
-          <span>Sisa {product.stock} porsi</span>
-          <span className="savora-rescue-link">Selamatkan <ArrowRight size={15} aria-hidden="true" /></span>
-        </div>
-        {savings > 0 && <p className="savora-saving">Hemat {formatRupiah(savings)}</p>}
-      </div>
-    </Link>
-  );
-}
-
-// Lekatkan data turunan yang stabil: status keamanan dari ulasan.
-function attachRuntimeFields(product) {
-  return {
-    ...product,
-    safety: deriveRestaurantSafety(product.reviews, product.safety_level),
-  };
-}
+import { fetchMarketplaceProducts, computeProductScore } from "@/lib/marketplace";
 
 export default function MarketplacePage() {
-  const [products, setProducts] = useState(() =>
-    fallbackMarketplaceProducts.map(normalizeMarketplaceProduct).map(attachRuntimeFields),
-  );
-  const [ads, setAds] = useState(() => fallbackAds.slice(0, 3).map((ad) => ({ ...ad, external: /^https?:\/\//i.test(ad.href) })));
-  const [filters, setFilters] = useState({ search: "", category: "Semua", trustStatus: "Semua", sort: "default" });
-  const [dataSource, setDataSource] = useState("fallback");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefetching, setIsRefetching] = useState(false);
-  const now = useNow();
-
-  const loadProducts = async () => {
-    try {
-      const result = await fetchMarketplaceProducts();
-      setProducts(result.products.map(attachRuntimeFields));
-      setDataSource(result.source);
-    } finally {
-      setIsLoading(false);
-      setIsRefetching(false);
-    }
-  };
+  const [products, setProducts] = useState([]);
+  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const handleRetry = () => {
-    setIsRefetching(true);
-    loadProducts();
-  };
-
-  useEffect(() => {
-    let alive = true;
-    fetchAds(3).then((items) => { if (alive) setAds(items); });
-    return () => { alive = false; };
-  }, []);
-
-  // Filter + hide expired (food_score 0 / sisa waktu habis) — PRD 12.6:
-  // "Listing otomatis berstatus Expired dan disembunyikan dari marketplace".
-  const visibleProducts = useMemo(() => {
-    const filtered = filterMarketplaceProducts(products, filters);
-    return filtered.filter((product) => {
-      const { score } = computeProductScore(product, now);
-      return score > 0;
+    fetchMarketplaceProducts().then((result) => {
+      setProducts(result.products || []);
     });
-  }, [products, filters, now]);
+  }, []);
 
-  function updateFilter(name, value) {
-    setFilters((current) => ({ ...current, [name]: value }));
-  }
+  useEffect(() => {
+    const timer = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimer = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const getFoodScoreBadge = (score) => {
+    if (score >= 80) return { text: "Sangat Layak", color: "#10b981" };
+    if (score >= 60) return { text: "Layak", color: "#3b82f6" };
+    if (score >= 35) return { text: "Segera Ambil", color: "#f59e0b" };
+    return { text: "Kritis", color: "#ef4444" };
+  };
+
+  const nearbyProducts = products.slice(0, 12);
+  const recommendedProducts = products.slice(12, 16);
+
+  const categories = [
+    { name: "Bakery", icon: "/categories/bakery.svg", bgColor: "#ecfdf5", iconColor: "#059669" },
+    { name: "Resto", icon: "/categories/resto.svg", bgColor: "#fff7ed", iconColor: "#ea580c" },
+    { name: "UMKM", icon: "/categories/umkm.svg", bgColor: "#eff6ff", iconColor: "#2563eb" },
+    { name: "Dessert", icon: "/categories/dessert.svg", bgColor: "#fdf2f8", iconColor: "#db2777" },
+    { name: "Cafe", icon: "/categories/cafe.svg", bgColor: "#fefce8", iconColor: "#ca8a04" },
+    { name: "Snacks", icon: "/categories/snacks.svg", bgColor: "#f0fdf4", iconColor: "#16a34a" },
+    { name: "Vegan", icon: "/categories/vegan.svg", bgColor: "#faf5ff", iconColor: "#9333ea" },
+    { name: "Fruits", icon: "/categories/fruits.svg", bgColor: "#fef2f2", iconColor: "#dc2626" },
+    { name: "Drinks", icon: "/categories/drinks.svg", bgColor: "#ecfeff", iconColor: "#0891b2" },
+  ];
 
   return (
-    <div className="savora-marketplace">
-      <MarketplaceHeader search={filters.search} onSearchChange={(value) => updateFilter("search", value)} />
-      <main>
-        <section className="savora-hero" aria-labelledby="savora-title">
-          <div className="savora-hero-copy">
-            <p className="savora-eyebrow"><Leaf size={14} /> Selamatkan makanan surplus dari UMKM lokal</p>
-            <h1 id="savora-title">Makan enak.<br /><em>Selamatkan bumi.</em></h1>
-            <p className="savora-hero-description">Temukan makanan surplus berkualitas dari UMKM terdekat. Lebih hemat, lebih bermakna, dengan Food Score yang menurun mengikuti Rescue Time secara transparan.</p>
-            <div className="savora-hero-actions">
-              <a className="savora-primary-action" href="#rescue-deals">Jelajahi Rescue Deals <ArrowRight size={17} /></a>
-              <a className="savora-secondary-action" href="#untuk-umkm">Daftar sebagai UMKM</a>
-            </div>
-            <dl className="savora-stats">
-              <div><dt>1,240+</dt><dd>Porsi diselamatkan</dd></div>
-              <div><dt>180+</dt><dd>UMKM mitra</dd></div>
-              <div><dt>≈ 380kg</dt><dd>CO₂ dihemat</dd></div>
-            </dl>
+    <div className="beranda-page">
+      <header className="beranda-navbar">
+        <div className="beranda-navbar-container">
+          <div className="beranda-brand">
+            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
+            <span className="beranda-brand-text">Savora</span>
           </div>
-          <div className="savora-hero-media" aria-label="Contoh rescue deal Savora">
-            <Image src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=90" alt="Aneka makanan dari UMKM lokal" fill priority sizes="(max-width: 900px) 100vw, 55vw" />
-            <div className="savora-image-trust"><span>✓</span><div><b>Food Score: 92 / Sangat Layak</b><small>Diproduksi 2 jam lalu • Warung Bu Ratih</small></div></div>
-            <div className="savora-image-saving"><b>-52%</b><span>Hemat Rp13.000</span></div>
-            <div className="savora-image-timer"><Clock3 size={13} /> Rescue Time 2j 15m</div>
+          <nav className="beranda-nav">
+            <Link href="/">Home</Link>
+            <Link href="/marketplace" className="nav-active">Marketplace</Link>
+            <a href="#mitra">Mitra</a>
+            <a href="#tentang">Tentang</a>
+          </nav>
+          <button className="beranda-location">
+            <MapPin size={14} />
+            <span>Masukkan Alamat Kamu</span>
+            <ChevronDown size={13} />
+          </button>
+          <div className="beranda-actions">
+            <Link href="/dashboard" className="beranda-btn-secondary">
+              Masuk
+            </Link>
+            <Link href="/marketplace" className="beranda-btn-primary">
+              Daftar Sekarang
+            </Link>
           </div>
-        </section>
+        </div>
+      </header>
 
-        <section id="rescue-deals" className="savora-deals" aria-labelledby="rescue-deals-title">
-          <div className="savora-section-heading">
-            <div>
-              <p className="savora-eyebrow savora-green">RESCUE DEALS HARI INI</p>
-              <h2 id="rescue-deals-title">Makanan yang butuh diselamatkan</h2>
-              <p>Food Score menurun seiring Rescue Time berkurang menuju batas layak. Pickup langsung, bayar cashless via Midtrans.</p>
-            </div>
-            <div className="savora-selects">
-              <label><SlidersHorizontal size={14} /><select value={filters.trustStatus} onChange={(event) => updateFilter("trustStatus", event.target.value)} aria-label="Filter Food Trust Index">
-                {trustOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-              </select></label>
-              <label><ArrowUpDown size={14} /><select value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)} aria-label="Urutkan produk">
-                <option value="default">Rekomendasi</option>
-                <option value="nearest">Terdekat</option>
-                <option value="lowest-price">Harga terendah</option>
-              </select></label>
-            </div>
-          </div>
-          <div className="savora-categories" role="group" aria-label="Filter kategori">
-            {categories.map((category) => <button key={category} type="button" className={filters.category === category ? "is-active" : ""} onClick={() => updateFilter("category", category)}>
-              {category === "Semua" ? "🍽" : category === "Nasi" ? "🍚" : category === "Bakery" ? "🥐" : category === "Snack" ? "🥟" : "🍱"} {category}
-            </button>)}
-          </div>
-          <AdRail ads={ads} />
-          {dataSource === "fallback" && !isLoading && (
-            <div className="savora-fallback-banner" role="status">
-              <AlertTriangle size={15} aria-hidden="true" />
-              <span>Menampilkan data demo — server tidak terjangkau</span>
-              <button type="button" onClick={handleRetry} disabled={isRefetching}>
-                <RefreshCw size={13} className={isRefetching ? "savora-spin" : ""} aria-hidden="true" /> Coba lagi
+      <section className="beranda-section">
+        <div className="beranda-container">
+          <div style={{ marginBottom: "8px" }}>
+            <div style={{
+              position: "relative",
+              width: "100%",
+              height: "54px",
+              backgroundColor: "#fff",
+              borderRadius: "22px",
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "20px",
+              paddingRight: "8px",
+              border: "1px solid #e8e8e8",
+            }}>
+              <Search size={18} color="#6b7280" />
+              <input
+                type="text"
+                placeholder="Cari makanan atau resto terdekat..."
+                style={{
+                  flex: 1,
+                  border: "none",
+                  outline: "none",
+                  fontSize: "15px",
+                  color: "#151c27",
+                  marginLeft: "12px",
+                  backgroundColor: "transparent",
+                }}
+              />
+              <button style={{
+                backgroundColor: "#16a34a",
+                color: "#fff",
+                fontSize: "15px",
+                fontWeight: 700,
+                padding: "10px 24px",
+                borderRadius: "15px",
+                border: "none",
+                cursor: "pointer",
+              }}>
+                Cari
               </button>
             </div>
-          )}
-          <div className="savora-product-grid">
-            {isLoading ? (
-              <>
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="savora-food-card savora-skeleton-card" aria-hidden="true">
-                    <div className="savora-food-image savora-skeleton-pulse" />
-                    <div className="savora-food-content">
-                      <div className="savora-skeleton-line" style={{ width: "60%" }} />
-                      <div className="savora-skeleton-line" style={{ width: "80%" }} />
-                      <div className="savora-skeleton-line" style={{ width: "40%" }} />
-                    </div>
-                  </div>
-                ))}
-              </>
-            ) : visibleProducts.length > 0 ? visibleProducts.map((product) => <FoodCard key={product.id} product={product} now={now} />) : (
-              <div className="savora-empty"><b>Belum ada rescue deal yang cocok.</b><span>Coba ubah kata kunci atau filter-mu.</span></div>
-            )}
           </div>
-        </section>
 
-        <section id="cara-kerja" className="savora-how-it-works"><p className="savora-eyebrow savora-green">CARA KERJA</p><h2>Pilih. Selamatkan. Ambil.</h2><div><span>1</span><p><b>Temukan deal</b>Filter makanan surplus yang dekat dan sesuai kebutuhanmu.</p><span>2</span><p><b>Periksa Food Score</b>Lihat skor kelayakan yang menurun mengikuti Rescue Time dan status keyword ulasan.</p><span>3</span><p><b>Ambil pesanan</b>Bayar cashless via Midtrans Sandbox lalu ambil langsung di UMKM.</p></div></section>
-      </main>
-      <footer id="untuk-umkm" className="savora-footer"><div className="savora-brand"><span className="savora-brand-mark">S</span><span>Savora <small>FOOD RESCUE</small></span></div><p>Selamatkan makanan, hemat biaya, kurangi limbah.<br />Marketplace food rescue untuk UMKM kuliner lokal.</p><span>© 2026 Savora. Karya CODE 6.0.</span></footer>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}>
+            <button style={{
+              backgroundColor: "#f5f3f3",
+              color: "#3e4941",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "8px 16px",
+              borderRadius: "999px",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}>
+              Urutkan: Terpopuler
+              <ChevronDown size={14} />
+            </button>
+
+            <div style={{
+              width: "1px",
+              height: "24px",
+              backgroundColor: "#bdcabe",
+            }}></div>
+
+            <button style={{
+              backgroundColor: "rgba(6,134,81,0.10)",
+              color: "#006a3f",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "8px 16px",
+              borderRadius: "999px",
+              border: "none",
+              cursor: "pointer",
+            }}>
+              Promo
+            </button>
+
+            <button style={{
+              backgroundColor: "#fff",
+              color: "#3e4941",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "8px 16px",
+              borderRadius: "999px",
+              border: "1px solid #e8e8e8",
+              cursor: "pointer",
+            }}>
+              Rating 4.5+
+            </button>
+
+            <button style={{
+              backgroundColor: "#fff",
+              color: "#3e4941",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "8px 16px",
+              borderRadius: "999px",
+              border: "1px solid #e8e8e8",
+              cursor: "pointer",
+            }}>
+              Di bawah 1 km
+            </button>
+
+            <button style={{
+              backgroundColor: "#fff",
+              color: "#3e4941",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "8px 16px",
+              borderRadius: "999px",
+              border: "1px solid #e8e8e8",
+              cursor: "pointer",
+            }}>
+              Buka Sekarang
+            </button>
+
+            <button style={{
+              backgroundColor: "#fff",
+              color: "#3e4941",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "8px 16px",
+              borderRadius: "999px",
+              border: "1px solid #e8e8e8",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginLeft: "auto",
+            }}>
+              <SlidersHorizontal size={14} />
+              Semua Filter
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="beranda-section">
+        <div className="beranda-container">
+          <div className="beranda-section-header">
+            <h2>Jelajahi Kategori</h2>
+            <Link href="/marketplace" className="beranda-link">
+              Lihat Semua <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div className="beranda-categories">
+            {categories.map((cat) => (
+              <Link
+                key={cat.name}
+                href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
+                className="beranda-category"
+              >
+                <div
+                  className="beranda-category-circle"
+                  style={{ backgroundColor: cat.bgColor }}
+                >
+                  <span
+                    className="beranda-category-icon"
+                    style={{
+                      backgroundColor: cat.iconColor,
+                      maskImage: `url(${cat.icon})`,
+                      WebkitMaskImage: `url(${cat.icon})`,
+                    }}
+                  />
+                </div>
+                <span className="beranda-category-name">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="beranda-section">
+        <div className="beranda-container">
+          <div className="beranda-section-header">
+            <h2>Makanan Terdekat</h2>
+            <Link href="/marketplace" className="beranda-link">
+              Lihat Semua <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+            {nearbyProducts.map((product) => {
+              const now = Date.now();
+              const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
+              const badge = getFoodScoreBadge(score);
+              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
+              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+              const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
+
+              return (
+                <div key={product.id} className="beranda-product-card">
+                  <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
+                    <div className="beranda-product-image">
+                      <img src={product.photo_url} alt={product.name} />
+                      <div className="beranda-product-badges">
+                        <span
+                          className="beranda-badge-timer"
+                          style={{ backgroundColor: timerColor, color: "#fff" }}
+                        >
+                          <Clock size={12} /> {formatTimer(remainingSeconds)}
+                        </span>
+                      </div>
+                      {score !== undefined && (
+                        <span
+                          className="beranda-badge-foodscore"
+                          style={{ backgroundColor: score >= 70 ? "#16a34a" : "#f0d944" }}
+                        >
+                          <span className="beranda-badge-foodscore-icon">●</span>
+                          FRS {Math.round(score)}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="beranda-product-info">
+                      <div className="beranda-product-title-row">
+                        <h3>{product.name}</h3>
+                        <div className="beranda-product-rating">
+                          <Star size={9} fill="#16a34a" color="#16a34a" />
+                          <span>{rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="beranda-product-vendor">
+                        <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
+                      </p>
+                      <div className="beranda-product-footer">
+                        <div className="beranda-product-price">
+                          <div className="beranda-price-old-row">
+                            <span className="beranda-price-original">
+                              Rp {product.original_price?.toLocaleString("id-ID") || "30.000"}
+                            </span>
+                            <span className="beranda-price-discount">-{discountPercent}%</span>
+                          </div>
+                          <span className="beranda-price-rescue">
+                            Rp {product.rescue_price?.toLocaleString("id-ID") || "15.000"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  <button
+                    className="beranda-product-cart"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.href = `/marketplace/${product.id}`;
+                    }}
+                    aria-label="Tambah ke keranjang"
+                  >
+                    <ShoppingCart size={17} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="beranda-section">
+        <div className="beranda-container">
+          <div className="beranda-section-header">
+            <h2>Makanan Rekomendasi</h2>
+            <Link href="/marketplace" className="beranda-link">
+              Lihat Semua <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+            {recommendedProducts.map((product) => {
+              const now = Date.now();
+              const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
+              const badge = getFoodScoreBadge(score);
+              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
+              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+              const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
+
+              return (
+                <div key={product.id} className="beranda-product-card">
+                  <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
+                    <div className="beranda-product-image">
+                      <img src={product.photo_url} alt={product.name} />
+                      <div className="beranda-product-badges">
+                        <span
+                          className="beranda-badge-timer"
+                          style={{ backgroundColor: timerColor, color: "#fff" }}
+                        >
+                          <Clock size={12} /> {formatTimer(remainingSeconds)}
+                        </span>
+                      </div>
+                      {score !== undefined && (
+                        <span
+                          className="beranda-badge-foodscore"
+                          style={{ backgroundColor: score >= 70 ? "#16a34a" : "#f0d944" }}
+                        >
+                          <span className="beranda-badge-foodscore-icon">●</span>
+                          FRS {Math.round(score)}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="beranda-product-info">
+                      <div className="beranda-product-title-row">
+                        <h3>{product.name}</h3>
+                        <div className="beranda-product-rating">
+                          <Star size={9} fill="#16a34a" color="#16a34a" />
+                          <span>{rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="beranda-product-vendor">
+                        <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
+                      </p>
+                      <div className="beranda-product-footer">
+                        <div className="beranda-product-price">
+                          <div className="beranda-price-old-row">
+                            <span className="beranda-price-original">
+                              Rp {product.original_price?.toLocaleString("id-ID") || "30.000"}
+                            </span>
+                            <span className="beranda-price-discount">-{discountPercent}%</span>
+                          </div>
+                          <span className="beranda-price-rescue">
+                            Rp {product.rescue_price?.toLocaleString("id-ID") || "15.000"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  <button
+                    className="beranda-product-cart"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.href = `/marketplace/${product.id}`;
+                    }}
+                    aria-label="Tambah ke keranjang"
+                  >
+                    <ShoppingCart size={17} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="beranda-section">
+        <div className="beranda-container">
+          <div className="beranda-section-header">
+            <h3>Restoran Pilihan</h3>
+            <Link href="/marketplace" className="beranda-link">
+              Lihat Semua
+            </Link>
+          </div>
+          <div className="beranda-shops">
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/martabak.png"
+                alt="Martabak"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Martabak</h4>
+              <p>Sweet Treats</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.9</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/bakso-soto.png"
+                alt="Bakso & Soto"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Bakso & Soto</h4>
+              <p>Comfort Food</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.8</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/bakery.png"
+                alt="Bakery"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Bakery</h4>
+              <p>Fresh Bread</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.9</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/chinese.png"
+                alt="Chinese"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Chinese</h4>
+              <p>Asian Cuisine</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.7</span>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="beranda-shop-card">
+              <Image
+                src="/shops/martabak.png"
+                alt="Martabak"
+                width={144}
+                height={144}
+                loading="eager"
+              />
+              <h4>Martabak</h4>
+              <p>Sweet Treats</p>
+              <div className="beranda-shop-rating">
+                <Star size={11} fill="#eab308" color="#eab308" />
+                <span>4.9</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <footer className="beranda-footer">
+        <div className="beranda-footer-container">
+          <div className="beranda-footer-column-brand">
+            <div className="beranda-footer-wordmark">Savora</div>
+            <p className="beranda-footer-mission">
+              Misi kami sederhana: Tidak boleh ada makanan enak yang terbuang sia-sia.
+              Bergabunglah dengan ribuan penyelamat makanan lainnya di seluruh Indonesia.
+            </p>
+            <div className="beranda-footer-social">
+              <button className="beranda-footer-social-btn" aria-label="Website">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm5.8 5h-1.9c-.2-1-.5-2-1-2.8 1.5.6 2.6 1.8 2.9 3.3zM8 2c.6 1 1.1 2.2 1.3 3.5H6.7C6.9 4.2 7.4 3 8 2zM2.3 9.5c-.2-.5-.3-1-.3-1.5s.1-1 .3-1.5h2.2c-.1.5-.1 1-.1 1.5s0 1 .1 1.5H2.3zm.9 2h1.9c.2 1 .5 2 1 2.8-1.5-.6-2.6-1.8-2.9-3.3zM5.1 5H3.2c.3-1.5 1.4-2.7 2.9-3.3-.5.8-.8 1.8-1 2.8zm2.9 9c-.6-1-1.1-2.2-1.3-3.5h2.6c-.2 1.3-.7 2.5-1.3 3.5zm1.5-5.5H5.5c-.1-.5-.1-1-.1-1.5s0-1 .1-1.5h4.8c.1.5.1 1 .1 1.5s0 1-.1 1.5zm.6 4.8c.5-.8.8-1.8 1-2.8h1.9c-.3 1.5-1.4 2.7-2.9 3.3zm1.4-4.8c.1-.5.1-1 .1-1.5s0-1-.1-1.5h2.2c.2.5.3 1 .3 1.5s-.1 1-.3 1.5h-2.2z" fill="#006a3f"/>
+                </svg>
+              </button>
+              <button className="beranda-footer-social-btn" aria-label="Share">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 10c-.8 0-1.5.3-2 .8L6.5 8.3c.1-.3.1-.5.1-.8s0-.5-.1-.8L11 4.2c.5.5 1.2.8 2 .8 1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3c0 .3 0 .5.1.8L5 5.3C4.5 4.8 3.8 4.5 3 4.5c-1.7 0-3 1.3-3 3s1.3 3 3 3c.8 0 1.5-.3 2-.8l4.5 2.5c-.1.3-.1.5-.1.8 0 1.7 1.3 3 3 3s3-1.3 3-3-1.3-3-3-3z" fill="#006a3f"/>
+                </svg>
+              </button>
+              <button className="beranda-footer-social-btn" aria-label="Chat">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M14 1H2C1.4 1 1 1.4 1 2v9c0 .6.4 1 1 1h3v3l3-3h6c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zM5 8H4V7h1v1zm3 0H7V7h1v1zm3 0h-1V7h1v1z" fill="#006a3f"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="beranda-footer-column">
+            <h4>Layanan Kami</h4>
+            <Link href="/marketplace">Daftar Marketplace</Link>
+            <Link href="/marketplace">Daftar Sebagai Mitra Donasi</Link>
+            <Link href="/marketplace">Voucher & Promo</Link>
+            <Link href="/marketplace">Catering Sisa</Link>
+          </div>
+
+          <div className="beranda-footer-column">
+            <h4>Informasi</h4>
+            <Link href="/marketplace">Tentang Kami</Link>
+            <Link href="/marketplace">Bantuan & FAQ</Link>
+            <Link href="/marketplace">Syarat & Ketentuan</Link>
+            <Link href="/marketplace">Kebijakan Privasi</Link>
+          </div>
+
+          <div className="beranda-footer-column">
+            <h4>Dapatkan Informasi terbaru</h4>
+            <p className="beranda-footer-newsletter-desc">
+              Dapatkan info flash deal dan update promo penyelamatan makanan langsung di emailmu.
+            </p>
+            <div className="beranda-footer-newsletter">
+              <input
+                type="email"
+                placeholder="Email kamu"
+                className="beranda-footer-newsletter-input"
+              />
+              <button className="beranda-footer-newsletter-btn" aria-label="Subscribe">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M15.8 0.2c-.2-.2-.5-.3-.8-.2L0.4 5.6c-.3.1-.5.4-.5.7 0 .3.2.6.5.7l4.8 2.1L7.3 14c.1.3.4.5.7.5.3 0 .6-.2.7-.5L15.8 1c.1-.3.1-.6 0-.8z" fill="white"/>
+                </svg>
+              </button>
+            </div>
+            <div className="beranda-footer-badges">
+              <img src="/footer/badge-1.png" alt="App Store" className="beranda-footer-badge" />
+              <img src="/footer/badge-2.png" alt="Google Play" className="beranda-footer-badge" />
+            </div>
+          </div>
+        </div>
+
+        <div className="beranda-footer-bottom">
+          <span>© 2026 Savora Platform. Proudly Made In Indonesia for the Earth.</span>
+          <div className="beranda-footer-bottom-links">
+            <span>SECURITY</span>
+            <span>SITEMAP</span>
+            <span>COOKIES</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
