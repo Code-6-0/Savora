@@ -555,44 +555,48 @@ export default function MarketplacePage() {
             <h4>Layanan Kami</h4>
             <Link href="/marketplace">Daftar Marketplace</Link>
             <Link href="/marketplace">Daftar Sebagai Mitra Donasi</Link>
-            <Link href="/marketplace">Cara Kerja</Link>
-            <Link href="/marketplace">Ketentuan Layanan</Link>
+            <Link href="/marketplace">Voucher & Promo</Link>
+            <Link href="/marketplace">Catering Sisa</Link>
           </div>
 
           <div className="beranda-footer-column">
-            <h4>Perusahaan</h4>
+            <h4>Informasi</h4>
             <Link href="/marketplace">Tentang Kami</Link>
-            <Link href="/marketplace">Blog</Link>
-            <Link href="/marketplace">Karir</Link>
-            <Link href="/marketplace">Hubungi Kami</Link>
+            <Link href="/marketplace">Bantuan & FAQ</Link>
+            <Link href="/marketplace">Syarat & Ketentuan</Link>
+            <Link href="/marketplace">Kebijakan Privasi</Link>
           </div>
 
           <div className="beranda-footer-column">
-            <h4>Newsletter</h4>
-            <p className="beranda-footer-newsletter-text">
-              Dapatkan penawaran menarik dan update terbaru dari Savora
+            <h4>Dapatkan Informasi terbaru</h4>
+            <p className="beranda-footer-newsletter-desc">
+              Dapatkan info flash deal dan update promo penyelamatan makanan langsung di emailmu.
             </p>
             <div className="beranda-footer-newsletter">
-              <input type="email" placeholder="Email kamu" />
-              <button>
+              <input
+                type="email"
+                placeholder="Email kamu"
+                className="beranda-footer-newsletter-input"
+              />
+              <button className="beranda-footer-newsletter-btn" aria-label="Subscribe">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 0L6.59 1.41L12.17 7H0v2h12.17l-5.58 5.59L8 16l8-8z" fill="white"/>
+                  <path d="M15.8 0.2c-.2-.2-.5-.3-.8-.2L0.4 5.6c-.3.1-.5.4-.5.7 0 .3.2.6.5.7l4.8 2.1L7.3 14c.1.3.4.5.7.5.3 0 .6-.2.7-.5L15.8 1c.1-.3.1-.6 0-.8z" fill="white"/>
                 </svg>
               </button>
             </div>
-            <div className="beranda-footer-apps">
-              <Image src="/brand/app-store.svg" alt="App Store" width={120} height={40} />
-              <Image src="/brand/play-store.svg" alt="Play Store" width={135} height={40} />
+            <div className="beranda-footer-badges">
+              <img src="/footer/badge-1.png" alt="App Store" className="beranda-footer-badge" />
+              <img src="/footer/badge-2.png" alt="Google Play" className="beranda-footer-badge" />
             </div>
           </div>
         </div>
 
         <div className="beranda-footer-bottom">
-          <p>&copy; 2026 Savora. All rights reserved.</p>
+          <span>© 2026 Savora Platform. Proudly Made In Indonesia for the Earth.</span>
           <div className="beranda-footer-bottom-links">
-            <Link href="/marketplace">Privacy Policy</Link>
-            <Link href="/marketplace">Terms of Service</Link>
-            <Link href="/marketplace">Cookie Policy</Link>
+            <span>SECURITY</span>
+            <span>SITEMAP</span>
+            <span>COOKIES</span>
           </div>
         </div>
       </footer>
