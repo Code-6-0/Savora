@@ -563,40 +563,78 @@ export default function BerandaPage() {
       {/* 11. Footer */}
       <footer className="beranda-footer">
         <div className="beranda-footer-container">
-          <div className="beranda-footer-brand">
-            <div className="beranda-footer-logo">
-              <div className="beranda-logo">S</div>
-              <span className="beranda-brand-text">Savora</span>
-            </div>
-            <p>Selamatkan makanan, hemat biaya, kurangi limbah.</p>
-            <p className="beranda-footer-tagline">
-              Marketplace food rescue untuk UMKM kuliner lokal.
+          <div className="beranda-footer-column-brand">
+            <div className="beranda-footer-wordmark">Savora</div>
+            <p className="beranda-footer-mission">
+              Misi kami sederhana: Tidak boleh ada makanan enak yang terbuang sia-sia.
+              Bergabunglah dengan ribuan penyelamat makanan lainnya di seluruh Indonesia.
             </p>
+            <div className="beranda-footer-social">
+              <button className="beranda-footer-social-btn" aria-label="Website">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm5.8 5h-1.9c-.2-1-.5-2-1-2.8 1.5.6 2.6 1.8 2.9 3.3zM8 2c.6 1 1.1 2.2 1.3 3.5H6.7C6.9 4.2 7.4 3 8 2zM2.3 9.5c-.2-.5-.3-1-.3-1.5s.1-1 .3-1.5h2.2c-.1.5-.1 1-.1 1.5s0 1 .1 1.5H2.3zm.9 2h1.9c.2 1 .5 2 1 2.8-1.5-.6-2.6-1.8-2.9-3.3zM5.1 5H3.2c.3-1.5 1.4-2.7 2.9-3.3-.5.8-.8 1.8-1 2.8zm2.9 9c-.6-1-1.1-2.2-1.3-3.5h2.6c-.2 1.3-.7 2.5-1.3 3.5zm1.5-5.5H5.5c-.1-.5-.1-1-.1-1.5s0-1 .1-1.5h4.8c.1.5.1 1 .1 1.5s0 1-.1 1.5zm.6 4.8c.5-.8.8-1.8 1-2.8h1.9c-.3 1.5-1.4 2.7-2.9 3.3zm1.4-4.8c.1-.5.1-1 .1-1.5s0-1-.1-1.5h2.2c.2.5.3 1 .3 1.5s-.1 1-.3 1.5h-2.2z" fill="#006a3f"/>
+                </svg>
+              </button>
+              <button className="beranda-footer-social-btn" aria-label="Share">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 10c-.8 0-1.5.3-2 .8L6.5 8.3c.1-.3.1-.5.1-.8s0-.5-.1-.8L11 4.2c.5.5 1.2.8 2 .8 1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3c0 .3 0 .5.1.8L5 5.3C4.5 4.8 3.8 4.5 3 4.5c-1.7 0-3 1.3-3 3s1.3 3 3 3c.8 0 1.5-.3 2-.8l4.5 2.5c-.1.3-.1.5-.1.8 0 1.7 1.3 3 3 3s3-1.3 3-3-1.3-3-3-3z" fill="#006a3f"/>
+                </svg>
+              </button>
+              <button className="beranda-footer-social-btn" aria-label="Chat">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M14 1H2C1.4 1 1 1.4 1 2v9c0 .6.4 1 1 1h3v3l3-3h6c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zM5 8H4V7h1v1zm3 0H7V7h1v1zm3 0h-1V7h1v1z" fill="#006a3f"/>
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="beranda-footer-links">
-            <div className="beranda-footer-column">
-              <h4>Produk</h4>
-              <Link href="/marketplace">Marketplace</Link>
-              <Link href="/dashboard">Dashboard UMKM</Link>
-              <a href="#kategori">Kategori</a>
+
+          <div className="beranda-footer-column">
+            <h4>Layanan Kami</h4>
+            <Link href="/marketplace">Daftar Marketplace</Link>
+            <Link href="/marketplace">Daftar Sebagai Mitra Donasi</Link>
+            <Link href="/marketplace">Voucher & Promo</Link>
+            <Link href="/marketplace">Catering Sisa</Link>
+          </div>
+
+          <div className="beranda-footer-column">
+            <h4>Informasi</h4>
+            <Link href="/marketplace">Tentang Kami</Link>
+            <Link href="/marketplace">Bantuan & FAQ</Link>
+            <Link href="/marketplace">Syarat & Ketentuan</Link>
+            <Link href="/marketplace">Kebijakan Privasi</Link>
+          </div>
+
+          <div className="beranda-footer-column">
+            <h4>Dapatkan Informasi terbaru</h4>
+            <p className="beranda-footer-newsletter-desc">
+              Dapatkan info flash deal dan update promo penyelamatan makanan langsung di emailmu.
+            </p>
+            <div className="beranda-footer-newsletter">
+              <input
+                type="email"
+                placeholder="Email kamu"
+                className="beranda-footer-newsletter-input"
+              />
+              <button className="beranda-footer-newsletter-btn" aria-label="Subscribe">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M15.8 0.2c-.2-.2-.5-.3-.8-.2L0.4 5.6c-.3.1-.5.4-.5.7 0 .3.2.6.5.7l4.8 2.1L7.3 14c.1.3.4.5.7.5.3 0 .6-.2.7-.5L15.8 1c.1-.3.1-.6 0-.8z" fill="white"/>
+                </svg>
+              </button>
             </div>
-            <div className="beranda-footer-column">
-              <h4>Perusahaan</h4>
-              <a href="#tentang">Tentang Kami</a>
-              <Link href="/marketplace">Cara Kerja</Link>
-              <Link href="/marketplace">Kontak</Link>
-            </div>
-            <div className="beranda-footer-column">
-              <h4>Dukungan</h4>
-              <Link href="/marketplace">FAQ</Link>
-              <Link href="/marketplace">Help Center</Link>
-              <Link href="/marketplace">Kebijakan Privasi</Link>
+            <div className="beranda-footer-badges">
+              <img src="/footer/badge-1.png" alt="App Store" className="beranda-footer-badge" />
+              <img src="/footer/badge-2.png" alt="Google Play" className="beranda-footer-badge" />
             </div>
           </div>
         </div>
+
         <div className="beranda-footer-bottom">
-          <span>© 2026 Savora. Karya CODE 6.0.</span>
-          <span>Food rescue marketplace berbasis web.</span>
+          <span>© 2026 Savora Platform. Proudly Made In Indonesia for the Earth.</span>
+          <div className="beranda-footer-bottom-links">
+            <span>SECURITY</span>
+            <span>SITEMAP</span>
+            <span>COOKIES</span>
+          </div>
         </div>
       </footer>
     </div>
