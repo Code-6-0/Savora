@@ -100,23 +100,21 @@ function fmt(val) {
   return num.toLocaleString("id-ID");
 }
 
-// FUNGSI BARU: Calculate Food Trust Index berdasarkan PRD
+// Calculate Food Trust Index berdasarkan PRD 12.4 (Backend-Compatible)
+// Menggunakan fraksi f = (expiresAt - now) / (expiresAt - productionTime)
 function calculateFoodTrustIndex(
-  category,
   productionTime,
-  storageMethod,
+  expiresAt,
   packagingCondition,
-  appearance,
-  aroma,
-  hasSauceOrGravy,
-  // CRITICAL SAFETY GATES (BARU)
+  storageMethod,
+  // CRITICAL SAFETY GATES
   hasMoldOrSlime,
   hasAbnormalAroma,
   hasPackagingLeakSevere,
-  hasColdChainBroken) {
+  hasColdChainBroken
+) {
   
   // CRITICAL SAFETY GATE CHECKS - Auto-reject sebelum kalkulasi
-  // Sesuai Review_Final_Audit_PRD_Savora_CODE_6_0.md lines 32-43
   if (hasMoldOrSlime || hasAbnormalAroma || hasPackagingLeakSevere || hasColdChainBroken) {
     return {
       status: "Tidak Layak Konsumsi",
@@ -136,102 +134,85 @@ function calculateFoodTrustIndex(
     };
   }
   
-  // Hitung jam sejak produksi
+  // Parse timestamps
   const now = new Date();
-  let hoursSinceProduction = 0;
+  let productionDate = null;
+  let expiryDate = null;
   
+  // Parse production time (HH:mm format, today or yesterday)
   if (productionTime) {
     try {
       const [hours, minutes] = productionTime.split(":").map(Number);
-      const productionDate = new Date();
+      productionDate = new Date();
       productionDate.setHours(hours, minutes, 0, 0);
       
-      // Jika waktu produksi lebih besar dari waktu sekarang, berarti kemarin
+      // Jika waktu produksi lebih besar dari sekarang, berarti kemarin
       if (productionDate > now) {
         productionDate.setDate(productionDate.getDate() - 1);
       }
-      
-      hoursSinceProduction = (now.getTime() - productionDate.getTime()) / (1000 * 60 * 60);
     } catch (e) {
-      hoursSinceProduction = 0;
+      productionDate = null;
     }
   }
   
-  // ATURAN 1: Fresh - Baru diproduksi (<2 jam), kondisi sangat baik
-  if (
-    hoursSinceProduction < 2 &&
-    packagingCondition === "sangat_baik" &&
-    appearance >= 8 &&
-    aroma === "segar" &&
-    storageMethod === "dingin"
-  ) {
+  // Parse expiry datetime (YYYY-MM-DDTHH:mm format)
+  if (expiresAt) {
+    try {
+      expiryDate = new Date(expiresAt);
+    } catch (e) {
+      expiryDate = null;
+    }
+  }
+  
+  // Jika data tidak lengkap, return status default
+  if (!productionDate || !expiryDate) {
     return {
-      status: "Fresh",
-      canPublish: true,
-      reason: "Produk baru diproduksi dan dalam kondisi sangat baik. Dapat dijual dengan harga optimal.",
+      status: "Tidak Layak Konsumsi",
+      canPublish: false,
+      reason: "Data waktu produksi atau kedaluwarsa tidak lengkap.",
       badge: {
-        label: "Fresh",
-        color: "text-emerald-700",
-        bg: "bg-emerald-50",
-        border: "border-emerald-300",
-        dot: "bg-emerald-500"
+        label: "Data Tidak Lengkap",
+        color: "text-gray-700",
+        bg: "bg-gray-50",
+        border: "border-gray-300",
+        dot: "bg-gray-500"
       }
     };
   }
   
-  // ATURAN 2: Layak Dijual - Masih dalam masa simpan (2-6 jam)
-  if (
-    hoursSinceProduction >= 2 &&
-    hoursSinceProduction < 6 &&
-    packagingCondition !== "rusak" &&
-    appearance >= 6 &&
-    (aroma === "segar" || aroma === "normal")
-  ) {
+  // Hitung fraksi f sesuai PRD 12.4
+  const totalLifespan = expiryDate.getTime() - productionDate.getTime();
+  const remainingTime = expiryDate.getTime() - now.getTime();
+  const f = totalLifespan > 0 ? remainingTime / totalLifespan : 0;
+  
+  // PRD 12.4 If-Else Tree (First Match Wins)
+  
+  // 1. Tidak Layak Konsumsi: f <= 0 OR kemasan = Rusak
+  if (f <= 0 || packagingCondition === "Rusak") {
     return {
-      status: "Layak Dijual",
-      canPublish: true,
-      reason: "Produk masih dalam masa simpan optimal dan kondisi layak untuk dijual.",
+      status: "Tidak Layak Konsumsi",
+      canPublish: false,
+      reason: f <= 0 
+        ? "Produk sudah melewati tanggal kedaluwarsa." 
+        : "Kemasan dalam kondisi rusak.",
       badge: {
-        label: "Layak Dijual",
-        color: "text-green-700",
-        bg: "bg-green-50",
-        border: "border-green-300",
-        dot: "bg-green-500"
+        label: "Tidak Layak Konsumsi",
+        color: "text-red-700",
+        bg: "bg-red-50",
+        border: "border-red-300",
+        dot: "bg-red-500"
       }
     };
   }
   
-  // ATURAN 3: Segera Dijual - Mendekati batas konsumsi (6-12 jam)
-  if (
-    hoursSinceProduction >= 6 &&
-    hoursSinceProduction < 12 &&
-    appearance >= 5 &&
-    packagingCondition !== "rusak"
-  ) {
-    return {
-      status: "Segera Dijual",
-      canPublish: true,
-      reason: "Produk mendekati batas waktu konsumsi. Disarankan dijual dengan diskon lebih tinggi untuk penjualan cepat.",
-      badge: {
-        label: "Segera Dijual",
-        color: "text-amber-700",
-        bg: "bg-amber-50",
-        border: "border-amber-300",
-        dot: "bg-amber-500"
-      }
-    };
-  }
-  
-  // ATURAN 4: Tidak Disarankan Dijual - Risiko sedang (12-18 jam)
-  if (
-    hoursSinceProduction >= 12 &&
-    hoursSinceProduction < 18 &&
-    appearance >= 4
-  ) {
+  // 2. Tidak Disarankan Dijual: f < 0.15 OR penyimpanan = Tidak Sesuai
+  if (f < 0.15 || storageMethod === "Tidak Sesuai") {
     return {
       status: "Tidak Disarankan Dijual",
       canPublish: false,
-      reason: "Produk sudah melewati masa simpan optimal. Sebaiknya tidak dijual untuk konsumsi. Pertimbangkan jalur recovery lain.",
+      reason: f < 0.15
+        ? "Produk tersisa < 15% masa layak (terlalu dekat dengan kedaluwarsa)."
+        : "Penyimpanan tidak sesuai standar.",
       badge: {
         label: "Tidak Disarankan",
         color: "text-orange-700",
@@ -242,17 +223,65 @@ function calculateFoodTrustIndex(
     };
   }
   
-  // ATURAN 5: Tidak Layak Konsumsi - Risiko tinggi (>18 jam atau kondisi buruk)
+  // 3. Segera Dijual: f < 0.40
+  if (f < 0.40) {
+    return {
+      status: "Segera Dijual",
+      canPublish: true,
+      reason: "Produk tersisa < 40% masa layak. Disarankan dijual dengan diskon tinggi untuk penjualan cepat.",
+      badge: {
+        label: "Segera Dijual",
+        color: "text-amber-700",
+        bg: "bg-amber-50",
+        border: "border-amber-300",
+        dot: "bg-amber-500"
+      }
+    };
+  }
+  
+  // 4. Layak Dijual: f < 0.75 OR kemasan = Standar
+  if (f < 0.75 || packagingCondition === "Standar") {
+    return {
+      status: "Layak Dijual",
+      canPublish: true,
+      reason: "Produk masih dalam masa layak dan kondisi standar untuk dijual.",
+      badge: {
+        label: "Layak Dijual",
+        color: "text-green-700",
+        bg: "bg-green-50",
+        border: "border-green-300",
+        dot: "bg-green-500"
+      }
+    };
+  }
+  
+  // 5. Fresh: f >= 0.75 AND kemasan = Baik AND penyimpanan = Sesuai
+  if (f >= 0.75 && packagingCondition === "Baik" && storageMethod === "Sesuai") {
+    return {
+      status: "Fresh",
+      canPublish: true,
+      reason: "Produk dalam kondisi fresh (≥75% masa layak tersisa) dengan kemasan baik dan penyimpanan sesuai.",
+      badge: {
+        label: "Fresh",
+        color: "text-emerald-700",
+        bg: "bg-emerald-50",
+        border: "border-emerald-300",
+        dot: "bg-emerald-500"
+      }
+    };
+  }
+  
+  // Fallback (seharusnya tidak pernah tercapai)
   return {
-    status: "Tidak Layak Konsumsi",
-    canPublish: false,
-    reason: "Produk sudah melewati batas konsumsi aman atau kondisi tidak memadai. Tidak boleh dijual untuk konsumsi manusia.",
+    status: "Layak Dijual",
+    canPublish: true,
+    reason: "Produk layak dijual.",
     badge: {
-      label: "Tidak Layak Konsumsi",
-      color: "text-red-700",
-      bg: "bg-red-50",
-      border: "border-red-300",
-      dot: "bg-red-500"
+      label: "Layak Dijual",
+      color: "text-green-700",
+      bg: "bg-green-50",
+      border: "border-green-300",
+      dot: "bg-green-500"
     }
   };
 }
@@ -885,7 +914,7 @@ function ProductPreviewCard({
                 form.description,
                 form.category || form.mysteryCategory,
                 form.rescuePrice,
-                form.expiryDate,
+                form.expiresAt,
               ].filter(Boolean).length /
                 6) *
                 100
@@ -903,7 +932,7 @@ function ProductPreviewCard({
                   form.description,
                   form.category || form.mysteryCategory,
                   form.rescuePrice,
-                  form.expiryDate,
+                  form.expiresAt,
                 ].filter(Boolean).length /
                   6) *
                   100
@@ -1033,11 +1062,12 @@ function Step1Form({
             </FormField>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <FormField label="Tanggal Kedaluwarsa">
+            <FormField label="Tanggal & Jam Kedaluwarsa" hint="Waktu produk tidak layak konsumsi (sesuai standar BPOM/produsen)">
               <Input
-                value={form.expiryDate}
-                onChange={(v) => set("expiryDate", v)}
-                type="date"
+                value={form.expiresAt}
+                onChange={(v) => set("expiresAt", v)}
+                type="datetime-local"
+                placeholder="2026-07-23T18:00"
               />
             </FormField>
           </div>
@@ -1296,9 +1326,7 @@ function Step2Assessment({
 
   const canProceed =
     data.packaging !== null &&
-    data.aroma !== null &&
     data.storage !== null &&
-    data.shelfLife !== "" &&
     data.confirmSafe;
 
   // Check if any safety gate is triggered
@@ -1415,11 +1443,11 @@ function Step2Assessment({
           <AssessmentRadioGroup
             label="1. Kondisi Kemasan"
             value={data.packaging}
-            onChange={(v) => set("packaging", v["packaging"])}
+            onChange={(v) => set("packaging", v)}
             options={[
-              { value: "sangat_baik", label: "Sangat Baik", icon: <CheckCircle2 className="w-4 h-4" /> },
-              { value: "cukup", label: "Cukup", icon: <Info className="w-4 h-4" /> },
-              { value: "rusak", label: "Rusak", icon: <AlertTriangle className="w-4 h-4" /> },
+              { value: "Baik", label: "Baik (Utuh, Bersih, Tidak Cacat)", icon: <CheckCircle2 className="w-4 h-4" /> },
+              { value: "Standar", label: "Standar (Ada Cacat Minor)", icon: <Info className="w-4 h-4" /> },
+              { value: "Rusak", label: "Rusak (Bocor/Robek/Rusak Parah)", icon: <AlertTriangle className="w-4 h-4" /> },
             ]}
           />
         </div>
@@ -1447,7 +1475,7 @@ function Step2Assessment({
               ].map((opt) => (
                 <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
                   <div
-                    onClick={() => set("aroma", opt.value["aroma"])}
+                    onClick={() => set("aroma", opt.value)}
                     className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                       data.aroma === opt.value
                         ? "border-primary"
@@ -1465,34 +1493,65 @@ function Step2Assessment({
           </div>
         </div>
 
-        {/* Suhu & Masa Simpan */}
+        {/* Suhu & Penyimpanan */}
         <div className="bg-card rounded-2xl border border-border p-5 shadow-sm space-y-5">
-          <AssessmentRadioGroup
-            label="4. Suhu Penyimpanan"
-            value={data.storage}
-            onChange={(v) => set("storage", v["storage"])}
-            options={[
-              { value: "dingin", label: "Dingin (Chilled)", icon: <Thermometer className="w-4 h-4" /> },
-              { value: "suhu_ruang", label: "Suhu Ruang", icon: <Thermometer className="w-4 h-4" /> },
-              { value: "panas", label: "Panas (Heated)", icon: <Flame className="w-4 h-4" /> },
-            ]}
-          />
-          <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-foreground">5. Sisa Masa Simpan</label>
-            <div className="relative">
-              <select
-                value={data.shelfLife}
-                onChange={(e) => set("shelfLife", e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-border rounded-lg bg-input-background appearance-none outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-8"
-              >
-                <option value="">Pilih durasi...</option>
-                <option value="lt2">Kurang dari 2 jam</option>
-                <option value="2-6">2–6 jam</option>
-                <option value="6-24">6–24 jam</option>
-                <option value="1-3d">1–3 hari</option>
-                <option value="gt3d">Lebih dari 3 hari</option>
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <div className="space-y-2.5">
+            <label className="block text-sm font-semibold text-foreground">4. Suhu Penyimpanan</label>
+            <div className="space-y-2">
+              {[
+                { value: "dingin", label: "Dingin (Chilled, <10°C)", icon: <Thermometer className="w-4 h-4" /> },
+                { value: "suhu_ruang", label: "Suhu Ruang (20-25°C)", icon: <Thermometer className="w-4 h-4" /> },
+                { value: "panas", label: "Panas (Hot Holding, >60°C)", icon: <Flame className="w-4 h-4" /> },
+              ].map((opt) => (
+                <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
+                  <div
+                    onClick={() => set("storageTemp", opt.value)}
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      data.storageTemp === opt.value
+                        ? "border-primary"
+                        : "border-border group-hover:border-primary/50"
+                    }`}
+                  >
+                    {data.storageTemp === opt.value && (
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <span className="text-sm text-foreground flex items-center gap-2">
+                    {opt.icon}
+                    {opt.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          <div className="space-y-2.5">
+            <label className="block text-sm font-semibold text-foreground">5. Kesesuaian Penyimpanan dengan SOP</label>
+            <p className="text-xs text-muted-foreground">Apakah produk disimpan sesuai standar produsen/BPOM?</p>
+            <div className="space-y-2">
+              {[
+                { value: "Sesuai", label: "Sesuai SOP (Suhu & kondisi sesuai standar)", icon: <CheckCircle2 className="w-4 h-4 text-green-600" /> },
+                { value: "Tidak Sesuai", label: "Tidak Sesuai SOP (Ada penyimpangan)", icon: <AlertTriangle className="w-4 h-4 text-orange-600" /> },
+              ].map((opt) => (
+                <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
+                  <div
+                    onClick={() => set("storage", opt.value)}
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      data.storage === opt.value
+                        ? "border-primary"
+                        : "border-border group-hover:border-primary/50"
+                    }`}
+                  >
+                    {data.storage === opt.value && (
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <span className="text-sm text-foreground flex items-center gap-2">
+                    {opt.icon}
+                    {opt.label}
+                  </span>
+                </label>
+              ))}
             </div>
           </div>
         </div>
@@ -1642,9 +1701,8 @@ function Step2Assessment({
               {[
                 { label: "Kondisi Kemasan", done: data.packaging !== null },
                 { label: "Penampilan", done: data.appearance > 0 },
-                { label: "Aroma", done: data.aroma !== null },
-                { label: "Suhu Penyimpanan", done: data.storage !== null },
-                { label: "Sisa Masa Simpan", done: data.shelfLife !== "" },
+                { label: "Suhu Penyimpanan", done: data.storageTemp !== null },
+                { label: "Kesesuaian SOP", done: data.storage !== null },
                 { label: "Bebas Kontaminasi", done: data.freeContamination },
                 { label: "Konfirmasi", done: data.confirmSafe },
               ].map((item) => (
@@ -1709,13 +1767,10 @@ function Step3Results({
 }) {
   // Hitung Food Trust Index (BARU) dengan Safety Gates
   const trustResult = calculateFoodTrustIndex(
-    form.category,
     form.productionTime,
-    assessment.storage,
+    form.expiresAt,
     assessment.packaging,
-    assessment.appearance,
-    assessment.aroma,
-    assessment.hasSauceOrGravy,
+    assessment.storage,
     // Critical Safety Gates
     assessment.hasMoldOrSlime,
     assessment.hasAbnormalAroma,
@@ -1733,13 +1788,13 @@ function Step3Results({
   const status = scoreStatus(score);
 
   const summaryItems = [
-    { label: "Kondisi Kemasan", val: assessment.packaging === "sangat_baik" ? "Sangat Baik" : assessment.packaging === "cukup" ? "Cukup" : "Rusak", ok: assessment.packaging !== "rusak" },
+    { label: "Kondisi Kemasan", val: assessment.packaging || "Tidak diisi", ok: assessment.packaging === "Baik" || assessment.packaging === "Standar" },
     { label: "Penampilan", val: `${assessment.appearance}/10`, ok: assessment.appearance >= 6 },
-    { label: "Aroma", val: assessment.aroma === "segar" ? "Segar & Wangi" : assessment.aroma === "normal" ? "Normal" : "Berkurang", ok: assessment.aroma !== "berkurang" },
-    { label: "Suhu Penyimpanan", val: assessment.storage === "dingin" ? "Dingin" : assessment.storage === "suhu_ruang" ? "Suhu Ruang" : "Panas", ok: true },
+    { label: "Suhu Penyimpanan", val: assessment.storageTemp === "dingin" ? "Dingin (<10°C)" : assessment.storageTemp === "suhu_ruang" ? "Suhu Ruang" : assessment.storageTemp === "panas" ? "Panas (>60°C)" : "Tidak diisi", ok: true },
+    { label: "Kesesuaian SOP", val: assessment.storage || "Tidak diisi", ok: assessment.storage === "Sesuai" },
     { label: "Bebas Kontaminasi", val: assessment.freeContamination ? "Ya" : "Tidak", ok: assessment.freeContamination },
     { label: "Kebersihan", val: `${assessment.cleanlinessItems.length}/${CLEANLIST.length} poin`, ok: assessment.cleanlinessItems.length >= 3 },
-    { label: "Berkuah/Saus", val: assessment.hasSauceOrGravy ? "Ya" : "Tidak", ok: true }, // BARU
+    { label: "Berkuah/Saus", val: assessment.hasSauceOrGravy ? "Ya" : "Tidak", ok: true },
   ];
 
   // Rekomendasi berdasarkan Food Trust Index (BARU)
@@ -2001,11 +2056,12 @@ const DEFAULT_FORM = {
   name: "",
   description: "",
   category: "",
-  expiryDate: "",
-  productionTime: "", // BARU
+  expiryDate: "", // Deprecated - diganti expiresAt
+  expiresAt: "", // BARU: Format datetime-local (YYYY-MM-DDTHH:mm)
+  productionTime: "", // Format time (HH:mm)
   normalPrice: "",
   rescuePrice: "",
-  minimumPrice: "", // BARU
+  minimumPrice: "",
   quantity: 1,
   weight: "",
   portion: "",
@@ -2026,11 +2082,12 @@ const DEFAULT_ASSESSMENT = {
   hasPackagingLeakSevere: false,
   hasColdChainBroken: false,
   
-  // Regular assessment
-  packaging: null,
+  // Regular assessment (Backend-compatible values)
+  packaging: null, // "Baik" | "Standar" | "Rusak" (sesuai backend)
   appearance: 5,
   aroma: null,
-  storage: null,
+  storage: null, // "Sesuai" | "Tidak Sesuai" (sesuai backend)
+  storageTemp: null, // "dingin" | "suhu_ruang" | "panas" (untuk UI saja)
   shelfLife: "",
   freeContamination: false,
   cleanlinessItems: [],
