@@ -488,7 +488,22 @@ export function computeProductScore(product, now, elapsedSeconds = 0) {
 
 export function filterMarketplaceProducts(products, { search = "", category = "Semua", trustStatus = "Semua", sort = "default" } = {}) {
   const term = search.trim().toLowerCase();
+  const now = Date.now();
+
   const filtered = products.filter((product) => {
+    // Sembunyikan produk yang tidak boleh tayang (PRD 12.6, guardrail 13.3)
+    // 1. Stok habis (null/undefined = tersedia)
+    if (Number.isFinite(product.stock) && product.stock <= 0) return false;
+
+    // 2. Status Food Trust tidak layak
+    const status = product.food_trust_status;
+    if (status === "Tidak Layak Konsumsi" || status === "Tidak Disarankan Dijual") return false;
+
+    // 3. Sudah expired (skor <= 0 atau sisa waktu <= 0)
+    const { score, remainingSeconds } = computeProductScore(product, now, 0);
+    if (score <= 0 || remainingSeconds <= 0) return false;
+
+    // Filter search, kategori, dan status
     const searchTarget = `${product.name} ${product.vendor} ${product.category}`.toLowerCase();
     return (!term || searchTarget.includes(term))
       && (category === "Semua" || product.category === category)
@@ -512,7 +527,7 @@ export function filterMarketplaceProducts(products, { search = "", category = "S
  * langsung memanggil `result.map(...)` tetap berfungsi.
  */
 export async function fetchMarketplaceProducts() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   const makeResult = (products, source) => {
     const result = [...products];
     result.products = products;

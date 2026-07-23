@@ -237,6 +237,42 @@
 .savora-ad-body p { margin: 0; color: var(--savora-muted); font-size: 10px; line-height: 1.45; }
 .savora-ad-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; color: var(--savora-lime); font-size: 10px; font-weight: 800; }
 
+/* Sort dropdown (Richard Firmansyah) */
+.beranda-sort-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.beranda-sort-option {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: #3e4941;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.beranda-sort-option:hover {
+  background: #f9fafb;
+}
+
+.beranda-sort-option.is-active {
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .savora-main-nav, .savora-login, .savora-signup { display: none; }
   .savora-search { max-width: none; }

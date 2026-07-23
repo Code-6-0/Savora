@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,23 +13,119 @@ import {
   ChevronRight,
   SlidersHorizontal,
   ShoppingCart,
+  RefreshCw,
 } from "lucide-react";
-import { fetchMarketplaceProducts, computeProductScore } from "@/lib/marketplace";
+import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
+import { fetchAds, AD_TYPES } from "@/lib/ads";
+import { deriveRestaurantSafety } from "@/lib/reviews";
 
 export default function MarketplacePage() {
-  const [products, setProducts] = useState([]);
+  const searchParams = useSearchParams();
+  const [allProducts, setAllProducts] = useState([]);
+  const [dataSource, setDataSource] = useState("api");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [sortMode, setSortMode] = useState("default");
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [ads, setAds] = useState([]);
   const [elapsed, setElapsed] = useState(0);
+  const sortDropdownRef = useRef(null);
 
+  // Fetch products
   useEffect(() => {
     fetchMarketplaceProducts().then((result) => {
-      setProducts(result.products || []);
+      setAllProducts(result.products || []);
+      setDataSource(result.source || "api");
     });
+  }, []);
+
+  // Read category from query params on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam && categoryParam !== "Semua") {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
+
+  // Fetch ads
+  useEffect(() => {
+    fetchAds(2).then(setAds);
   }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    if (sortDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sortDropdownOpen]);
+
+  // Close dropdown on Escape key
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setSortDropdownOpen(false);
+      }
+    };
+    if (sortDropdownOpen) {
+      document.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [sortDropdownOpen]);
+
+  // Apply filtering
+  const products = filterMarketplaceProducts(allProducts, {
+    search: searchTerm,
+    category: selectedCategory,
+    sort: sortMode,
+  });
+
+  // Handlers
+  const handleSearch = () => {
+    // Filtering is reactive, no action needed
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleSortClick = () => {
+    setSortDropdownOpen((prev) => !prev);
+  };
+
+  const handleSortSelect = (mode) => {
+    setSortMode(mode);
+    setSortDropdownOpen(false);
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    setSelectedCategory((prev) => (prev === categoryName ? "Semua" : categoryName));
+  };
+
+  const handleRetry = () => {
+    fetchMarketplaceProducts().then((result) => {
+      setAllProducts(result.products || []);
+      setDataSource(result.source || "api");
+    });
+  };
+
+  const sortLabel = sortMode === "nearest" ? "Terdekat" : sortMode === "lowest-price" ? "Termurah" : "Terpopuler";
 
   const formatTimer = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -45,7 +142,9 @@ export default function MarketplacePage() {
   };
 
   const nearbyProducts = products.slice(0, 12);
-  const recommendedProducts = products.slice(12, 16);
+  // Inject ads into recommended products (max 2)
+  const recommendedBase = products.slice(12, 16);
+  const recommendedProducts = [...ads.slice(0, 2), ...recommendedBase].slice(0, 6);
 
   const categories = [
     { name: "Bakery", icon: "/categories/bakery.svg", bgColor: "#ecfdf5", iconColor: "#059669" },
@@ -108,6 +207,9 @@ export default function MarketplacePage() {
               <input
                 type="text"
                 placeholder="Cari makanan atau resto terdekat..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 style={{
                   flex: 1,
                   border: "none",
@@ -118,16 +220,19 @@ export default function MarketplacePage() {
                   backgroundColor: "transparent",
                 }}
               />
-              <button style={{
-                backgroundColor: "#16a34a",
-                color: "#fff",
-                fontSize: "15px",
-                fontWeight: 700,
-                padding: "10px 24px",
-                borderRadius: "15px",
-                border: "none",
-                cursor: "pointer",
-              }}>
+              <button
+                onClick={handleSearch}
+                style={{
+                  backgroundColor: "#16a34a",
+                  color: "#fff",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  padding: "10px 24px",
+                  borderRadius: "15px",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
                 Cari
               </button>
             </div>
@@ -139,22 +244,50 @@ export default function MarketplacePage() {
             gap: "12px",
             flexWrap: "wrap",
           }}>
-            <button style={{
-              backgroundColor: "#f5f3f3",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}>
-              Urutkan: Terpopuler
-              <ChevronDown size={14} />
-            </button>
+            <div ref={sortDropdownRef} style={{ position: "relative" }}>
+              <button
+                onClick={handleSortClick}
+                style={{
+                  backgroundColor: "#f5f3f3",
+                  color: "#3e4941",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  padding: "8px 16px",
+                  borderRadius: "999px",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                Urutkan: {sortLabel}
+                <ChevronDown size={14} />
+              </button>
+
+              {sortDropdownOpen && (
+                <div className="beranda-sort-dropdown">
+                  <button
+                    onClick={() => handleSortSelect("default")}
+                    className={`beranda-sort-option ${sortMode === "default" ? "is-active" : ""}`}
+                  >
+                    Terpopuler
+                  </button>
+                  <button
+                    onClick={() => handleSortSelect("nearest")}
+                    className={`beranda-sort-option ${sortMode === "nearest" ? "is-active" : ""}`}
+                  >
+                    Terdekat
+                  </button>
+                  <button
+                    onClick={() => handleSortSelect("lowest-price")}
+                    className={`beranda-sort-option ${sortMode === "lowest-price" ? "is-active" : ""}`}
+                  >
+                    Termurah
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div style={{
               width: "1px",
@@ -245,10 +378,15 @@ export default function MarketplacePage() {
           </div>
           <div className="beranda-categories">
             {categories.map((cat) => (
-              <Link
+              <button
                 key={cat.name}
-                href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
+                onClick={() => handleCategoryClick(cat.name)}
                 className="beranda-category"
+                style={{
+                  opacity: selectedCategory === cat.name ? 1 : selectedCategory === "Semua" ? 1 : 0.5,
+                  transform: selectedCategory === cat.name ? "scale(1.05)" : "scale(1)",
+                  transition: "all 0.2s ease",
+                }}
               >
                 <div
                   className="beranda-category-circle"
@@ -264,7 +402,7 @@ export default function MarketplacePage() {
                   />
                 </div>
                 <span className="beranda-category-name">{cat.name}</span>
-              </Link>
+              </button>
             ))}
           </div>
         </div>
@@ -272,12 +410,63 @@ export default function MarketplacePage() {
 
       <section className="beranda-section">
         <div className="beranda-container">
+          {dataSource === "fallback" && (
+            <div style={{
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: "15px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+            }}>
+              <span style={{ fontSize: "14px", color: "#856404" }}>
+                Menampilkan data demo — server tidak terjangkau
+              </span>
+              <button
+                onClick={handleRetry}
+                style={{
+                  backgroundColor: "#ffc107",
+                  color: "#000",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  padding: "6px 14px",
+                  borderRadius: "10px",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <RefreshCw size={14} /> Coba Lagi
+              </button>
+            </div>
+          )}
           <div className="beranda-section-header">
             <h2>Makanan Terdekat</h2>
             <Link href="/marketplace" className="beranda-link">
               Lihat Semua <ChevronRight size={16} />
             </Link>
           </div>
+          {products.length === 0 ? (
+            <div style={{
+              textAlign: "center",
+              padding: "48px 24px",
+              backgroundColor: "#f9fafb",
+              borderRadius: "15px",
+              border: "1px solid #e5e7eb",
+            }}>
+              <p style={{ fontSize: "16px", fontWeight: 600, color: "#1f2937", marginBottom: "8px" }}>
+                Tidak ada produk ditemukan
+              </p>
+              <p style={{ fontSize: "14px", color: "#6b7280" }}>
+                Coba ubah pencarian atau filter kategori
+              </p>
+            </div>
+          ) : null}
           <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
             {nearbyProducts.map((product) => {
               const now = Date.now();
@@ -286,6 +475,11 @@ export default function MarketplacePage() {
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
               const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
+
+              // Safety badge (PRD 12.7)
+              const showSafetyBadge = product.safety_level || (product.reviews && product.reviews.length >= 3);
+              const safetyData = showSafetyBadge ? deriveRestaurantSafety(product.reviews || [], product.safety_level) : null;
+              const safetyColor = safetyData?.level.key === "aman" ? "#16a34a" : safetyData?.level.key === "warning" ? "#f59e0b" : "#ef4444";
 
               return (
                 <div key={product.id} className="beranda-product-card">
@@ -299,6 +493,14 @@ export default function MarketplacePage() {
                         >
                           <Clock size={12} /> {formatTimer(remainingSeconds)}
                         </span>
+                        {safetyData && (
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                          >
+                            {safetyData.level.label}
+                          </span>
+                        )}
                       </div>
                       {score !== undefined && (
                         <span
@@ -362,13 +564,73 @@ export default function MarketplacePage() {
             </Link>
           </div>
           <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-            {recommendedProducts.map((product) => {
+            {recommendedProducts.map((item) => {
+              // Check if this is an ad or a product
+              const isAd = item.sponsor !== undefined;
+
+              if (isAd) {
+                // Render ad card
+                const adLabel = item.type === "umkm" ? "Promoted UMKM" : "Iklan";
+                return (
+                  <div key={item.id} className="beranda-product-card">
+                    <a
+                      href={item.href}
+                      target={item.external ? "_blank" : "_self"}
+                      rel={item.external ? "noopener noreferrer" : undefined}
+                      className="beranda-product-link"
+                    >
+                      <div className="beranda-product-image">
+                        <img src={item.photo_url} alt={item.headline} />
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: "#f59e0b", color: "#fff" }}
+                          >
+                            {adLabel}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="beranda-product-info">
+                        <h3 style={{ fontSize: "14px", marginBottom: "4px" }}>{item.headline}</h3>
+                        <p className="beranda-product-vendor">
+                          <MapPin size={9} /> {item.sponsor}
+                        </p>
+                        <div className="beranda-product-footer">
+                          <button
+                            style={{
+                              backgroundColor: "#16a34a",
+                              color: "#fff",
+                              fontSize: "13px",
+                              fontWeight: 600,
+                              padding: "8px 16px",
+                              borderRadius: "10px",
+                              border: "none",
+                              cursor: "pointer",
+                              width: "100%",
+                            }}
+                          >
+                            {item.cta}
+                          </button>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                );
+              }
+
+              // Render regular product card (same as nearbyProducts)
+              const product = item;
               const now = Date.now();
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
               const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
+
+              // Safety badge (PRD 12.7)
+              const showSafetyBadge = product.safety_level || (product.reviews && product.reviews.length >= 3);
+              const safetyData = showSafetyBadge ? deriveRestaurantSafety(product.reviews || [], product.safety_level) : null;
+              const safetyColor = safetyData?.level.key === "aman" ? "#16a34a" : safetyData?.level.key === "warning" ? "#f59e0b" : "#ef4444";
 
               return (
                 <div key={product.id} className="beranda-product-card">
@@ -382,6 +644,14 @@ export default function MarketplacePage() {
                         >
                           <Clock size={12} /> {formatTimer(remainingSeconds)}
                         </span>
+                        {safetyData && (
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                          >
+                            {safetyData.level.label}
+                          </span>
+                        )}
                       </div>
                       {score !== undefined && (
                         <span
