@@ -50,29 +50,80 @@ async function getAuthToken(page) {
   });
 }
 
-// Generate Midtrans signature (PRD 14.6)
-function generateMidtransSignature(orderId, statusCode, grossAmount, serverKey = MIDTRANS_SERVER_KEY) {
-  const signatureString = `${orderId}${statusCode}${grossAmount}${serverKey}`;
-  return crypto.createHash('sha512').update(signatureString).digest('hex');
+// Xendit Invoice API helpers
+const XENDIT_CALLBACK_TOKEN = process.env.XENDIT_CALLBACK_TOKEN || 'test_xendit_callback_token';
+
+// Generate Xendit invoice data
+function generateXenditInvoice(orderId, amount = 52500) {
+  return {
+    id: `xendit_inv_${orderId}_${Date.now()}`,
+    external_id: `savora-order-${orderId}`,
+    status: 'PENDING',
+    amount: amount,
+    invoice_url: `https://checkout.xendit.co/web/${crypto.randomBytes(16).toString('hex')}`,
+    expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+  };
 }
 
-// Trigger Midtrans webhook
-async function triggerMidtransWebhook(request, orderId, statusCode = '200', grossAmount = '52500') {
-  const signature = generateMidtransSignature(orderId, statusCode, grossAmount);
+// Trigger Xendit webhook
+async function triggerXenditWebhook(request, orderId, status = 'PAID', amount = 52500, callbackToken = XENDIT_CALLBACK_TOKEN) {
+  const webhookData = {
+    id: `xendit_inv_${orderId}_123456`,
+    external_id: `savora-order-${orderId}`,
+    status: status,
+    amount: amount,
+    paid_at: status === 'PAID' ? new Date().toISOString() : undefined,
+  };
   
-  return await request.post(`${API_URL}/payments/midtrans-webhook`, {
+  return await request.post(`${API_URL}/payments/xendit-webhook`, {
     headers: {
       'Content-Type': 'application/json',
+      'x-callback-token': callbackToken,
     },
-    data: {
-      order_id: orderId,
-      status_code: statusCode,
-      gross_amount: grossAmount,
-      transaction_status: statusCode === '200' ? 'settlement' : 'expire',
-      signature_key: signature,
-    },
+    data: webhookData,
     failOnStatusCode: false,
   });
+}
+
+// Verify order is in payment pending state
+async function verifyOrderPending(page, orderId) {
+  try {
+    const response = await page.request.get(`${API_URL}/orders/${orderId}`);
+    const order = await response.json();
+    return order.status === 'PAYMENT_PENDING' && order.payment_status === 'PENDING';
+  } catch {
+    return false;
+  }
+}
+
+// Verify order is paid
+async function verifyOrderPaid(page, orderId) {
+  try {
+    const response = await page.request.get(`${API_URL}/orders/${orderId}`);
+    const order = await response.json();
+    return order.status === 'PAID' && order.payment_status === 'PAID' && order.pickup_code;
+  } catch {
+    return false;
+  }
+}
+
+// Wait for order status
+async function waitForOrderStatus(page, orderId, status, timeout = 30000, interval = 1000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    try {
+      const response = await page.request.get(`${API_URL}/orders/${orderId}`);
+      const order = await response.json();
+      if ((order.status === status && order.payment_status === status) ||
+          order.status === status || order.payment_status === status) {
+        return order;
+      }
+    } catch {
+      // Continue waiting
+    }
+    await page.waitForTimeout(interval);
+  }
+  throw new Error(`Order ${orderId} did not reach status ${status} within ${timeout}ms`);
 }
 
 // Wait for element with retry
