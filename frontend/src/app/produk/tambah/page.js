@@ -104,10 +104,10 @@ function fmt(val) {
 function calculateFoodTrustIndex(
   category,
   productionTime,
-  storageMethod| null,
-  packagingCondition| null,
+  storageMethod,
+  packagingCondition,
   appearance,
-  aroma| null,
+  aroma,
   hasSauceOrGravy,
   // CRITICAL SAFETY GATES (BARU)
   hasMoldOrSlime,
@@ -483,13 +483,10 @@ function TopNav({ step }) {
 function ProductTypeToggle({
   value,
   onChange,
-}: {
-  value;
-  onChange;
 }) {
   return (
     <div className="flex rounded-xl border border-border overflow-hidden">
-      {(["reguler", "mystery"] as ProductType[]).map((t) => (
+      {(["reguler", "mystery"]).map((t) => (
         <button
           key={t}
           onClick={() => onChange(t)}
@@ -509,9 +506,6 @@ function ProductTypeToggle({
 function PhotoUpload({
   url,
   onChange,
-}: {
-  url| null;
-  onChange;
 }) {
   const ref = useRef(null);
 
@@ -519,7 +513,7 @@ function PhotoUpload({
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => onChange(ev.target?.result as string);
+    reader.onload = (ev) => onChange(ev.target?.result);
     reader.readAsDataURL(file);
   }
 
@@ -561,10 +555,6 @@ function FormField({
   label,
   children,
   hint,
-}: {
-  label;
-  children;
-  hint;
 }) {
   return (
     <div className="space-y-1.5">
@@ -581,12 +571,6 @@ function Input({
   placeholder,
   prefix,
   type = "text",
-}: {
-  value;
-  onChange;
-  placeholder;
-  prefix;
-  type;
 }) {
   return (
     <div className="flex items-center border border-border rounded-lg bg-input-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
@@ -609,11 +593,6 @@ function Select({
   onChange,
   options,
   placeholder,
-}: {
-  value;
-  onChange;
-  options;
-  placeholder;
 }) {
   return (
     <div className="relative">
@@ -635,9 +614,6 @@ function Select({
 function QuantityControl({
   value,
   onChange,
-}: {
-  value;
-  onChange;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -664,10 +640,6 @@ function TagSelector({
   selected,
   onChange,
   options,
-}: {
-  selected;
-  onChange;
-  options;
 }) {
   function toggle(tag) {
     onChange(
@@ -697,9 +669,6 @@ function TagSelector({
 function AllergenGrid({
   selected,
   onChange,
-}: {
-  selected;
-  onChange;
 }) {
   function toggle(a) {
     onChange(
@@ -771,9 +740,6 @@ function QualityChecklist({ checked, onChange }) {
 function ProductPreviewCard({
   form,
   score,
-}: {
-  form;
-  score| null;
 }) {
   const isMystery = form.productType === "mystery";
   const name = isMystery
@@ -969,14 +935,10 @@ function Step1Form({
   form,
   setForm,
   onNext,
-}: {
-  form;
-  setForm: React.Dispatch<React.SetStateAction<FormData>>;
-  onNext: () => void;
 }) {
   const isMystery = form.productType === "mystery";
 
-  function set<K extends keyof FormData>(key: K, value[K]) {
+  function set(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -1256,11 +1218,6 @@ function AssessmentRadioGroup({
   options,
   value,
   onChange,
-}: {
-  label;
-  options: { value; label; icon? }[];
-  value| null;
-  onChange;
 }) {
   return (
     <div className="space-y-2.5">
@@ -1293,14 +1250,6 @@ function SliderField({
   max = 10,
   leftLabel,
   rightLabel,
-}: {
-  label;
-  value;
-  onChange;
-  min;
-  max;
-  leftLabel;
-  rightLabel;
 }) {
   return (
     <div className="space-y-2.5">
@@ -1331,13 +1280,8 @@ function Step2Assessment({
   setData,
   onBack,
   onNext,
-}: {
-  data;
-  setData: React.Dispatch<React.SetStateAction<AssessmentData>>;
-  onBack: () => void;
-  onNext: () => void;
 }) {
-  function set<K extends keyof AssessmentData>(key: K, value[K]) {
+  function set(key, value) {
     setData((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -1471,7 +1415,7 @@ function Step2Assessment({
           <AssessmentRadioGroup
             label="1. Kondisi Kemasan"
             value={data.packaging}
-            onChange={(v) => set("packaging", v as AssessmentData["packaging"])}
+            onChange={(v) => set("packaging", v["packaging"])}
             options={[
               { value: "sangat_baik", label: "Sangat Baik", icon: <CheckCircle2 className="w-4 h-4" /> },
               { value: "cukup", label: "Cukup", icon: <Info className="w-4 h-4" /> },
@@ -1503,7 +1447,7 @@ function Step2Assessment({
               ].map((opt) => (
                 <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
                   <div
-                    onClick={() => set("aroma", opt.value as AssessmentData["aroma"])}
+                    onClick={() => set("aroma", opt.value["aroma"])}
                     className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                       data.aroma === opt.value
                         ? "border-primary"
@@ -1526,7 +1470,7 @@ function Step2Assessment({
           <AssessmentRadioGroup
             label="4. Suhu Penyimpanan"
             value={data.storage}
-            onChange={(v) => set("storage", v as AssessmentData["storage"])}
+            onChange={(v) => set("storage", v["storage"])}
             options={[
               { value: "dingin", label: "Dingin (Chilled)", icon: <Thermometer className="w-4 h-4" /> },
               { value: "suhu_ruang", label: "Suhu Ruang", icon: <Thermometer className="w-4 h-4" /> },
@@ -1762,11 +1706,6 @@ function Step3Results({
   assessment,
   onBack,
   onPublish,
-}: {
-  form;
-  assessment;
-  onBack: () => void;
-  onPublish: () => void;
 }) {
   // Hitung Food Trust Index (BARU) dengan Safety Gates
   const trustResult = calculateFoodTrustIndex(
@@ -2100,9 +2039,9 @@ const DEFAULT_ASSESSMENT = {
 };
 
 export default function App() {
-  const [step, setStep] = useState<Step>(1);
-  const [form, setForm] = useState<FormData>(DEFAULT_FORM);
-  const [assessment, setAssessment] = useState<AssessmentData>(DEFAULT_ASSESSMENT);
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [assessment, setAssessment] = useState(DEFAULT_ASSESSMENT);
   const [published, setPublished] = useState(false);
 
   function handlePublish() {

@@ -55,7 +55,7 @@ const KEYWORD_MAP = [
 /**
  * Normalisasi key level ke salah satu SAFETY_LEVELS.
  * @param {string} value
- * @returns {object|null}
+ * @returns {object} Safety level object atau null
  */
 export function normalizeSafetyLevel(value) {
   if (!value) return null;

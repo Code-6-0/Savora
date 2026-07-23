@@ -35,7 +35,7 @@ const INITIAL_SCORE_BY_STATUS = {
 /**
  * Skor awal terkunci berdasarkan status Food Trust Index saat publish.
  * @param {string} status status Food Trust Index.
- * @returns {number|null} skor awal (100/85/70) atau null bila status tidak tayang.
+ * @returns {number} skor awal (100/85/70) atau null bila status tidak tayang.
  */
 export function initialFoodScore(status) {
   return INITIAL_SCORE_BY_STATUS[status] ?? null;
