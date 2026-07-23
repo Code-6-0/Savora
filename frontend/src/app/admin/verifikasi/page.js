@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DashboardLayout from '../../../components/templates/DashboardLayout';
 import Badge from '../../../components/atoms/Badge';
+import { apiGet, apiPatch } from '@/lib/api';
 
 export default function VerifikasiPage() {
   // State
@@ -12,6 +13,7 @@ export default function VerifikasiPage() {
   const [mitraList, setMitraList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mitraError, setMitraError] = useState(null); // Per-tab error state
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Dialog states
@@ -38,21 +40,7 @@ export default function VerifikasiPage() {
   // Fetch UMKM list
   const fetchUMKMList = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/umkm?status=PENDING`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Gagal mengambil data UMKM');
-      }
-
-      const result = await response.json();
+      const result = await apiGet('/admin/umkm?status=PENDING');
       if (result.success) {
         setUmkmList(result.data.umkm_list || []);
         setBadgeCounts(prev => ({ ...prev, umkm: result.data.total || 0 }));
@@ -66,28 +54,14 @@ export default function VerifikasiPage() {
   // Fetch Mitra Donasi list
   const fetchMitraList = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/mitra-donasi?status=PENDING`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Gagal mengambil data mitra donasi');
-      }
-
-      const result = await response.json();
+      const result = await apiGet('/admin/mitra-donasi?status=PENDING');
       if (result.success) {
         setMitraList(result.data.mitra_list || []);
         setBadgeCounts(prev => ({ ...prev, mitra: result.data.total || 0 }));
       }
     } catch (err) {
       console.error('Error fetching mitra:', err);
-      setError(err.message);
+      setMitraError(err.message); // Per-tab error (tidak crash seluruh page)
     }
   };
 
@@ -117,30 +91,14 @@ export default function VerifikasiPage() {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
       const isUMKM = activeTab === 'umkm';
       const endpoint = isUMKM
-        ? `/api/admin/umkm/${selectedItem.id}/verification`
-        : `/api/admin/mitra-donasi/${selectedItem.id}/verify`;
+        ? `/admin/umkm/${selectedItem.id}/verification`
+        : `/admin/mitra-donasi/${selectedItem.id}/verify`;
 
       const status = dialogType === 'approve' ? 'APPROVED' : 'REJECTED';
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status, note: note.trim() })
-        }
-      );
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error?.message || 'Gagal memverifikasi');
-      }
+      await apiPatch(endpoint, { status, note: note.trim() });
 
       // Success - refresh data
       if (isUMKM) {
@@ -378,7 +336,37 @@ export default function VerifikasiPage() {
         {/* Mitra Donasi Tab */}
         {activeTab === 'mitra' && (
           <>
-            {mitraList.length === 0 ? (
+            {mitraError ? (
+              <div style={{ padding: '3rem', textAlign: 'center' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
+                <p style={{ color: 'var(--danger-color)', marginBottom: '0.5rem', fontWeight: '600' }}>
+                  {mitraError}
+                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                  Terjadi kesalahan saat memuat data mitra donasi. Silakan coba lagi.
+                </p>
+                <button
+                  onClick={() => {
+                    setMitraError(null);
+                    fetchMitraList();
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => { e.target.style.opacity = '0.9'; }}
+                  onMouseOut={(e) => { e.target.style.opacity = '1'; }}
+                >
+                  Coba Lagi
+                </button>
+              </div>
+            ) : mitraList.length === 0 ? (
               <div style={{ padding: '3rem', textAlign: 'center' }}>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Tidak ada mitra donasi yang menunggu verifikasi</p>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Semua pengajuan mitra donasi telah diproses</p>

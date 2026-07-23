@@ -361,6 +361,50 @@ func GetUMKMListHandler(c *fiber.Ctx) error {
 	})
 }
 
+// GetMitraDonasiListHandler - GET /admin/mitra-donasi
+// Return list of mitra donasi profiles with user info
+func GetMitraDonasiListHandler(c *fiber.Ctx) error {
+	// Parse query params
+	statusFilter := c.Query("status") // Filter by verification_status (PENDING, APPROVED, REJECTED)
+
+	// Query mitra_donasi_profiles dengan join ke users
+	query := database.DB.Model(&models.MitraDonasiProfile{}).
+		Select("mitra_donasi_profiles.*, users.name as user_name, users.email as user_email, users.status as user_status, users.created_at as user_created_at").
+		Joins("LEFT JOIN users ON users.id = mitra_donasi_profiles.user_id")
+
+	// Apply filter
+	if statusFilter != "" {
+		query = query.Where("mitra_donasi_profiles.verification_status = ?", statusFilter)
+	}
+
+	// Execute query
+	type MitraWithUser struct {
+		models.MitraDonasiProfile
+		UserName      string `json:"user_name"`
+		UserEmail     string `json:"user_email"`
+		UserStatus    string `json:"user_status"`
+		UserCreatedAt string `json:"user_created_at"`
+	}
+
+	var mitraList []MitraWithUser
+	if err := query.Order("mitra_donasi_profiles.created_at desc").Scan(&mitraList).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "INTERNAL_ERROR", Message: "Gagal mengambil data mitra donasi"},
+		})
+	}
+
+	return c.JSON(APIResponse{
+		Success: true,
+		Data: fiber.Map{
+			"mitra_list": mitraList,
+			"total":      len(mitraList),
+		},
+		Error: nil,
+	})
+}
+
 // TopUMKMData represents top performing UMKM data
 type TopUMKMData struct {
 	UMKMName        string  `json:"umkm_name"`

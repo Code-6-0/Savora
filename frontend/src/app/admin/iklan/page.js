@@ -21,6 +21,8 @@ export default function ManajemenIklanPage() {
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [viewAd, setViewAd] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -74,6 +76,11 @@ export default function ManajemenIklanPage() {
     setShowDialog(true);
   }
 
+  function openViewDialog(ad) {
+    setViewAd(ad);
+    setShowViewDialog(true);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!note.trim()) {
@@ -92,6 +99,7 @@ export default function ManajemenIklanPage() {
         alert(`Iklan berhasil ${action === 'APPROVED' ? 'disetujui' : 'ditolak'}`);
         setShowDialog(false);
         fetchAdList();
+        fetchBadgeCount(); // Refresh badge count after action
       }
     } catch (err) {
       alert(err.message);
@@ -130,6 +138,110 @@ export default function ManajemenIklanPage() {
       </div>
     );
   }
+
+  // Build columns based on active tab
+  const getColumns = () => {
+    const baseColumns = [
+      { key: 'id', label: 'ID' },
+      {
+        key: 'title',
+        label: 'Judul',
+        render: (row) => (
+          <div
+            style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            title={row.title}
+          >
+            {row.title}
+          </div>
+        )
+      },
+      {
+        key: 'advertiser_type',
+        label: 'Tipe',
+        render: (row) => (
+          <Badge
+            variant={row.advertiser_type === 'UMKM' ? 'info' : 'secondary'}
+            text={row.advertiser_type || '-'}
+          />
+        )
+      },
+      {
+        key: 'price',
+        label: 'Harga',
+        render: (row) => formatCurrency(row.price)
+      },
+      {
+        key: 'service_fee',
+        label: 'Service Fee',
+        render: (row) => formatCurrency(row.service_fee)
+      },
+      {
+        key: 'duration_days',
+        label: 'Durasi',
+        render: (row) => `${row.duration_days} hari`
+      }
+    ];
+
+    // For pending tab, show duration info; for active/rejected, show periode tayang
+    if (activeTab === 'pending') {
+      baseColumns.push({
+        key: 'created_at',
+        label: 'Tanggal Pengajuan',
+        render: (row) => formatDate(row.created_at)
+      });
+    } else {
+      baseColumns.push({
+        key: 'periode',
+        label: 'Periode Tayang',
+        render: (row) => formatPeriode(row)
+      });
+    }
+
+    // Status column only for active and rejected tabs (redundant for pending)
+    if (activeTab !== 'pending') {
+      baseColumns.push({
+        key: 'status',
+        label: 'Status',
+        render: (row) => (
+          <Badge
+            variant={
+              row.status === 'ACTIVE' ? 'success' :
+              row.status === 'APPROVED' ? 'success' :
+              row.status === 'PENDING' ? 'warning' :
+              row.status === 'REJECTED' ? 'danger' :
+              'secondary'
+            }
+            text={row.status}
+          />
+        )
+      });
+    }
+
+    // Actions column
+    baseColumns.push({
+      key: 'actions',
+      label: 'Aksi',
+      render: (row) => (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <Button variant="secondary" onClick={() => openViewDialog(row)}>
+            Lihat
+          </Button>
+          {row.status === 'PENDING' && (
+            <>
+              <Button variant="primary" onClick={() => openDialog(row, 'APPROVED')}>
+                Setujui
+              </Button>
+              <Button variant="danger" onClick={() => openDialog(row, 'REJECTED')}>
+                Tolak
+              </Button>
+            </>
+          )}
+        </div>
+      )
+    });
+
+    return baseColumns;
+  };
 
   return (
     <div className="dashboard-wrapper">
@@ -281,87 +393,7 @@ export default function ManajemenIklanPage() {
           {/* Table */}
           {!loading && !error && adList.length > 0 && (
             <DataTable
-              columns={[
-                { key: 'id', label: 'ID' },
-                {
-                  key: 'title',
-                  label: 'Judul',
-                  render: (row) => (
-                    <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {row.title}
-                    </div>
-                  )
-                },
-                {
-                  key: 'advertiser_type',
-                  label: 'Tipe',
-                  render: (row) => (
-                    <Badge
-                      variant={row.advertiser_type === 'UMKM' ? 'info' : 'secondary'}
-                      text={row.advertiser_type}
-                    />
-                  )
-                },
-                {
-                  key: 'price',
-                  label: 'Harga',
-                  render: (row) => formatCurrency(row.price)
-                },
-                {
-                  key: 'service_fee',
-                  label: 'Fee (5%)',
-                  render: (row) => formatCurrency(row.service_fee)
-                },
-                {
-                  key: 'duration_days',
-                  label: 'Durasi',
-                  render: (row) => `${row.duration_days} hari`
-                },
-                {
-                  key: 'periode',
-                  label: 'Periode Tayang',
-                  render: (row) => formatPeriode(row)
-                },
-                {
-                  key: 'status',
-                  label: 'Status',
-                  render: (row) => (
-                    <Badge
-                      variant={
-                        row.status === 'ACTIVE' ? 'success' :
-                        row.status === 'APPROVED' ? 'success' :
-                        row.status === 'PENDING' ? 'warning' :
-                        row.status === 'REJECTED' ? 'danger' :
-                        'secondary'
-                      }
-                      text={row.status}
-                    />
-                  )
-                },
-                {
-                  key: 'created_at',
-                  label: 'Tanggal',
-                  render: (row) => new Date(row.created_at).toLocaleDateString('id-ID')
-                },
-                {
-                  key: 'actions',
-                  label: 'Aksi',
-                  render: (row) => (
-                    row.status === 'PENDING' ? (
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <Button variant="primary" onClick={() => openDialog(row, 'APPROVED')}>
-                          Setujui
-                        </Button>
-                        <Button variant="danger" onClick={() => openDialog(row, 'REJECTED')}>
-                          Tolak
-                        </Button>
-                      </div>
-                    ) : (
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>-</span>
-                    )
-                  )
-                }
-              ]}
+              columns={getColumns()}
               data={adList}
             />
           )}
@@ -394,7 +426,7 @@ export default function ManajemenIklanPage() {
                 <strong>Harga:</strong> {formatCurrency(selectedAd?.price || 0)}
               </p>
               <p style={{ marginBottom: '8px', color: 'var(--text-main)' }}>
-                <strong>Service Fee (5%):</strong> {formatCurrency(selectedAd?.service_fee || 0)}
+                <strong>Service Fee:</strong> {formatCurrency(selectedAd?.service_fee || 0)}
               </p>
               <p style={{ marginBottom: '8px', color: 'var(--text-main)' }}>
                 <strong>Total:</strong> {formatCurrency((selectedAd?.price || 0) + (selectedAd?.service_fee || 0))}
@@ -458,6 +490,195 @@ export default function ManajemenIklanPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Dialog Lihat Detail */}
+      {showViewDialog && viewAd && (
+        <div className="dialog-overlay" onClick={() => setShowViewDialog(false)}>
+          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-main)', fontSize: '1.3rem', fontWeight: 600 }}>
+              Detail Iklan
+            </h2>
+
+            {/* Preview Image */}
+            {viewAd.image_url && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <img
+                  src={viewAd.image_url}
+                  alt={viewAd.title}
+                  style={{
+                    width: '100%',
+                    maxHeight: '300px',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Ad Details */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Judul Iklan
+                </div>
+                <div style={{ fontSize: '1rem', color: 'var(--text-main)', fontWeight: 500 }}>
+                  {viewAd.title}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Tipe Pengiklan
+                  </div>
+                  <Badge
+                    variant={viewAd.advertiser_type === 'UMKM' ? 'info' : 'secondary'}
+                    text={viewAd.advertiser_type || '-'}
+                  />
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Status
+                  </div>
+                  <Badge
+                    variant={
+                      viewAd.status === 'ACTIVE' ? 'success' :
+                      viewAd.status === 'APPROVED' ? 'success' :
+                      viewAd.status === 'PENDING' ? 'warning' :
+                      viewAd.status === 'REJECTED' ? 'danger' :
+                      'secondary'
+                    }
+                    text={viewAd.status}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Harga
+                  </div>
+                  <div style={{ fontSize: '1rem', color: 'var(--text-main)', fontWeight: 500 }}>
+                    {formatCurrency(viewAd.price || 0)}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Service Fee
+                  </div>
+                  <div style={{ fontSize: '1rem', color: 'var(--text-main)', fontWeight: 500 }}>
+                    {formatCurrency(viewAd.service_fee || 0)}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Total Biaya
+                </div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--primary-color)', fontWeight: 600 }}>
+                  {formatCurrency((viewAd.price || 0) + (viewAd.service_fee || 0))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Durasi Tayang
+                </div>
+                <div style={{ fontSize: '1rem', color: 'var(--text-main)', fontWeight: 500 }}>
+                  {viewAd.duration_days} hari
+                </div>
+              </div>
+
+              {viewAd.starts_at && viewAd.expires_at && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Periode Tayang
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-main)' }}>
+                    {formatDate(viewAd.starts_at)} - {formatDate(viewAd.expires_at)}
+                  </div>
+                </div>
+              )}
+
+              {viewAd.target_url && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Target URL
+                  </div>
+                  <a
+                    href={viewAd.target_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: 'var(--primary-color)',
+                      textDecoration: 'underline',
+                      wordBreak: 'break-all',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {viewAd.target_url}
+                  </a>
+                </div>
+              )}
+
+              <div style={{ marginBottom: '0' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Tanggal Pengajuan
+                </div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-main)' }}>
+                  {formatDate(viewAd.created_at)}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions for PENDING ads */}
+            {viewAd.status === 'PENDING' && (
+              <div style={{
+                padding: '1rem',
+                backgroundColor: 'var(--secondary-color)',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                borderLeft: '4px solid var(--warning-color)'
+              }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-main)', marginBottom: '0.75rem' }}>
+                  Iklan ini menunggu tinjauan. Anda dapat menyetujui atau menolak dari sini:
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setShowViewDialog(false);
+                      openDialog(viewAd, 'APPROVED');
+                    }}
+                  >
+                    ✓ Setujui
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      setShowViewDialog(false);
+                      openDialog(viewAd, 'REJECTED');
+                    }}
+                  >
+                    ✕ Tolak
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Close button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={() => setShowViewDialog(false)}>
+                Tutup
+              </Button>
+            </div>
           </div>
         </div>
       )}
