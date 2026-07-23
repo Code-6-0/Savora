@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/savora/backend/database"
 	"github.com/savora/backend/models"
 	"github.com/savora/backend/services"
 )
@@ -36,7 +35,7 @@ func CreateAd(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if err := database.DB.Create(&ad).Error; err != nil {
+	if err := services.GetDB().Create(&ad).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -50,7 +49,7 @@ func GetAdsByUMKM(c *fiber.Ctx) error {
 	umkmID := c.Params("umkm_id")
 
 	var ads []models.Advertisement
-	if err := database.DB.Where("umkm_id = ?", umkmID).Order("created_at desc").Find(&ads).Error; err != nil {
+	if err := services.GetDB().Where("umkm_id = ?", umkmID).Find(&ads).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -58,7 +57,7 @@ func GetAdsByUMKM(c *fiber.Ctx) error {
 	for i := range ads {
 		if resolved := services.ResolveAdStatus(ads[i], now); resolved != ads[i].Status {
 			ads[i].Status = resolved
-			database.DB.Model(&ads[i]).Update("status", resolved)
+			services.GetDB().Model(&ads[i]).Update("status", resolved)
 		}
 	}
 
@@ -79,7 +78,7 @@ func UpdateAdStatus(c *fiber.Ctx) error {
 	}
 
 	var ad models.Advertisement
-	if err := database.DB.First(&ad, id).Error; err != nil {
+	if err := services.GetDB().First(&ad, id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Advertisement not found"})
 	}
 
@@ -94,7 +93,7 @@ func UpdateAdStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Status tidak valid"})
 	}
 
-	if err := database.DB.Save(&ad).Error; err != nil {
+	if err := services.GetDB().Save(&ad).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -106,7 +105,7 @@ func UpdateAdStatus(c *fiber.Ctx) error {
 // GET /api/ads/active
 func GetActiveAds(c *fiber.Ctx) error {
 	var ads []models.Advertisement
-	if err := database.DB.Find(&ads).Error; err != nil {
+	if err := services.GetDB().Find(&ads).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -116,10 +115,10 @@ func GetActiveAds(c *fiber.Ctx) error {
 	out := make([]fiber.Map, 0, len(active))
 	for _, ad := range active {
 		var product models.Product
-		database.DB.First(&product, ad.ProductID)
+		services.GetDB().First(&product, ad.ProductID)
 
 		var umkm models.UMKMProfile
-		database.DB.First(&umkm, ad.UmkmID)
+		services.GetDB().First(&umkm, ad.UmkmID)
 
 		out = append(out, fiber.Map{
 			"ad_id":     ad.ID,

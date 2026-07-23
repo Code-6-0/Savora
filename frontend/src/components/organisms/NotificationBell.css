@@ -1,0 +1,52 @@
+.notification-bell-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.notification-bell-button {
+  transition: opacity 0.2s;
+}
+
+.notification-bell-button:hover {
+  opacity: 0.7;
+}
+
+.notification-badge {
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.notification-panel {
+  animation: slide-down 0.2s ease-out;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-item {
+  transition: background-color 0.2s ease;
+}
+
+.notification-item.unread {
+  background-color: rgba(59, 130, 246, 0.02);
+}
+
+.notification-item.read {
+  background-color: white;
+}

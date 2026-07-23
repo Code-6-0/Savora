@@ -1,14 +1,15 @@
 "use client";
 
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { 
+import {
   LayoutDashboard, Package, ShoppingCart, BarChart2, Bell, Settings,
   Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft, Megaphone
 } from "lucide-react";
 import { useUmkm } from '@/context/UmkmContext';
 
-export default function Sidebar({ onClose }) {
+function SidebarContent({ onClose }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'bantuan';
@@ -120,5 +121,13 @@ export default function Sidebar({ onClose }) {
         </ul>
       </div>
     </div>
+  );
+}
+
+export default function Sidebar({ onClose }) {
+  return (
+    <Suspense fallback={<div className="sidebar"><div style={{ padding: '20px' }}>Loading...</div></div>}>
+      <SidebarContent onClose={onClose} />
+    </Suspense>
   );
 }
