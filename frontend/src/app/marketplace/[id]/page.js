@@ -498,8 +498,8 @@ export default function ProductDetailPage() {
           <div style={{ padding: '28px', display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', gap: '18px' }}>
               <div style={{ width: '57px', height: '57px', background: '#ffffff', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0 }}>
-                <div style={{ width: '43px', height: '43px', background: '#eaf8ec', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Store size={18} />
+                <div style={{ width: '43px', height: '43px', background: '#eaf8ec', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Store size={28} style={{ color: '#0b7a3b' }} />
                 </div>
               </div>
               <div>
