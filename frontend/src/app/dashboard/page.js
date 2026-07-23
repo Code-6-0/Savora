@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, ShoppingBag, Package, FileText, BarChart2, Plus, Users, MessageSquare, ShieldCheck, Star, Award, Leaf, Wind, Sprout } from "lucide-react";
 
@@ -8,29 +9,26 @@ import TopHeader from "@/components/organisms/TopHeader";
 import SummaryCard from "@/components/molecules/SummaryCard";
 import Badge from "@/components/atoms/Badge";
 import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
+import { useUmkm } from '@/context/UmkmContext';
 
 const COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1D5DB'];
 
 export default function DashboardPage() {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    // In a real app we would fetch the dashboard data here.
-    // For now we mock the data to match the new comprehensive design.
-    setData({
-      sales_today: 2450000,
-      sales_trend: 12.4,
-      active_orders: 12,
-      active_orders_trend: 3,
-      active_products: 34,
-      active_products_trend: -2.1,
-      monthly_revenue: 48750000,
-      monthly_revenue_trend: 18.7,
-      food_rescue_score: 94,
-      trust_score: 4.8,
-      rating: 4.9,
-    });
-  }, []);
+  const router = useRouter();
+  const { umkmData } = useUmkm();
+  const [data, setData] = useState({
+    sales_today: 2450000,
+    sales_trend: 12.4,
+    active_orders: 12,
+    active_orders_trend: 3,
+    active_products: 34,
+    active_products_trend: -2.1,
+    monthly_revenue: 48750000,
+    monthly_revenue_trend: 18.7,
+    food_rescue_score: 94,
+    trust_score: 4.8,
+    rating: 4.9,
+  });
 
   const formatRupiah = (number) => {
     if (number >= 1000000) {
@@ -70,7 +68,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <TopHeader title="Halo, Warung Bu Lestari 👋" subtitle="Kamis, 9 Juli 2026" />
+      <TopHeader title={`Halo, ${umkmData?.umkm_profiles?.business_name} 👋`} subtitle="Kamis, 9 Juli 2026" />
 
       <div className="content-area">
         {/* KPI Cards */}
@@ -118,7 +116,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
                 <h3 style={{ marginBottom: '5px' }}>Grafik Penjualan</h3>
-                <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>Tren pendapatan harian Warung Bu Lestari</p>
+                <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>Tren pendapatan harian {umkmData?.umkm_profiles?.business_name}</p>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <Badge status="Aktif" customStyle={{ borderRadius: '20px' }}>7 Hari</Badge>
@@ -183,7 +181,7 @@ export default function DashboardPage() {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ margin: 0 }}>Pesanan Aktif</h3>
-              <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.875rem' }}>Lihat Semua →</button>
+              <button className="btn-secondary" onClick={() => router.push('/pesanan')} style={{ padding: '6px 12px', fontSize: '0.875rem', cursor: 'pointer' }}>Lihat Semua →</button>
             </div>
             <table className="table" style={{ fontSize: '0.875rem' }}>
               <thead>
@@ -224,7 +222,7 @@ export default function DashboardPage() {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ margin: 0 }}>Inventori — Hampir Habis</h3>
-              <button className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '5px' }}><Plus size={16}/> Tambah Produk</button>
+              <button className="btn-primary" onClick={() => router.push('/produk')} style={{ padding: '6px 12px', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}><Plus size={16}/> Tambah Produk</button>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -362,28 +360,28 @@ export default function DashboardPage() {
           <div className="card">
             <h3 style={{ marginBottom: '20px' }}>Aksi Cepat</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
-              <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
+              <button onClick={() => router.push('/produk')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
                 <div style={{ width: '40px', height: '40px', backgroundColor: '#ECFDF5', color: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Plus size={20} />
                 </div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#374151' }}>Tambah<br/>Produk</span>
               </button>
               
-              <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
+              <button onClick={() => router.push('/produk')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
                 <div style={{ width: '40px', height: '40px', backgroundColor: '#EFF6FF', color: '#3B82F6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Package size={20} />
                 </div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#374151' }}>Kelola<br/>Produk</span>
               </button>
               
-              <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
+              <button onClick={() => router.push('/pesanan')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
                 <div style={{ width: '40px', height: '40px', backgroundColor: '#FEF3C7', color: '#D97706', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ShoppingBag size={20} />
                 </div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#374151' }}>Daftar<br/>Pesanan</span>
               </button>
               
-              <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
+              <button onClick={() => router.push('/analitik')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '15px 10px', cursor: 'pointer' }}>
                 <div style={{ width: '40px', height: '40px', backgroundColor: '#F3E8FF', color: '#9333EA', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <BarChart2 size={20} />
                 </div>

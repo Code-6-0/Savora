@@ -1,23 +1,71 @@
+/*
+ * Savora Design Tokens — sumber tunggal tema dashboard UMKM.
+ * Selaraskan warna, tipografi, radius, spacing, dan shadow lewat variabel di
+ * sini agar seluruh halaman konsisten. Hindari hardcode hex di inline style;
+ * pakai var(--token) supaya perubahan tema cukup di satu tempat.
+ */
 :root {
   --primary-color: #16a34a;
   --primary-dark: #0f7a38;
   --secondary-color: #e5f5eb;
+  --primary-soft: #ecfdf3;
+
+  /* Netral / teks */
   --text-main: #111827;
   --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
   --bg-color: #f9fafb;
   --card-bg: #ffffff;
   --border-color: #e5e7eb;
+  --border-strong: #d1d5db;
 
+  /* Status */
   --warning-color: #f59e0b;
+  --warning-soft: #fef3c7;
   --danger-color: #ef4444;
   --success-color: #16a34a;
+  --danger-soft: #fee2e2;
+  --success-soft: #def7ec;
+  --info-color: #3b82f6;
+  --info-soft: #e1effe;
+
+  /* Tipografi */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2rem;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-1: 5px;
+  --space-2: 10px;
+  --space-3: 15px;
+  --space-4: 20px;
+  --space-5: 30px;
+
+  /* Shadow */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemBox, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 body {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Sidebar from "../organisms/Sidebar";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -31,7 +31,9 @@ export default function DashboardLayout({ children }) {
       {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
 
       <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
-         <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        <Suspense fallback={<div style={{ padding: '20px' }}>Loading...</div>}>
+          <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        </Suspense>
       </div>
 
       <div className="main-container">

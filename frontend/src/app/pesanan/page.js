@@ -6,7 +6,13 @@ import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
 
 export default function PesananPage() {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([
+    { id: "SVR-0892", customer: "Rina Marlina", phone: "0812-3456-7890", items: [{name: "Nasi Padang Box", qty: 3, price: 25000}], total: 75000, status: "Menunggu", time: "13:45", date: "9 Jul 2026", payment: "GoPay" },
+    { id: "SVR-0891", customer: "Budi Santoso", phone: "0811-2233-4455", items: [{name: "Mie Ayam Spesial", qty: 2, price: 24000}], total: 48000, status: "Diproses", time: "13:20", date: "9 Jul 2026", payment: "OVO" },
+    { id: "SVR-0890", customer: "Dewi Rahayu", phone: "0899-8877-6655", items: [{name: "Paket Sarapan", qty: 4, price: 24000}], total: 96000, status: "Siap Diambil", time: "12:55", date: "9 Jul 2026", payment: "ShopeePay" },
+    { id: "SVR-0889", customer: "Ahmad Fauzi", phone: "0877-6655-4433", items: [{name: "Nasi Box Campur", qty: 1, price: 22000}], total: 22000, status: "Selesai", time: "12:30", date: "9 Jul 2026", payment: "Tunai" },
+    { id: "SVR-0888", customer: "Siti Nurhaliza", phone: "0855-4433-2211", items: [{name: "Kue Basah Assorted", qty: 6, price: 9000}], total: 54000, status: "Dibatalkan", time: "11:45", date: "9 Jul 2026", payment: "DANA" },
+  ]);
   const [activeTab, setActiveTab] = useState("Pesanan Aktif");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,17 +23,6 @@ export default function PesananPage() {
   const [dateFilter, setDateFilter] = useState("Hari Ini");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
-
-  useEffect(() => {
-    // Mock data for UI presentation based on new designs
-    setOrders([
-      { id: "SVR-0892", customer: "Rina Marlina", phone: "0812-3456-7890", items: [{name: "Nasi Padang Box", qty: 3, price: 25000}], total: 75000, status: "Menunggu", time: "13:45", date: "9 Jul 2026", payment: "GoPay" },
-      { id: "SVR-0891", customer: "Budi Santoso", phone: "0811-2233-4455", items: [{name: "Mie Ayam Spesial", qty: 2, price: 24000}], total: 48000, status: "Diproses", time: "13:20", date: "9 Jul 2026", payment: "OVO" },
-      { id: "SVR-0890", customer: "Dewi Rahayu", phone: "0899-8877-6655", items: [{name: "Paket Sarapan", qty: 4, price: 24000}], total: 96000, status: "Siap Diambil", time: "12:55", date: "9 Jul 2026", payment: "ShopeePay" },
-      { id: "SVR-0889", customer: "Ahmad Fauzi", phone: "0877-6655-4433", items: [{name: "Nasi Box Campur", qty: 1, price: 22000}], total: 22000, status: "Selesai", time: "12:30", date: "9 Jul 2026", payment: "Tunai" },
-      { id: "SVR-0888", customer: "Siti Nurhaliza", phone: "0855-4433-2211", items: [{name: "Kue Basah Assorted", qty: 6, price: 9000}], total: 54000, status: "Dibatalkan", time: "11:45", date: "9 Jul 2026", payment: "DANA" },
-    ]);
-  }, []);
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -40,6 +35,16 @@ export default function PesananPage() {
   const openOrderDetails = (order) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
+  };
+
+  const handleUpdateStatus = (newStatus) => {
+    if (!selectedOrder) return;
+    setOrders(orders.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o));
+    setSelectedOrder({ ...selectedOrder, status: newStatus });
+    if (newStatus === "Didonasikan" || newStatus === "Dibatalkan") {
+      setIsEmergencyModalOpen(false);
+      setIsModalOpen(false);
+    }
   };
 
   const filteredOrders = orders.filter(o => {
@@ -265,13 +270,13 @@ export default function PesananPage() {
               {selectedOrder.status !== "Selesai" && selectedOrder.status !== "Dibatalkan" && (
                 <div style={{ display: 'flex', gap: '15px' }}>
                   {selectedOrder.status === "Menunggu" && (
-                    <button className="btn-primary" style={{ flex: 1, padding: '12px' }}>Konfirmasi & Proses Pesanan</button>
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("Diproses")} style={{ flex: 1, padding: '12px' }}>Konfirmasi & Proses Pesanan</button>
                   )}
                   {selectedOrder.status === "Diproses" && (
-                    <button className="btn-primary" style={{ flex: 1, padding: '12px' }}>Pesanan Siap Diambil</button>
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("Siap Diambil")} style={{ flex: 1, padding: '12px' }}>Pesanan Siap Diambil</button>
                   )}
                   {selectedOrder.status === "Siap Diambil" && (
-                    <button className="btn-primary" style={{ flex: 1, padding: '12px' }}>Selesaikan Pesanan</button>
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("Selesai")} style={{ flex: 1, padding: '12px' }}>Selesaikan Pesanan</button>
                   )}
                   
                   <button onClick={() => setIsEmergencyModalOpen(true)} style={{ padding: '12px 20px', border: '1px solid #EF4444', color: '#EF4444', backgroundColor: 'white', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -302,10 +307,10 @@ export default function PesananPage() {
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="btn-primary" style={{ padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+              <button className="btn-primary" onClick={() => handleUpdateStatus("Didonasikan")} style={{ padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
                 Alihkan ke Donasi Savora
               </button>
-              <button className="btn-secondary" style={{ padding: '12px', width: '100%', color: '#EF4444', borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }}>
+              <button className="btn-secondary" onClick={() => handleUpdateStatus("Dibatalkan")} style={{ padding: '12px', width: '100%', color: '#EF4444', borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }}>
                 Batalkan & Kembalikan ke Stok
               </button>
               <button onClick={() => setIsEmergencyModalOpen(false)} style={{ padding: '12px', width: '100%', background: 'none', border: 'none', color: '#6B7280', fontWeight: 600, cursor: 'pointer', marginTop: '10px' }}>

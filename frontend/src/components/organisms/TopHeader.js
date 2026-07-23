@@ -1,9 +1,11 @@
 import React from 'react';
 import SearchBar from '../molecules/SearchBar';
-import { Bell } from 'lucide-react';
+import NotificationBell from '../organisms/NotificationBell';
 import { PageTitle, PageSubtitle } from '../atoms/Typography';
+import { useUmkm } from '@/context/UmkmContext';
 
 export default function TopHeader({ title, subtitle, children }) {
+  const { umkmData } = useUmkm();
   return (
     <div className="topbar">
       <div>
@@ -14,13 +16,16 @@ export default function TopHeader({ title, subtitle, children }) {
         {children !== undefined ? children : (
           <>
             <SearchBar />
-            <div style={{ position: 'relative', cursor: 'pointer' }}>
-              <Bell size={20} color="var(--text-muted)" />
-              <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', backgroundColor: 'var(--primary-color)', borderRadius: '50%' }}></div>
-            </div>
-            <div style={{ padding: '5px 12px', backgroundColor: '#D1FAE5', color: '#065F46', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
-              • Toko Buka
-            </div>
+            <NotificationBell />
+            {umkmData?.isStoreOpen ? (
+              <div style={{ padding: '5px 12px', backgroundColor: '#D1FAE5', color: '#065F46', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                • Toko Buka
+              </div>
+            ) : (
+              <div style={{ padding: '5px 12px', backgroundColor: '#FEE2E2', color: '#991B1B', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                • Toko Tutup
+              </div>
+            )}
           </>
         )}
       </div>
