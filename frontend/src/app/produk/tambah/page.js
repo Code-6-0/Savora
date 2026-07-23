@@ -537,25 +537,81 @@ function PhotoUpload({
   onChange,
 }) {
   const ref = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  function handleFile(e) {
+  async function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => onChange(ev.target?.result);
-    reader.readAsDataURL(file);
+
+    // Validasi ukuran file (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Ukuran file maksimal 5MB");
+      return;
+    }
+
+    // Validasi tipe file
+    if (!file.type.startsWith("image/")) {
+      alert("File harus berupa gambar (JPG, PNG, WebP)");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64Data = ev.target?.result;
+
+        // Upload ke backend
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+        const response = await fetch(`${apiUrl}/api/upload/image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image: base64Data }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Upload gagal");
+        }
+
+        const result = await response.json();
+        console.log("✅ Gambar berhasil diupload:", result.url);
+        onChange(result.url); // Set URL public dari Supabase
+        setIsUploading(false);
+      };
+
+      reader.onerror = () => {
+        alert("Gagal membaca file");
+        setIsUploading(false);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("❌ Error upload gambar:", error);
+      alert(`Gagal upload gambar: ${error.message}\n\nPastikan backend berjalan dan Supabase credentials sudah diisi.`);
+      setIsUploading(false);
+    }
   }
 
   return (
     <div
-      onClick={() => ref.current?.click()}
+      onClick={() => !isUploading && ref.current?.click()}
       className={`relative border-2 border-dashed rounded-xl cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${
-        url ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
+        isUploading ? "border-primary bg-primary/5 cursor-wait" : url ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
       }`}
       style={{ minHeight: 140 }}
     >
-      <input ref={ref} type="file" className="hidden" accept="image/*" onChange={handleFile} />
-      {url ? (
+      <input ref={ref} type="file" className="hidden" accept="image/*" onChange={handleFile} disabled={isUploading} />
+      {isUploading ? (
+        <>
+          <div className="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-sm font-medium text-primary">Mengupload...</p>
+        </>
+      ) : url ? (
         <>
           <img src={url} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
           <button
@@ -1764,6 +1820,7 @@ function Step3Results({
   assessment,
   onBack,
   onPublish,
+  isSubmitting = false,
 }) {
   // Hitung Food Trust Index (BARU) dengan Safety Gates
   const trustResult = calculateFoodTrustIndex(
@@ -1995,11 +2052,20 @@ function Step3Results({
             </button>
             <button
               onClick={onPublish}
-              disabled={!trustResult.canPublish}
+              disabled={!trustResult.canPublish || isSubmitting}
               className="flex-1 px-6 py-2.5 text-sm font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              Publikasikan Produk
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Publikasikan Produk
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -2100,9 +2166,57 @@ export default function App() {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [assessment, setAssessment] = useState(DEFAULT_ASSESSMENT);
   const [published, setPublished] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
-  function handlePublish() {
-    setPublished(true);
+  async function handlePublish() {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Prepare payload sesuai model Product backend
+      const payload = {
+        umkm_id: 1, // TODO: Ganti dengan umkm_id dari session/auth
+        name: form.name,
+        category: form.category,
+        description: form.description,
+        photo_url: form.photoUrl || "",
+        original_price: parseFloat(form.normalPrice.replace(/\D/g, "")) || 0,
+        rescue_price: parseFloat(form.rescuePrice.replace(/\D/g, "")) || 0,
+        stock: form.quantity,
+        weight_per_portion: parseFloat(form.weight) || 0,
+        pickup_address: "Alamat UMKM", // TODO: Ambil dari profil UMKM
+        packaging_condition: assessment.packaging || "Baik",
+        storage_method: assessment.storage || "Sesuai",
+        production_time: form.productionTime ? new Date(`2026-01-01T${form.productionTime}:00Z`).toISOString() : null,
+        expires_at: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
+        status: "Aktif",
+      };
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+      const response = await fetch(`${apiUrl}/api/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Produk berhasil disimpan:", result);
+      setPublished(true);
+    } catch (error) {
+      console.error("❌ Error saat publish produk:", error);
+      setSubmitError(error.message);
+      alert(`Gagal menyimpan produk: ${error.message}\n\nPastikan backend berjalan di port 3001`);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   function handleClose() {
@@ -2110,6 +2224,7 @@ export default function App() {
     setStep(1);
     setForm(DEFAULT_FORM);
     setAssessment(DEFAULT_ASSESSMENT);
+    setSubmitError(null);
   }
 
   return (
@@ -2153,6 +2268,7 @@ export default function App() {
               assessment={assessment}
               onBack={() => setStep(2)}
               onPublish={handlePublish}
+              isSubmitting={isSubmitting}
             />
           )}
         </div>

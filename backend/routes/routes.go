@@ -46,4 +46,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// Dynamic Discount
 	api.Post("/discount/calculate", handlers.CalculateDynamicDiscount)
+
+	// Upload Image
+	api.Post("/upload/image", handlers.UploadImage)
 }
