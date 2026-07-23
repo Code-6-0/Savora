@@ -45,3 +45,9 @@ frontend/qa-*.jpg
 frontend/qa-*.png
 frontend/hero-screenshot.png
 frontend/*.jpg
+
+/*.jpg
+/design-*.png
+/hero-screenshot.png
+/*-spec.txt
+.DS_Store
