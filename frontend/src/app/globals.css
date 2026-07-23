@@ -1364,6 +1364,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.2s;
+  white-space: nowrap;
 }
 
 .beranda-location:hover {
