@@ -49,6 +49,28 @@ export default function KeuanganPage() {
     }).format(amount);
   }
 
+  // Calculate delta vs bulan lalu dari monthly_trend
+  function calculateDelta() {
+    if (!summary?.monthly_trend || summary.monthly_trend.length < 2) {
+      return null;
+    }
+    const trend = summary.monthly_trend;
+    const currentMonth = trend[trend.length - 1]?.revenue || 0;
+    const lastMonth = trend[trend.length - 2]?.revenue || 0;
+
+    if (lastMonth === 0) return null;
+
+    const delta = ((currentMonth - lastMonth) / lastMonth) * 100;
+    return {
+      percentage: delta,
+      isPositive: delta >= 0,
+      currentMonth: trend[trend.length - 1]?.month || '',
+      lastMonth: trend[trend.length - 2]?.month || ''
+    };
+  }
+
+  const delta = calculateDelta();
+
   function handleExport(format) {
     const token = getToken();
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
@@ -132,6 +154,36 @@ export default function KeuanganPage() {
         </div>
 
         <div className="content-area">
+          {/* Delta Info Box */}
+          {delta && (
+            <div style={{
+              marginBottom: '20px',
+              padding: '16px 20px',
+              backgroundColor: delta.isPositive ? 'var(--secondary-color)' : '#fee',
+              borderLeft: `4px solid ${delta.isPositive ? 'var(--success-color)' : 'var(--danger-color)'}`,
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              fontSize: '14px'
+            }}>
+              <span style={{ fontSize: '24px' }}>
+                {delta.isPositive ? '📈' : '📉'}
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px' }}>
+                  Revenue Bulan Ini {delta.isPositive ? 'Naik' : 'Turun'}{' '}
+                  <span style={{ color: delta.isPositive ? 'var(--success-color)' : 'var(--danger-color)' }}>
+                    {delta.isPositive ? '+' : ''}{delta.percentage.toFixed(1)}%
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  {delta.currentMonth} vs {delta.lastMonth}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Summary Cards */}
           <div style={{
             display: 'grid',
@@ -157,6 +209,77 @@ export default function KeuanganPage() {
               subtitle={`${summary?.ad_count || 0} iklan`}
               icon="📢"
             />
+          </div>
+
+          {/* Breakdown per Source Type */}
+          <div className="card" style={{ marginBottom: '30px', padding: '24px' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '16px', color: 'var(--text-main)' }}>
+              Breakdown Revenue per Sumber
+            </h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>
+              Komposisi service fee 5% dari transaksi produk dan iklan
+            </p>
+
+            {/* Progress bars */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* From Orders */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                    🛒 Service Fee dari Orders (Transaksi Produk)
+                  </span>
+                  <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>
+                    {formatCurrency(summary?.from_orders || 0)}
+                  </span>
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '12px',
+                  backgroundColor: 'var(--border-color)',
+                  borderRadius: '6px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${summary?.total_service_fee > 0 ? ((summary?.from_orders || 0) / summary.total_service_fee * 100) : 0}%`,
+                    height: '100%',
+                    backgroundColor: 'var(--primary-color)',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  {summary?.order_count || 0} transaksi • {summary?.total_service_fee > 0 ? ((summary?.from_orders || 0) / summary.total_service_fee * 100).toFixed(1) : 0}% dari total
+                </div>
+              </div>
+
+              {/* From Ads */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                    📢 Service Fee dari Iklan (UMKM + Pihak Ketiga)
+                  </span>
+                  <span style={{ fontWeight: 700, color: 'var(--success-color)' }}>
+                    {formatCurrency(summary?.from_ads || 0)}
+                  </span>
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '12px',
+                  backgroundColor: 'var(--border-color)',
+                  borderRadius: '6px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${summary?.total_service_fee > 0 ? ((summary?.from_ads || 0) / summary.total_service_fee * 100) : 0}%`,
+                    height: '100%',
+                    backgroundColor: 'var(--success-color)',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  {summary?.ad_count || 0} iklan • {summary?.total_service_fee > 0 ? ((summary?.from_ads || 0) / summary.total_service_fee * 100).toFixed(1) : 0}% dari total
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Trend Chart */}

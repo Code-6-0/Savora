@@ -13,8 +13,9 @@ export default function HelpCenterPage() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterStatus, setFilterStatus] = useState('');
+  const [activeTab, setActiveTab] = useState('new'); // 'new' | 'in_progress' | 'resolved'
   const [filterCategory, setFilterCategory] = useState('');
+  const [pendingCount, setPendingCount] = useState(0); // Badge count tab Baru
   const [showDialog, setShowDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [newStatus, setNewStatus] = useState('');
@@ -30,15 +31,38 @@ export default function HelpCenterPage() {
       return;
     }
     fetchTickets();
-  }, [filterStatus, filterCategory]);
+    fetchBadgeCount();
+  }, [activeTab, filterCategory]);
+
+  async function fetchBadgeCount() {
+    try {
+      const response = await apiGet('/admin/reports/summary');
+      if (response.success && response.data?.summary) {
+        setPendingCount(response.data.summary.tiket_help_baru_count || 0);
+      }
+    } catch (err) {
+      // Silent fail untuk badge count - tidak kritikal
+      console.error('Failed to fetch badge count:', err);
+    }
+  }
 
   async function fetchTickets() {
     try {
       setLoading(true);
       setError(null);
+
+      // Map tab ke status backend
+      const statusMap = {
+        'new': 'OPEN',
+        'in_progress': 'IN_PROGRESS',
+        'resolved': 'RESOLVED,CLOSED' // Tab "Selesai" include RESOLVED & CLOSED
+      };
+
       let params = [];
-      if (filterStatus) params.push(`status=${filterStatus}`);
+      const mappedStatus = statusMap[activeTab];
+      if (mappedStatus) params.push(`status=${mappedStatus}`);
       if (filterCategory) params.push(`category=${filterCategory}`);
+
       const queryString = params.length > 0 ? `?${params.join('&')}` : '';
       const response = await apiGet(`/admin/help-tickets${queryString}`);
       if (response.success) {
@@ -132,30 +156,106 @@ export default function HelpCenterPage() {
         </div>
 
         <div className="content-area">
-          {/* Filters */}
+          {/* Tab Navigation */}
+          <div style={{
+            borderBottom: '2px solid var(--border-color)',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            gap: '0.5rem'
+          }}>
+            <button
+              onClick={() => setActiveTab('new')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === 'new' ? '3px solid var(--primary-color)' : '3px solid transparent',
+                color: activeTab === 'new' ? 'var(--primary-color)' : 'var(--text-muted)',
+                fontWeight: activeTab === 'new' ? 600 : 400,
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                position: 'relative',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'new') {
+                  e.currentTarget.style.background = 'var(--secondary-color)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              Baru
+              {pendingCount > 0 && (
+                <span style={{
+                  marginLeft: '6px',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: 'var(--danger-color)',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: 600
+                }}>
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('in_progress')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === 'in_progress' ? '3px solid var(--primary-color)' : '3px solid transparent',
+                color: activeTab === 'in_progress' ? 'var(--primary-color)' : 'var(--text-muted)',
+                fontWeight: activeTab === 'in_progress' ? 600 : 400,
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'in_progress') {
+                  e.currentTarget.style.background = 'var(--secondary-color)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              Diproses
+            </button>
+            <button
+              onClick={() => setActiveTab('resolved')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === 'resolved' ? '3px solid var(--primary-color)' : '3px solid transparent',
+                color: activeTab === 'resolved' ? 'var(--primary-color)' : 'var(--text-muted)',
+                fontWeight: activeTab === 'resolved' ? 600 : 400,
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'resolved') {
+                  e.currentTarget.style.background = 'var(--secondary-color)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              Selesai
+            </button>
+          </div>
+
+          {/* Filter Kategori */}
           <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-main)' }}>
-                Status:
-              </label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '14px',
-                  minWidth: '150px'
-                }}
-              >
-                <option value="">Semua</option>
-                <option value="OPEN">Open</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="RESOLVED">Resolved</option>
-                <option value="CLOSED">Closed</option>
-              </select>
-            </div>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-main)' }}>
                 Kategori:
@@ -220,7 +320,7 @@ export default function HelpCenterPage() {
                 },
                 {
                   key: 'category',
-                  label: 'Kategori',
+                  label: 'Kategori Aduan',
                   render: (row) => (
                     <span style={{ fontSize: '0.85rem' }}>
                       {categoryLabels[row.category] || row.category}
@@ -228,10 +328,23 @@ export default function HelpCenterPage() {
                   )
                 },
                 {
+                  key: 'order_id',
+                  label: 'Order/Entitas Terkait',
+                  render: (row) => (
+                    row.order_id ? (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--primary-color)', fontWeight: 500 }}>
+                        Order #{row.order_id}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>-</span>
+                    )
+                  )
+                },
+                {
                   key: 'description',
                   label: 'Deskripsi',
                   render: (row) => (
-                    <div style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {row.description}
                     </div>
                   )

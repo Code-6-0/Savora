@@ -56,6 +56,8 @@ Sumber tema NYATA dan satu-satunya: CSS custom properties di `frontend/src/app/g
 WAJIB pakai token ini (`var(--...)`) — jangan hardcode hex baru, jangan membuat palet/tema baru, jangan memasang UI library baru.
 Referensi visual: `docs/design/01-Beranda.png` s.d. `08-Pick-up.png` (semua layar customer). Halaman tanpa file design (admin & mitra donasi): tiru tema + pola layout dari referensi dan komponen existing (Sidebar, TopHeader, DataTable, SummaryCard, DashboardLayout) — sederhana, konsisten, user-friendly.
 Konsistensi dengan kode yang ada > preferensi pribadi.
+
+Untuk dashboard admin, ikuti docs/design/admin-dashboard-spec.md (turunan PRD 5.3/FR-12/FR-13/16/19). Update docs/design/PROGRESS.md di akhir setiap sesi.
 ---
 5. Business Rules — Sumber Kebenaran Tunggal (PRD)
 Detail lengkap ada di `docs/SAVORA_PRD.md`. Aturan kritis berikut wajib diimplementasikan persis — jangan diubah:
@@ -284,3 +286,4 @@ Saat memasang RBAC: proteksi dulu route BARU (`/api/admin/*`, `/api/me`, dst.). 
 Housekeeping
 `savora.db` sudah dihapus (21 Jul). Repo BELUM punya `.gitignore` — buat di root berisi minimal: `.env`, `*.db`, `node_modules/`, `.next/`.
 `backend/.env` berisi kredensial database nyata — JANGAN pernah di-commit; sediakan `backend/.env.example` (isi: `PORT=3001` dan `DATABASE_URL=` kosong).
+

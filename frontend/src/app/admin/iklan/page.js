@@ -13,7 +13,8 @@ export default function ManajemenIklanPage() {
   const [adList, setAdList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterStatus, setFilterStatus] = useState('');
+  const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'active' | 'rejected'
+  const [pendingCount, setPendingCount] = useState(0);
   const [showDialog, setShowDialog] = useState(false);
   const [selectedAd, setSelectedAd] = useState(null);
   const [action, setAction] = useState('');
@@ -28,14 +29,34 @@ export default function ManajemenIklanPage() {
       return;
     }
     fetchAdList();
-  }, [filterStatus]);
+    fetchBadgeCount();
+  }, [activeTab]);
+
+  async function fetchBadgeCount() {
+    try {
+      const response = await apiGet('/admin/reports/summary');
+      if (response.success) {
+        setPendingCount(response.data.summary?.iklan_pending_count || 0);
+      }
+    } catch (err) {
+      // Silent fail untuk badge count
+    }
+  }
 
   async function fetchAdList() {
     try {
       setLoading(true);
       setError(null);
-      const params = filterStatus ? `?status=${filterStatus}` : '';
-      const response = await apiGet(`/advertisements${params}`);
+
+      // Map tab ke status filter backend
+      const statusMap = {
+        pending: 'PENDING',
+        active: 'ACTIVE',     // Iklan yang sedang tayang
+        rejected: 'REJECTED'
+      };
+
+      const status = statusMap[activeTab];
+      const response = await apiGet(`/advertisements?status=${status}`);
       if (response.success) {
         setAdList(response.data.advertisements || []);
       }
@@ -87,6 +108,29 @@ export default function ManajemenIklanPage() {
     }).format(amount);
   }
 
+  function formatDate(dateString) {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  }
+
+  function formatPeriode(ad) {
+    if (!ad.starts_at || !ad.expires_at) {
+      return <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>-</span>;
+    }
+    const start = formatDate(ad.starts_at);
+    const end = formatDate(ad.expires_at);
+    return (
+      <div style={{ fontSize: '0.875rem' }}>
+        <div>{start}</div>
+        <div style={{ color: 'var(--text-muted)' }}>s/d {end}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-wrapper">
       <div className="mobile-header">
@@ -110,29 +154,104 @@ export default function ManajemenIklanPage() {
         </div>
 
         <div className="content-area">
-          {/* Filter */}
-          <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <label style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: 600 }}>
-              Filter Status:
-            </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              style={{
-                padding: '0.5rem 0.75rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                fontSize: '14px',
-                minWidth: '160px'
-              }}
-            >
-              <option value="">Semua</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="ACTIVE">Active</option>
-              <option value="EXPIRED">Expired</option>
-            </select>
+          {/* Tab Navigation */}
+          <div style={{ marginBottom: '2rem', borderBottom: '2px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', gap: '0', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setActiveTab('pending')}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderBottom: activeTab === 'pending' ? '3px solid var(--primary-color)' : '3px solid transparent',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: activeTab === 'pending' ? 700 : 500,
+                  color: activeTab === 'pending' ? 'var(--primary-color)' : 'var(--text-main)',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '-2px'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'pending') {
+                    e.currentTarget.style.backgroundColor = 'var(--secondary-color)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Menunggu
+                {pendingCount > 0 && (
+                  <span style={{
+                    backgroundColor: 'var(--danger-color)',
+                    color: 'white',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    minWidth: '20px',
+                    textAlign: 'center'
+                  }}>
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab('active')}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderBottom: activeTab === 'active' ? '3px solid var(--primary-color)' : '3px solid transparent',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: activeTab === 'active' ? 700 : 500,
+                  color: activeTab === 'active' ? 'var(--primary-color)' : 'var(--text-main)',
+                  transition: 'all 0.2s ease',
+                  marginBottom: '-2px'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'active') {
+                    e.currentTarget.style.backgroundColor = 'var(--secondary-color)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Aktif
+              </button>
+
+              <button
+                onClick={() => setActiveTab('rejected')}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderBottom: activeTab === 'rejected' ? '3px solid var(--primary-color)' : '3px solid transparent',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: activeTab === 'rejected' ? 700 : 500,
+                  color: activeTab === 'rejected' ? 'var(--primary-color)' : 'var(--text-main)',
+                  transition: 'all 0.2s ease',
+                  marginBottom: '-2px'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'rejected') {
+                    e.currentTarget.style.backgroundColor = 'var(--secondary-color)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Ditolak
+              </button>
+            </div>
           </div>
 
           {/* Loading */}
@@ -197,6 +316,11 @@ export default function ManajemenIklanPage() {
                   key: 'duration_days',
                   label: 'Durasi',
                   render: (row) => `${row.duration_days} hari`
+                },
+                {
+                  key: 'periode',
+                  label: 'Periode Tayang',
+                  render: (row) => formatPeriode(row)
                 },
                 {
                   key: 'status',
