@@ -149,9 +149,9 @@ func TestBuildListingMetrics(t *testing.T) {
 
 func TestBuildUmkmInsight(t *testing.T) {
 	reviews := []models.Review{
-		{UmkmID: 1, Rating: 5},
-		{UmkmID: 1, Rating: 4},
-		{UmkmID: 1, Rating: 3},
+		{TargetID: 1, Rating: 5},
+		{TargetID: 1, Rating: 4},
+		{TargetID: 1, Rating: 3},
 	}
 	insight := BuildUmkmInsight(1, sampleOrders(), reviews, 5)
 
