@@ -11,7 +11,6 @@ import {
   Megaphone,
   DollarSign,
   LifeBuoy,
-  Settings,
   LogOut
 } from "lucide-react";
 
@@ -182,12 +181,6 @@ export default function AdminSidebar({ onClose }) {
         </div>
 
         <ul className="sidebar-footer-menu">
-          <li>
-            <Link href="/admin/settings" onClick={onClose}>
-              <span style={{ marginRight: '10px' }}><Settings size={20} /></span>
-              Pengaturan
-            </Link>
-          </li>
           <li>
             <button
               onClick={handleLogout}
