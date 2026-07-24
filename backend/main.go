@@ -96,12 +96,13 @@ func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
 	app.Get("/payments/:payment_id/logs", helpHandler.GetPaymentLogs)
 	app.Patch("/help-tickets/:id/status", helpHandler.UpdateTicketStatus)
 
-	// Ad routes (Tugas 1)
-	app.Get("/api/ads/packages", handlers.GetAdPackages)
-	app.Post("/api/ads", handlers.CreateAd)
-	app.Get("/api/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
-	app.Put("/api/ads/:id/status", handlers.UpdateAdStatus)
-	app.Get("/api/ads/active", handlers.GetActiveAds)
+	// // Ad routes (Tugas 1)
+	// TODO(iklan-soon): dinonaktifkan sementara mengikuti build tag di handlers/ads.go
+	// app.Get("/api/ads/packages", handlers.GetAdPackages)
+	// app.Post("/api/ads", handlers.CreateAd)
+	// app.Get("/api/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
+	// app.Put("/api/ads/:id/status", handlers.UpdateAdStatus)
+	// app.Get("/api/ads/active", handlers.GetActiveAds)
 
 	// Waste Log routes (Tugas 2)
 	app.Get("/api/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)

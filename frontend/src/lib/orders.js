@@ -81,7 +81,8 @@ function baseUrl() {
  */
 export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
   try {
-    const response = await fetch(`${baseUrl()}/api/orders/umkm/${umkmId}`);
+    // TODO: backend belum punya filter per-UMKM; sementara ambil semua orders
+const response = await fetch(`${baseUrl()}/orders`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json")) {
       throw new Error("Orders API tidak tersedia");
@@ -108,7 +109,7 @@ export async function updateOrderStatus(orderId, uiStatus) {
   const backendStatus = reverseStatusMap[uiStatus] || uiStatus;
   try {
     const response = await fetch(`${baseUrl()}/api/orders/${orderId}/status`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
       },
