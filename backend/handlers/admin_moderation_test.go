@@ -76,7 +76,7 @@ func TestModerateUserHandler_Warning(t *testing.T) {
 	targetUser := models.User{
 		Name:   "Target User Warning",
 		Email:  "target_warning_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusActive,
 	}
 	targetUser.SetPassword("password123")
@@ -168,7 +168,7 @@ func TestModerateUserHandler_Suspend(t *testing.T) {
 	targetUser := models.User{
 		Name:   "Target User Suspend",
 		Email:  "target_suspend_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusActive,
 	}
 	targetUser.SetPassword("password123")
@@ -260,7 +260,7 @@ func TestModerateUserHandler_Approve(t *testing.T) {
 	targetUser := models.User{
 		Name:   "Target User Approve",
 		Email:  "target_approve_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusSuspended,
 	}
 	targetUser.SetPassword("password123")

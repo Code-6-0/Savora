@@ -4,13 +4,6 @@ import (
 	"time"
 )
 
-// VerificationStatus enum values untuk mitra donasi
-const (
-	VerificationPending  = "PENDING"
-	VerificationApproved = "APPROVED"
-	VerificationRejected = "REJECTED"
-)
-
 // MitraDonasiProfile represents mitra donasi profile (PRD Section 18)
 type MitraDonasiProfile struct {
 	ID                 uint       `gorm:"primaryKey" json:"id"`

@@ -82,7 +82,7 @@ func TestVerifyUMKMHandler_Approve(t *testing.T) {
 	umkmUser := models.User{
 		Name:   "UMKM Test",
 		Email:  "umkm_test_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusPending,
 	}
 	umkmUser.SetPassword("password123")
@@ -196,7 +196,7 @@ func TestVerifyUMKMHandler_Reject(t *testing.T) {
 	umkmUser := models.User{
 		Name:   "UMKM Reject Test",
 		Email:  "umkm_reject_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusPending,
 	}
 	umkmUser.SetPassword("password123")

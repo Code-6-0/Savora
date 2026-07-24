@@ -461,7 +461,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 	// Count users per role
 	database.DB.Model(&models.User{}).Count(&summary.TotalUsers)
 	database.DB.Model(&models.User{}).Where("role = ?", models.RoleCustomer).Count(&summary.TotalCustomers)
-	database.DB.Model(&models.User{}).Where("role = ?", models.RoleUMKM).Count(&summary.TotalUMKM)
+	database.DB.Model(&models.User{}).Where("role = ?", models.RoleUmkm).Count(&summary.TotalUMKM)
 	database.DB.Model(&models.User{}).Where("role = ?", models.RoleAdmin).Count(&summary.TotalAdmins)
 	database.DB.Model(&models.User{}).Where("role = ?", models.RoleMitraDonasi).Count(&summary.TotalMitraDonasi)
 
@@ -549,7 +549,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 
 	// Registrations hari ini (UMKM & Customer)
 	database.DB.Model(&models.User{}).
-		Where("role = ? AND created_at >= ? AND created_at < ?", models.RoleUMKM, startOfToday, endOfToday).
+		Where("role = ? AND created_at >= ? AND created_at < ?", models.RoleUmkm, startOfToday, endOfToday).
 		Count(&summary.RegistrationsTodayUMKM)
 	database.DB.Model(&models.User{}).
 		Where("role = ? AND created_at >= ? AND created_at < ?", models.RoleCustomer, startOfToday, endOfToday).

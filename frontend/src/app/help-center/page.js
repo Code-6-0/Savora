@@ -6,7 +6,6 @@ import Button from '@/components/atoms/Button';
 import Input from '@/components/atoms/Input';
 import Select from '@/components/atoms/Select';
 import FormGroup from '@/components/molecules/FormGroup';
-import Typography from '@/components/atoms/Typography';
 
 // 7 Kategori PERSIS dari PRD Section 14.7 (wording exact)
 const categories = [
@@ -95,22 +94,22 @@ export default function HelpCenterPage() {
   return (
     <div className="help-center-page">
       <div className="container">
-        <Typography variant="h1">Pusat Bantuan</Typography>
-        <Typography variant="body" className="subtitle">
+        <h1 style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--text-main)' }}>Pusat Bantuan</h1>
+        <p className="subtitle">
           Laporkan masalah yang Anda alami dan tim kami akan segera membantu.
-        </Typography>
+        </p>
 
         {success ? (
           <div className="success-message">
-            <Typography variant="body">
+            <p>
               ✅ Laporan berhasil dikirim! Admin kami akan segera menangani masalah Anda.
-            </Typography>
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="help-form">
             {error && (
               <div className="error-message">
-                <Typography variant="body" color="danger">{error}</Typography>
+                <p style={{ color: 'var(--danger-color)', margin: 0 }}>{error}</p>
               </div>
             )}
 
@@ -165,9 +164,9 @@ export default function HelpCenterPage() {
                 onChange={(e) => setFormData({ ...formData, proof_url: e.target.value })}
                 placeholder="https://..."
               />
-              <Typography variant="caption" style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+              <small style={{ marginTop: '0.5rem', color: 'var(--text-muted)', display: 'block' }}>
                 Upload foto bukti ke layanan seperti Imgur atau Google Drive, lalu paste linknya di sini
-              </Typography>
+              </small>
             </FormGroup>
 
             <div className="form-actions">

@@ -8,34 +8,63 @@ savora.zip
 .env
 .env.local
 .env*.local
+.env.*.local
 backend/.env
 frontend/.env.local
 
-# Node.js
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+savora.db
+
+# Node.js Dependencies
 node_modules/
+vendor/
+
+# Node.js Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Next.js
+# Next.js Build Outputs
 frontend/.next/
 frontend/out/
 frontend/build/
 frontend/.vercel
+.next/
+out/
+dist/
+build/
 
-# Go
+# Go Build Outputs
 backend/savora-backend
 backend/savora-backend.exe
 backend/tmp/
 
-# IDE
+# General Logs
+logs/
+*.log
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Test Coverage
+coverage/
+*.cover
+*.coverprofile
+
+# IDE Files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS Files
 .DS_Store
 Thumbs.db
+desktop.ini

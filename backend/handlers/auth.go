@@ -75,7 +75,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 
 	// Validasi role (tidak boleh ADMIN)
-	if req.Role != models.RoleCustomer && req.Role != models.RoleUMKM && req.Role != models.RoleMitraDonasi {
+	if req.Role != models.RoleCustomer && req.Role != models.RoleUmkm && req.Role != models.RoleMitraDonasi {
 		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
 			Success: false,
 			Data:    nil,
@@ -109,7 +109,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 
 	// Set status PENDING untuk UMKM dan MITRA_DONASI, ACTIVE untuk CUSTOMER
-	if req.Role == models.RoleUMKM || req.Role == models.RoleMitraDonasi {
+	if req.Role == models.RoleUmkm || req.Role == models.RoleMitraDonasi {
 		user.Status = models.StatusPending
 	} else {
 		user.Status = models.StatusActive

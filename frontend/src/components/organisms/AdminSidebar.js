@@ -220,7 +220,7 @@ export default function AdminSidebar({ onClose }) {
                       >
                         <span>{item.icon}</span>
                         <span style={{ flex: 1 }}>{item.name}</span>
-                        {item.badge !== undefined && (
+                        {item.badge > 0 && (
                           <span style={{
                             backgroundColor: 'var(--danger-color)',
                             color: 'white',

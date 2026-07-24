@@ -14,7 +14,9 @@ export default function LayoutWrapper({ children }) {
   // Daftar path yang TIDAK menggunakan DashboardLayout (standalone pages)
   const isAuthPage = pathname?.startsWith('/login') ||
                      pathname?.startsWith('/register')
+  const isAdminPage = pathname?.startsWith('/admin')
 
-  // Render children langsung untuk auth pages, wrap dengan DashboardLayout untuk lainnya
-  return isAuthPage ? children : <DashboardLayout>{children}</DashboardLayout>
+  // Render children langsung untuk auth pages dan admin pages
+  // Admin pages punya layout sendiri (AdminSidebar) dari app/admin/layout.js
+  return (isAuthPage || isAdminPage) ? children : <DashboardLayout>{children}</DashboardLayout>
 }

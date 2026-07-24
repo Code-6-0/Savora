@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import AdminSidebar from '@/components/organisms/AdminSidebar';
 import SummaryCard from '@/components/molecules/SummaryCard';
 import Badge from '@/components/atoms/Badge';
 import { apiGet } from '@/lib/api';
@@ -14,7 +13,6 @@ export default function AdminDashboardPage() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [topUMKMPeriod, setTopUMKMPeriod] = useState('month'); // 'month' or '30days'
   const router = useRouter();
 
@@ -61,71 +59,38 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="dashboard-wrapper">
-        <div className="mobile-header">
-          <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-          <div className="sidebar-header"><span style={{ color: "var(--primary-color)" }}>⚲</span> Savora Admin</div>
+      <>
+        <div className="topbar">
+          <div><div className="page-title">Dashboard Admin</div></div>
         </div>
-        {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-        <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
-          <AdminSidebar onClose={() => setSidebarOpen(false)} />
-        </div>
-        <div className="main-container">
-          <div className="topbar">
-            <div><div className="page-title">Dashboard Admin</div></div>
-          </div>
-          <div className="content-area">
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '14px' }}>Memuat data dashboard...</div>
-            </div>
+        <div className="content-area">
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '14px' }}>Memuat data dashboard...</div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-wrapper">
-        <div className="mobile-header">
-          <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-          <div className="sidebar-header"><span style={{ color: "var(--primary-color)" }}>⚲</span> Savora Admin</div>
+      <>
+        <div className="topbar">
+          <div><div className="page-title">Dashboard Admin</div></div>
         </div>
-        {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-        <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
-          <AdminSidebar onClose={() => setSidebarOpen(false)} />
-        </div>
-        <div className="main-container">
-          <div className="topbar">
-            <div><div className="page-title">Dashboard Admin</div></div>
-          </div>
-          <div className="content-area">
-            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ color: 'var(--danger-color)', fontSize: '14px', marginBottom: '10px' }}>{error}</div>
-              <button className="btn-primary" onClick={fetchDashboardData}>Coba Lagi</button>
-            </div>
+        <div className="content-area">
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <div style={{ color: 'var(--danger-color)', fontSize: '14px', marginBottom: '10px' }}>{error}</div>
+            <button className="btn-primary" onClick={fetchDashboardData}>Coba Lagi</button>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="dashboard-wrapper">
-      <div className="mobile-header">
-        <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-        <div className="sidebar-header">
-          <span style={{ color: "var(--primary-color)" }}>⚲</span> Savora Admin
-        </div>
-      </div>
-
-      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-      <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
-        <AdminSidebar onClose={() => setSidebarOpen(false)} />
-      </div>
-
-      <div className="main-container">
-        <div className="topbar">
+    <>
+      <div className="topbar">
           <div>
             <div className="page-title">Dashboard Admin</div>
             <div className="page-subtitle">Ringkasan aktivitas platform Savora</div>
@@ -709,7 +674,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

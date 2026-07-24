@@ -91,7 +91,7 @@ func TestRequireRole_CorrectRole(t *testing.T) {
 func TestRequireAnyRole_NoUserContext(t *testing.T) {
 	app := fiber.New()
 
-	app.Get("/restricted", RequireAnyRole(models.RoleAdmin, models.RoleUMKM), func(c *fiber.Ctx) error {
+	app.Get("/restricted", RequireAnyRole(models.RoleAdmin, models.RoleUmkm), func(c *fiber.Ctx) error {
 		return c.SendString("Admin or UMKM only")
 	})
 
@@ -120,7 +120,7 @@ func TestRequireAnyRole_WrongRole(t *testing.T) {
 		}
 		c.Locals("user", claims)
 		return c.Next()
-	}, RequireAnyRole(models.RoleAdmin, models.RoleUMKM), func(c *fiber.Ctx) error {
+	}, RequireAnyRole(models.RoleAdmin, models.RoleUmkm), func(c *fiber.Ctx) error {
 		return c.SendString("Admin or UMKM only")
 	})
 
@@ -149,7 +149,7 @@ func TestRequireAnyRole_CorrectRole_FirstMatch(t *testing.T) {
 		}
 		c.Locals("user", claims)
 		return c.Next()
-	}, RequireAnyRole(models.RoleAdmin, models.RoleUMKM), func(c *fiber.Ctx) error {
+	}, RequireAnyRole(models.RoleAdmin, models.RoleUmkm), func(c *fiber.Ctx) error {
 		return c.SendString("Admin or UMKM only")
 	})
 
@@ -174,11 +174,11 @@ func TestRequireAnyRole_CorrectRole_SecondMatch(t *testing.T) {
 		claims := &handlers.JWTClaims{
 			UserID: 2,
 			Email:  "umkm@test.com",
-			Role:   models.RoleUMKM,
+			Role:   models.RoleUmkm,
 		}
 		c.Locals("user", claims)
 		return c.Next()
-	}, RequireAnyRole(models.RoleAdmin, models.RoleUMKM), func(c *fiber.Ctx) error {
+	}, RequireAnyRole(models.RoleAdmin, models.RoleUmkm), func(c *fiber.Ctx) error {
 		return c.SendString("Admin or UMKM only")
 	})
 

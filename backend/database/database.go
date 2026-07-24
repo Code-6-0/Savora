@@ -48,18 +48,40 @@ func ConnectDB() {
 		&models.MitraDonasiProfile{}, // Task 4: Mitra Donasi
 		&models.Product{},
 		&models.Order{},
-		&models.OrderItem{},
+		&models.Payment{},            // P1 MVP - payment transactions
+		&models.PaymentLog{},         // P1 MVP - payment audit log
 		&models.Review{},
-		&models.Advertisement{},    // Task 5: Iklan
-		&models.AdMetrics{},        // Task 5: Iklan Metrics
-		&models.PlatformRevenue{},  // Task 5 & 6: Revenue Platform
-		&models.HelpTicket{},       // Task 7: Help Center
+		&models.Advertisement{},      // Task 5: Iklan
+		&models.AdMetrics{},          // Task 5: Iklan Metrics
+		&models.PlatformRevenue{},    // Task 5 & 6: Revenue Platform
+		&models.HelpTicket{},         // Task 7: Help Center
+		&models.Notification{},       // P2 Should Have - in-app notifications
+		&models.WasteLog{},           // P2 Should Have - waste tracking
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
-	SeedDatabase(db)
+	// Manual migration: drop old password_hash column (if exists)
+	// Background: Old schema had "password_hash", new schema has "password"
+	// AutoMigrate adds "password" but doesn't remove "password_hash", causing NOT NULL conflict
+	log.Println("Checking schema alignment...")
+	db.Exec(`
+		DO $$
+		BEGIN
+			IF EXISTS (
+				SELECT 1 FROM information_schema.columns
+				WHERE table_name='users' AND column_name='password_hash'
+			) THEN
+				ALTER TABLE users DROP COLUMN password_hash;
+				RAISE NOTICE 'Dropped old users.password_hash column';
+			END IF;
+		END $$;
+	`)
+
+	// Note: Auto-seeding disabled to prevent conflict with dedicated seeder (cmd/seed/main.go)
+	// Run seeder explicitly: cd backend && go run cmd/seed/main.go
+	// SeedDatabase(db)
 
 	DB = db
 }
@@ -103,7 +125,7 @@ func SeedDatabase(db *gorm.DB) {
 		umkm := models.User{
 			Name:   "UMKM Demo",
 			Email:  "umkm@savora.com",
-			Role:   models.RoleUMKM,
+			Role:   models.RoleUmkm,
 			Status: models.StatusActive,
 		}
 		umkm.SetPassword("umkm123")
@@ -146,21 +168,8 @@ func SeedDatabase(db *gorm.DB) {
 		log.Println("✓ Seeded 1 pending mitra donasi profile for verification testing")
 	}
 
-	// Simple seeder to ensure we have mock data
-	var count int64
-	db.Model(&models.Order{}).Count(&count)
-	if count == 0 {
-		orders := []models.Order{
-			{UmkmID: 1, CustomerName: "Rina Marlina", TotalAmount: 75000, Status: "Menunggu", PickupTime: "13:45"},
-			{UmkmID: 1, CustomerName: "Budi Santoso", TotalAmount: 48000, Status: "Diproses", PickupTime: "13:20"},
-			{UmkmID: 1, CustomerName: "Dewi Rahayu", TotalAmount: 96000, Status: "Siap Diambil", PickupTime: "12:55"},
-		}
-		db.Create(&orders)
-
-		reviews := []models.Review{
-			{UmkmID: 1, CustomerName: "Rina Marlina", Rating: 5, Comment: "Makanannya masih sangat layak dan enak!", Sentiment: "Positif"},
-			{UmkmID: 1, CustomerName: "Budi Santoso", Rating: 4, Comment: "Pelayanan cepat dan makanan masih fresh.", Sentiment: "Positif"},
-		}
-		db.Create(&reviews)
-	}
+	// Note: Order and Review seed data removed - structure changed to comply with PRD Section 18
+	// Orders now require: ProductID, CustomerID, Quantity, Subtotal, ServiceFee, TotalPrice, etc.
+	// Reviews now use keyword classification (review_keywords + keyword_scores), not Sentiment
+	// Seed data for these will be added by respective module owners when structure is stable
 }

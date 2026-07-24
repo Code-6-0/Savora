@@ -38,21 +38,21 @@ func InitDB() error {
 		&models.CustomerProfile{},
 		&models.UmkmProfile{},
 		&models.MitraDonasiProfile{},
-		
+
 		// Core products & orders
 		&models.Product{},
 		&models.Order{},
 		&models.Payment{},
 		&models.PaymentLog{},
-		
+
 		// Reviews & keywords
 		&models.Review{},
 		&models.ReviewKeyword{},
 		&models.KeywordScore{},
-		
+
 		// Platform revenue
 		&models.PlatformRevenue{},
-		
+
 		// Perluasan: ads, help, waste, notifications
 		&models.Advertisement{},
 		&models.WasteLog{},

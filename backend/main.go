@@ -7,7 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/savora/backend/database"
 	"github.com/savora/backend/handlers"
+	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
 )
 
@@ -21,6 +23,9 @@ func main() {
 	if err := services.InitDB(); err != nil {
 		log.Fatalf("❌ Failed to initialize database: %v", err)
 	}
+
+	// Init database.DB (for admin module - uses backend/database package)
+	database.ConnectDB()
 
 	// Init Xendit service
 	xenditService := services.NewXenditService()
@@ -38,12 +43,15 @@ func main() {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
 	}))
 
-	// Setup routes
+	// Setup routes (inline routes for order/payment/review/help-ticket - milik anggota lain)
 	setupRoutes(app, xenditService)
+
+	// Setup centralized routes (auth/admin - dari routes/routes.go)
+	routes.SetupRoutes(app)
 
 	port := os.Getenv("PORT")
 	if port == "" {

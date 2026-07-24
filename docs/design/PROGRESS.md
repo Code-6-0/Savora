@@ -2122,4 +2122,139 @@ await apiPatch(endpoint, { status, note: note.trim() });
 
 ---
 
+## 📝 Catatan untuk Tim Setelah Lomba
+
+**Terakhir diperbarui:** 24 Jul 2026
+
+### Technical Debt & Refactor Opportunities
+
+#### 1. Duplikasi Model Profil UMKM
+**Status:** Warisan dari main branch, kedua type valid dan compile
+
+**Dua type berbeda untuk UMKM profile:**
+- `models/user.go:36` → `type UmkmProfile struct` (camelCase)
+  - Dipakai untuk relasi `User.UmkmProfile` dan `Review.Umkm`
+- `models/umkm.go:7` → `type UMKMProfile struct` (all caps)
+  - Model utama untuk tabel `umkm_profiles`
+
+**Bukti keduanya valid:**
+- `go build ./...` PASS tanpa error
+- Kedua type di-migrate di AutoMigrate list berbeda (services vs database)
+
+**Rekomendasi unifikasi:**
+- Pilih satu penamaan (konsistensi: `UMKMProfile` all caps sesuai konvensi akronim Go)
+- Update semua referensi ke `UmkmProfile` untuk pakai `UMKMProfile`
+- Hapus duplicate type definition
+- Update test yang bergantung pada nama type
+- **Estimasi:** 1-2 jam (search-replace + test verification)
+
+---
+
+#### 2. Duplikasi Implementasi Koneksi DB
+**Status:** Dua implementasi paralel, keduanya aktif dipakai
+
+**Implementasi 1: `backend/services/database.go`**
+- Fungsi: `InitDB()`
+- Format: HANYA baca `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- Tidak ada fallback `DATABASE_URL`
+- Dipakai oleh: `main.go` → server produksi
+
+**Implementasi 2: `backend/database/database.go`**
+- Fungsi: `ConnectDB()`
+- Format: Prioritas `DATABASE_URL`, fallback ke `DB_*` individual variables
+- Lebih robust (smart fallback)
+- Dipakai oleh: `cmd/seed/main.go` (seeder), semua handler admin, semua middleware admin, semua test admin
+
+**Akibat duplikasi:**
+- Dua global variable: `services.DB` dan `database.DB`
+- Dua kali inisialisasi di `main.go` (baris 22 + 27)
+- Duplikasi konfigurasi di `.env` (harus isi `DATABASE_URL` + 5 variabel `DB_*`)
+- Maintenance overhead (update logic harus di dua tempat)
+
+**Rekomendasi refactor:**
+- Unifikasi ke satu implementasi dengan pola `database.ConnectDB()` (lebih robust)
+- Migrate semua handler existing (product, order, payment, review, analytics) dari `services.DB` ke `database.DB`
+- Hapus `backend/services/database.go`
+- Update `main.go` untuk hanya panggil `database.ConnectDB()` sekali
+- `.env` cukup isi `DATABASE_URL` atau `DB_*` (tidak perlu keduanya)
+- **Estimasi:** 3-4 jam (search-replace + test semua module + koordinasi tim)
+- **Risiko:** Medium — butuh testing menyeluruh dari semua anggota tim
+
+---
+
+#### 3. Dead Handlers di routes/routes.go
+**Status:** 11 handler di-comment sejak commit e4cd920, ada TODO untuk re-enable
+
+**Handler yang di-comment (baris 41-94):**
+```go
+// TODO (FASE 4+): Re-enable route ini setelah handler ready & test lolos
+// POST   /api/auth/register        → handlers.RegisterHandler
+// POST   /api/auth/login           → handlers.LoginHandler
+// GET    /api/me                   → handlers.GetMeHandler (middleware auth)
+// PATCH  /api/me                   → handlers.UpdateMeHandler (middleware auth)
+// GET    /api/admin/users          → handlers.GetUsersHandler (admin only)
+// GET    /api/admin/customers      → handlers.GetCustomersHandler (admin only)
+// GET    /api/admin/umkm           → handlers.GetUMKMListHandler (admin only)
+// PATCH  /api/admin/umkm/:id/verification → handlers.VerifyUMKMHandler (admin)
+// GET    /api/admin/mitra-donasi   → handlers.GetMitraDonasiListHandler (admin)
+// PATCH  /api/admin/mitra-donasi/:id/verify → handlers.VerifyMitraDonasiHandler (admin)
+// GET    /api/admin/reports/summary → handlers.GetAdminSummaryHandler (admin)
+```
+
+**Alasan di-comment:**
+- Handler sudah ada di `backend/handlers/` (admin.go, auth.go, mitra_donasi.go)
+- Test sudah ada dan lolos (`*_test.go`)
+- Di-comment sementara untuk hindari konflik saat merge origin/main
+- Routes aktif ada di inline setupRoutes di `main.go` (order, payment, review, help-ticket)
+
+**Cara re-enable:**
+1. Uncomment 11 baris di `routes/routes.go:41-94`
+2. Pindahkan inline routes dari `main.go:61-87` ke `routes/routes.go`
+3. Hapus fungsi `setupRoutes()` dari `main.go`
+4. Test semua endpoint: `go test ./handlers/...`
+5. Smoke test manual: `docs/admin-smoke-test.md`
+
+**Estimasi:** 30 menit - 1 jam (uncomment + test + smoke test)
+
+---
+
+#### 4. Modul Iklan Lama Dikarantina
+**Status:** Build tag `iklan_soon` mencegah compile, ada instruksi restore
+
+**File yang dikarantina:**
+- `backend/handlers/ads.go` — handler iklan lama (belum sesuai PRD Section 18)
+- `backend/services/ads.go` — business logic iklan lama
+- `backend/services/ads_test.go` — test iklan lama
+
+**Alasan karantina:**
+- Struktur data tidak match PRD Section 18 (Advertisement model baru)
+- Hindari konflik nama handler (`AdsHandler` vs `AdvertisementHandler`)
+- Preserve kode lama untuk referensi/migrasi bertahap
+
+**Cara restore (jika diperlukan):**
+Ikuti instruksi lengkap di `docs/ads_RESTORE_INSTRUCTIONS.md`:
+1. Hapus build tag `//go:build iklan_soon` dari ketiga file
+2. Rename handler/service untuk hindari konflik
+3. Update import di tempat yang memakainya
+4. Run test: `go test ./handlers/... ./services/...`
+
+**Rekomendasi:**
+- Jika modul iklan baru (advertisement.go) sudah production-ready → hapus file lama
+- Jika masih ada fitur dari modul lama yang belum di-migrate → restore lalu migrate bertahap
+- **Estimasi restore + migrate:** 2-3 jam
+
+---
+
+### Checklist Unifikasi Post-Lomba
+
+- [ ] **Unifikasi model UMKM** (UmkmProfile → UMKMProfile) — 1-2 jam
+- [ ] **Unifikasi koneksi DB** (services.InitDB → database.ConnectDB) — 3-4 jam, medium risk
+- [ ] **Re-enable dead routes** di routes/routes.go — 30 menit - 1 jam
+- [ ] **Evaluasi modul iklan lama** (restore vs delete) — 2-3 jam jika restore + migrate
+- [ ] **Alignment skema orders/products** dengan PRD Section 18 (jika diperlukan) — estimasi TBD by owner module
+
+**Total estimasi:** 7-11 jam (1-2 hari kerja)
+
+---
+
 **End of PROGRESS.md**

@@ -86,7 +86,7 @@ func TestApproveAdvertisement_CreatesPlatformRevenue(t *testing.T) {
 	umkmUser := models.User{
 		Name:   "UMKM Advertiser",
 		Email:  "umkm_ad_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusActive,
 	}
 	umkmUser.SetPassword("password123")
@@ -230,7 +230,7 @@ func TestRejectAdvertisement_NoPlatformRevenue(t *testing.T) {
 	umkmUser := models.User{
 		Name:   "UMKM Advertiser Reject",
 		Email:  "umkm_ad_reject_" + time.Now().Format("20060102150405") + "@test.com",
-		Role:   models.RoleUMKM,
+		Role:   models.RoleUmkm,
 		Status: models.StatusActive,
 	}
 	umkmUser.SetPassword("password123")
