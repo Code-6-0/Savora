@@ -29,6 +29,10 @@ export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [sortMode, setSortMode] = useState("default");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [promoActive, setPromoActive] = useState(false);
+  const [ratingActive, setRatingActive] = useState(false);
+  const [distanceActive, setDistanceActive] = useState(false);
+  const [openNowActive, setOpenNowActive] = useState(false);
   const [ads, setAds] = useState([]);
   const [adsSource, setAdsSource] = useState("api");
   const [elapsed, setElapsed] = useState(0);
@@ -98,6 +102,10 @@ export default function MarketplacePage() {
     search: searchTerm,
     category: selectedCategory,
     sort: sortMode,
+    promo: promoActive,
+    minRating: ratingActive ? 4.5 : null,
+    maxDistanceKm: distanceActive ? 1 : null,
+    openNow: openNowActive,
   });
 
   // Handlers
@@ -122,6 +130,32 @@ export default function MarketplacePage() {
 
   const handleCategoryClick = (categoryName) => {
     setSelectedCategory((prev) => (prev === categoryName ? "Semua" : categoryName));
+  };
+
+  const handlePromoToggle = () => {
+    setPromoActive((prev) => !prev);
+  };
+
+  const handleRatingToggle = () => {
+    setRatingActive((prev) => !prev);
+  };
+
+  const handleDistanceToggle = () => {
+    setDistanceActive((prev) => !prev);
+  };
+
+  const handleOpenNowToggle = () => {
+    setOpenNowActive((prev) => !prev);
+  };
+
+  const handleResetAllFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("Semua");
+    setSortMode("default");
+    setPromoActive(false);
+    setRatingActive(false);
+    setDistanceActive(false);
+    setOpenNowActive(false);
   };
 
   const handleRetry = () => {
@@ -314,72 +348,92 @@ export default function MarketplacePage() {
               backgroundColor: "#bdcabe",
             }}></div>
 
-            <button style={{
-              backgroundColor: "rgba(6,134,81,0.10)",
-              color: "#006a3f",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "none",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handlePromoToggle}
+              style={{
+                backgroundColor: promoActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: promoActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: promoActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Promo
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handleRatingToggle}
+              style={{
+                backgroundColor: ratingActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: ratingActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: ratingActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Rating 4.5+
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handleDistanceToggle}
+              style={{
+                backgroundColor: distanceActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: distanceActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: distanceActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Di bawah 1 km
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handleOpenNowToggle}
+              style={{
+                backgroundColor: openNowActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: openNowActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: openNowActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Buka Sekarang
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginLeft: "auto",
-            }}>
+            <button
+              onClick={handleResetAllFilters}
+              style={{
+                backgroundColor: "#fff",
+                color: "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: "1px solid #e8e8e8",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginLeft: "auto",
+                transition: "all 0.2s",
+              }}
+            >
               <SlidersHorizontal size={14} />
               Semua Filter
             </button>
@@ -542,6 +596,11 @@ export default function MarketplacePage() {
                       <p className="beranda-product-vendor">
                         <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
                       </p>
+                      {Number.isFinite(product.stock) && (
+                        <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
+                          Sisa {product.stock} porsi
+                        </span>
+                      )}
                       <div className="beranda-product-footer">
                         <div className="beranda-product-price">
                           <div className="beranda-price-old-row">
@@ -706,6 +765,11 @@ export default function MarketplacePage() {
                       <p className="beranda-product-vendor">
                         <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
                       </p>
+                      {Number.isFinite(product.stock) && (
+                        <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
+                          Sisa {product.stock} porsi
+                        </span>
+                      )}
                       <div className="beranda-product-footer">
                         <div className="beranda-product-price">
                           <div className="beranda-price-old-row">
