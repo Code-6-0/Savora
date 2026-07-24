@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build *)",
+      "Bash(echo \"BUILD_EXIT=$?\")",
+      "Bash(gofmt -w services/ models/)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(gofmt -w handlers/ routes/ database/ services/ models/)"
+    ]
+  }
+}

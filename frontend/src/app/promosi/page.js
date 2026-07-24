@@ -11,6 +11,7 @@ import {
   updateAdStatus,
   AD_STATUS,
 } from "@/lib/umkmAds";
+import { fetchUMKMProducts, fallbackProducts } from "@/lib/products";
 
 const UMKM_ID = 1;
 
@@ -24,11 +25,6 @@ const statusBadgeType = (status) => {
   return "warning"; // Draft
 };
 
-const fallbackProducts = [
-  { id: 1, name: "Nasi Kotak Ayam Bakar" },
-  { id: 2, name: "Salad Bowl Superfood" },
-  { id: 3, name: "Roti Gandum Artisan" },
-];
 
 export default function PromosiPage() {
   const [packages, setPackages] = useState([]);
@@ -40,8 +36,6 @@ export default function PromosiPage() {
   // Form state
   const [productId, setProductId] = useState("");
   const [packageId, setPackageId] = useState("");
-  const [headline, setHeadline] = useState("");
-  const [cta, setCta] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const reloadAds = async () => {
@@ -51,20 +45,26 @@ export default function PromosiPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const pkgs = await fetchAdPackages();
-      if (!active) return;
-      setPackages(pkgs);
-      
-      // Dummy data for visual
-      const dummyAds = [
-        { id: 1, umkm_id: UMKM_ID, product_id: 1, package_id: "populer", headline: "Flash Sale Ayam Bakar", cta: "Beli Sekarang", status: AD_STATUS.Aktif.key, price: 35000, duration_days: 7, start_at: new Date().toISOString() }
-      ];
-      setAds(dummyAds);
-      setProducts(fallbackProducts);
-      
-      if (pkgs.length > 0) setPackageId(pkgs[0].id);
-      if (fallbackProducts.length > 0) setProductId(String(fallbackProducts[0].id));
-      setLoading(false);
+      try {
+        const pkgs = await fetchAdPackages();
+        if (!active) return;
+        setPackages(pkgs);
+        if (pkgs.length > 0) setPackageId(pkgs[0].id);
+        
+        const prods = await fetchUMKMProducts(UMKM_ID);
+        if (!active) return;
+        const activeProds = prods.filter(p => p.status === "Aktif" || p.status === "Active");
+        setProducts(activeProds);
+        if (activeProds.length > 0) setProductId(String(activeProds[0].id));
+        
+        const fetchedAds = await fetchUmkmAds(UMKM_ID);
+        if (!active) return;
+        setAds(fetchedAds);
+      } catch (err) {
+        console.error("Error loading promosi data:", err);
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => {
       active = false;
@@ -82,31 +82,29 @@ export default function PromosiPage() {
     setSubmitting(true);
     setNotice(null);
     
-    // Simulate API Create
-    setTimeout(() => {
-      const newAd = {
-        id: ads.length > 0 ? Math.max(...ads.map(a => a.id)) + 1 : 1,
+    try {
+      const newAd = await createUmkmAd({
         umkm_id: UMKM_ID,
         product_id: Number(productId),
         package_id: packageId,
-        headline: headline || "Promosi Baru",
-        cta: cta || "Lihat Produk",
-        status: AD_STATUS.Draft.key,
-        price: selectedPackage ? selectedPackage.price : 0,
-        duration_days: selectedPackage ? selectedPackage.duration_days : 0,
-        start_at: new Date().toISOString()
-      };
+      });
       setAds([newAd, ...ads]);
-      setHeadline("");
-      setCta("");
-      setNotice({ type: "success", text: "Promosi dibuat sebagai Draft. Aktifkan untuk mulai tayang." });
+      setNotice({ type: "success", text: "Promosi berhasil diajukan. Menunggu persetujuan Admin." });
+    } catch (error) {
+      setNotice({ type: "error", text: error.message || "Gagal mengajukan promosi." });
+    } finally {
       setSubmitting(false);
-    }, 500);
+    }
   };
 
   const handleActivate = async (id) => {
-    setAds(ads.map(ad => ad.id === id ? { ...ad, status: AD_STATUS.Aktif.key } : ad));
-    setNotice({ type: "success", text: "Promosi diaktifkan dan mulai tayang di marketplace." });
+    try {
+      const updatedAd = await updateAdStatus(id, AD_STATUS.Aktif.key);
+      setAds(ads.map(ad => ad.id === id ? updatedAd : ad));
+      setNotice({ type: "success", text: "Promosi diaktifkan dan mulai tayang di marketplace." });
+    } catch (error) {
+      setNotice({ type: "error", text: error.message || "Gagal mengaktifkan promosi." });
+    }
   };
 
   const productName = (id) => products.find((p) => String(p.id) === String(id))?.name || `Produk #${id}`;
@@ -187,27 +185,7 @@ export default function PromosiPage() {
                 </select>
               </div>
 
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, marginBottom: "5px" }}>Judul Promosi (Headline)</label>
-                <input
-                  type="text"
-                  value={headline}
-                  onChange={(e) => setHeadline(e.target.value)}
-                  placeholder="Contoh: Nasi Kotak fresh, hemat 40%!"
-                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #D1D5DB" }}
-                />
-              </div>
 
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, marginBottom: "5px" }}>Teks Tombol (CTA)</label>
-                <input
-                  type="text"
-                  value={cta}
-                  onChange={(e) => setCta(e.target.value)}
-                  placeholder="Contoh: Selamatkan sekarang"
-                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #D1D5DB" }}
-                />
-              </div>
 
               {selectedPackage && (
                 <div style={{ padding: "12px", backgroundColor: "#F9FAFB", borderRadius: "8px", marginBottom: "15px", fontSize: "0.875rem" }}>
@@ -216,7 +194,7 @@ export default function PromosiPage() {
               )}
 
               <button type="submit" className="btn-primary" disabled={submitting || products.length === 0} style={{ width: "100%", justifyContent: "center" }}>
-                <Plus size={18} /> {submitting ? "Menyimpan..." : "Buat Promosi (Draft)"}
+                <Plus size={18} /> {submitting ? "Menyimpan..." : "Ajukan Promosi"}
               </button>
             </form>
           </div>
@@ -232,22 +210,14 @@ export default function PromosiPage() {
               {ads.map((ad) => (
                 <div key={ad.id} style={{ padding: "15px", border: "1px solid #E5E7EB", borderRadius: "10px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "6px" }}>
-                    <div style={{ fontWeight: 600 }}>{ad.headline || productName(ad.product_id)}</div>
-                    <Badge type={statusBadgeType(ad.status)}>{ad.status}</Badge>
+                    <div style={{ fontWeight: 600 }}>{productName(ad.product_id)}</div>
+                    <Badge type={statusBadgeType(ad.status)}>{ad.status === AD_STATUS.Draft.key ? "Menunggu Persetujuan" : ad.status}</Badge>
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "#6B7280", marginBottom: "10px" }}>
                     {productName(ad.product_id)} · {formatRupiah(ad.price)} · {ad.duration_days} hari
                     {ad.end_at ? ` · berakhir ${new Date(ad.end_at).toLocaleDateString("id-ID")}` : ""}
                   </div>
-                  {ad.status === AD_STATUS.Draft.key && (
-                    <button
-                      onClick={() => handleActivate(ad.id)}
-                      className="btn-primary"
-                      style={{ padding: "6px 14px", fontSize: "0.8125rem" }}
-                    >
-                      <Zap size={14} /> Aktifkan
-                    </button>
-                  )}
+
                   {ad.status === AD_STATUS.Aktif.key && (
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.8125rem", color: "#10B981" }}>
                       <TrendingUp size={14} /> Sedang tayang di marketplace
