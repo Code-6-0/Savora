@@ -224,7 +224,8 @@ export default function ProductDetailPage() {
 
   function updateQuantity(delta) { setQuantity((current) => Math.min(product.stock, Math.max(1, current + delta))); }
   function reserveProduct() {
-    setNotice(`${quantity} porsi ${product.name} berhasil dipilih. Lanjutkan ke Checkout untuk pembayaran.`);
+    // Redirect ke checkout page dengan query params product_id dan qty
+    router.push(`/marketplace/checkout?product_id=${product.id}&qty=${quantity}`);
   }
 
   return (
