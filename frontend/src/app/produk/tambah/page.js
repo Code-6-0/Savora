@@ -564,7 +564,7 @@ function PhotoUpload({
         const base64Data = ev.target?.result;
 
         // Upload ke backend
-        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
         const response = await fetch(`${apiUrl}/api/upload/image`, {
           method: "POST",
           headers: {

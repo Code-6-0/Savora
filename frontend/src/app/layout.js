@@ -1,6 +1,8 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
+import './beranda.css'
 import DashboardLayout from '@/components/templates/DashboardLayout'
+import LayoutWrapper from './LayoutWrapper'
 import { UmkmProvider } from '@/context/UmkmContext'
 import { NotificationProvider } from '@/context/NotificationContext'
 
@@ -23,9 +25,9 @@ export default function RootLayout({ children }) {
       <body>
         <UmkmProvider>
           <NotificationProvider userId={1} userRole="umkm">
-            <DashboardLayout>
+            <LayoutWrapper>
               {children}
-            </DashboardLayout>
+            </LayoutWrapper>
           </NotificationProvider>
         </UmkmProvider>
       </body>
