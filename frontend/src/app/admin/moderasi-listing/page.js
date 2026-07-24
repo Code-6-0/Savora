@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import DashboardLayout from '../../../components/templates/DashboardLayout';
 import Badge from '../../../components/atoms/Badge';
 
 export default function ModerasiListingPage() {
@@ -212,40 +211,36 @@ export default function ModerasiListingPage() {
   // Loading state
   if (loading && products.length === 0) {
     return (
-      <DashboardLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)' }}>Memuat data produk...</p>
-        </div>
-      </DashboardLayout>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Memuat data produk...</p>
+      </div>
     );
   }
 
   // Error state
   if (error && products.length === 0) {
     return (
-      <DashboardLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--danger-color)', marginBottom: '1rem' }}>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: 'var(--primary-color)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}
-          >
-            Coba Lagi
-          </button>
-        </div>
-      </DashboardLayout>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--danger-color)', marginBottom: '1rem' }}>{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: 'var(--primary-color)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          Coba Lagi
+        </button>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+    <>
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{
@@ -800,6 +795,6 @@ export default function ModerasiListingPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 }

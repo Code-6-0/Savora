@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/templates/DashboardLayout";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
@@ -285,29 +284,25 @@ export default function KelolaUMKMPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="admin">
-        <div style={{ padding: "30px", textAlign: "center" }}>
-          Memuat data UMKM...
-        </div>
-      </DashboardLayout>
+      <div style={{ padding: "30px", textAlign: "center" }}>
+        Memuat data UMKM...
+      </div>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout role="admin">
-        <div style={{ padding: "30px", textAlign: "center" }}>
-          <p style={{ color: "var(--danger-color)", marginBottom: "16px" }}>
-            {error}
-          </p>
-          <Button onClick={fetchUMKMList}>Coba Lagi</Button>
-        </div>
-      </DashboardLayout>
+      <div style={{ padding: "30px", textAlign: "center" }}>
+        <p style={{ color: "var(--danger-color)", marginBottom: "16px" }}>
+          {error}
+        </p>
+        <Button onClick={fetchUMKMList}>Coba Lagi</Button>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout role="admin">
+    <>
       <div style={{ padding: "30px" }}>
         {/* Header */}
         <div style={{ marginBottom: "24px" }}>
@@ -572,6 +567,6 @@ export default function KelolaUMKMPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 }
