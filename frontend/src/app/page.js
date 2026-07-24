@@ -319,6 +319,11 @@ export default function BerandaPage() {
                         <p className="beranda-product-vendor">
                           <MapPin size={9} /> {product.vendor} • {product.distanceKm} km
                         </p>
+                        {Number.isFinite(product.stock) && (
+                          <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
+                            Sisa {product.stock} porsi
+                          </span>
+                        )}
                         <div className="beranda-product-footer">
                           <div className="beranda-product-price">
                             <div className="beranda-price-old-row">
