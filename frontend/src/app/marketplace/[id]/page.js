@@ -254,7 +254,7 @@ export default function ProductDetailPage() {
         </div>
       </header>
 
-      <main style={{ maxWidth: '1088px', margin: '0 auto', padding: '24px 32px' }}>
+      <main style={{ maxWidth: '1151px', margin: '0 auto', padding: '24px 32px' }}>
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '16px', fontWeight: '500', color: '#999999' }}>
           <Home size={16} />

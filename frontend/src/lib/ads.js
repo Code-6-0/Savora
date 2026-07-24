@@ -72,7 +72,7 @@ export function normalizeAd(raw) {
  * @param {number} [limit] jumlah maksimal iklan yang dikembalikan.
  */
 export async function fetchAds(limit = 3) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
     const response = await fetch(`${baseUrl}/api/ads/active`);
     const contentType = response.headers.get("content-type") || "";

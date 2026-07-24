@@ -1,5 +1,7 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
+import './beranda.css'
+import DashboardLayout from '@/components/templates/DashboardLayout'
 import LayoutWrapper from './LayoutWrapper'
 import { UmkmProvider } from '@/context/UmkmContext'
 import { NotificationProvider } from '@/context/NotificationContext'
