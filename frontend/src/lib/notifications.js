@@ -3,7 +3,9 @@
  * Base URL dari env; fallback ke localhost:3000.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL 
+  ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api` 
+  : 'http://localhost:3001/api';
 
 // Data demo untuk fallback tanpa backend
 const DEMO_NOTIFICATIONS = [

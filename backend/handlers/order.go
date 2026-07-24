@@ -186,3 +186,12 @@ func (h *OrderHandler) ValidatePickupCode(c *fiber.Ctx) error {
 		"order":   order,
 	})
 }
+
+// Standalone function stubs for routes.go compatibility
+func GetOrdersByUMKM(c *fiber.Ctx) error {
+	return c.Status(501).JSON(fiber.Map{"error": "Not implemented"})
+}
+
+func UpdateOrderStatus(c *fiber.Ctx) error {
+	return c.Status(501).JSON(fiber.Map{"error": "Not implemented - use OrderHandler.UpdateOrderStatus"})
+}

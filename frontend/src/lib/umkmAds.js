@@ -14,12 +14,7 @@ export const AD_STATUS = {
   Kadaluarsa: { key: "Kadaluarsa", label: "Kadaluarsa", className: "is-kadaluarsa" },
 };
 
-// Fallback katalog paket (harus sama dengan services/ads.go adPackages).
-export const fallbackAdPackages = [
-  { id: "kilat", name: "Kilat", duration_days: 3, price: 15000, description: "Tayang 3 hari, cocok untuk flash sale rescue deal." },
-  { id: "populer", name: "Populer", duration_days: 7, price: 35000, description: "Tayang 7 hari, paling banyak dipilih UMKM." },
-  { id: "sorotan", name: "Sorotan", duration_days: 30, price: 99000, description: "Tayang 30 hari, sorotan penuh sebulan." },
-];
+// Fallback katalog dihapus agar selalu mengambil dari API (Tugas 5).
 
 /**
  * Normalisasi status iklan ke salah satu AD_STATUS (default Draft).
@@ -71,19 +66,15 @@ function baseUrl() {
 }
 
 /**
- * Ambil katalog paket iklan. Fallback ke demo lokal bila API gagal.
+ * Ambil katalog paket iklan langsung dari API.
  */
 export async function fetchAdPackages() {
-  try {
-    const response = await fetch(`${baseUrl()}/api/ads/packages`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) throw new Error("Ads API tidak tersedia");
-    const data = await response.json();
-    if (!Array.isArray(data) || data.length === 0) throw new Error("Respons paket tidak valid");
-    return data.map(normalizeAdPackage);
-  } catch {
-    return fallbackAdPackages.map(normalizeAdPackage);
-  }
+  const response = await fetch(`${baseUrl()}/api/ads/packages`);
+  const contentType = response.headers.get("content-type") || "";
+  if (!response.ok || !contentType.includes("application/json")) throw new Error("Ads API tidak tersedia");
+  const data = await response.json();
+  if (!Array.isArray(data) || data.length === 0) throw new Error("Respons paket tidak valid");
+  return data.map(normalizeAdPackage);
 }
 
 /**

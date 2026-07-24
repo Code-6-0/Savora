@@ -55,6 +55,13 @@ func main() {
 }
 
 func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
+	// Product routes
+	app.Get("/api/products/umkm/:umkm_id", handlers.GetProductsByUMKM)
+	app.Get("/api/products/marketplace", handlers.GetActiveMarketplaceProducts)
+	app.Post("/api/products", handlers.CreateProduct)
+	app.Put("/api/products/:id", handlers.UpdateProduct)
+	app.Delete("/api/products/:id", handlers.DeleteProduct)
+
 	// Order routes
 	orderHandler := handlers.NewOrderHandler(xenditService)
 	app.Post("/orders", orderHandler.CreateOrder)
@@ -80,4 +87,18 @@ func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
 	app.Get("/help-tickets", helpHandler.GetHelpTickets)
 	app.Get("/payments/:payment_id/logs", helpHandler.GetPaymentLogs)
 	app.Patch("/help-tickets/:id/status", helpHandler.UpdateTicketStatus)
+
+	// Ad routes (Tugas 1)
+	app.Get("/api/ads/packages", handlers.GetAdPackages)
+	app.Post("/api/ads", handlers.CreateAd)
+	app.Get("/api/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
+	app.Put("/api/ads/:id/status", handlers.UpdateAdStatus)
+	app.Get("/api/ads/active", handlers.GetActiveAds)
+
+	// Waste Log routes (Tugas 2)
+	app.Get("/api/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
+	app.Post("/api/waste-logs", handlers.CreateWasteLog)
+
+	// Analytics routes (Tugas 4)
+	app.Get("/api/analytics/insight/:umkm_id", handlers.GetUmkmInsight)
 }

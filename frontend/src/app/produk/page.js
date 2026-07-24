@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
+import { fetchUMKMProducts, deleteProduct, fallbackProducts } from "@/lib/products";
 
 export default function ProdukPage() {
   const router = useRouter();
@@ -21,17 +22,18 @@ export default function ProdukPage() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Dummy data for visual
-  const [products, setProducts] = useState([
-    { id: 1, name: "Nasi Kotak Ayam Bakar", category: "Makanan Siap Saji", original_price: 35000, rescue_price: 20000, stock: 8, score: 87, timer: "6j", status: "Aktif" },
-    { id: 2, name: "Roti Gandum Artisan", category: "Bakeri & Roti", original_price: 25000, rescue_price: 12000, stock: 3, score: 38, timer: "2j", status: "Hampir Habis" },
-    { id: 3, name: "Salad Bowl Superfood", category: "Makanan Sehat", original_price: 45000, rescue_price: 28000, stock: 12, score: 74, timer: "8j", status: "Aktif" },
-    { id: 4, name: "Kue Tart Spesial", category: "Kue & Pastri", original_price: 150000, rescue_price: 65000, stock: 1, score: 14, timer: "1j", status: "Kritis" },
-    { id: 5, name: "Sandwich Club Tuna", category: "Sandwich & Wrap", original_price: 28000, rescue_price: null, stock: 0, score: 0, timer: "-", status: "Habis" },
-    { id: 6, name: "Smoothie Bowl Mango", category: "Minuman & Bowl", original_price: 55000, rescue_price: 35000, stock: 6, score: 68, timer: "7j", status: "Aktif" },
-    { id: 7, name: "Pizza Margherita Min", category: "Pizza & Pasta", original_price: 65000, rescue_price: 65000, stock: 4, score: 91, timer: "11j", status: "Aktif" },
-    { id: 8, name: "Bakso Premium Solo", category: "Makanan Siap Saji", original_price: 40000, rescue_price: 25000, stock: 6, score: 55, timer: "5j", status: "Aktif" },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      const data = await fetchUMKMProducts(1, false);
+      setProducts(data);
+      setLoading(false);
+    }
+    loadProducts();
+  }, []);
 
   const [newProduct, setNewProduct] = useState({ 
     name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",
@@ -126,8 +128,11 @@ export default function ProdukPage() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteProduct = (id) => {
-    setProducts(products.filter(p => p.id !== id));
+  const handleDeleteProduct = async (id) => {
+    if (confirm("Yakin ingin menghapus produk ini?")) {
+      await deleteProduct(id);
+      setProducts(products.filter(p => p.id !== id));
+    }
   };
 
   const formatRupiah = (number) => {
@@ -298,7 +303,11 @@ export default function ProdukPage() {
               {filteredProducts.length > 0 ? filteredProducts.map(p => (
                 <tr key={p.id}>
                   <td style={{ paddingLeft: '20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ width: '40px', height: '40px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}></div>
+                    {p.photo_url && p.photo_url !== 'EMPTY' ? (
+                      <img src={p.photo_url} alt={p.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '40px', height: '40px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}></div>
+                    )}
                     <span style={{ fontWeight: 600 }}>{p.name}</span>
                   </td>
                   <td style={{ color: '#6B7280' }}>{p.category}</td>
@@ -357,6 +366,7 @@ export default function ProdukPage() {
         </div>
 
         {/* Peringatan Produk Kritis */}
+        {products.filter(p => p && p.score < 50).length > 0 && (
         <div style={{ border: '1px solid #FECACA', backgroundColor: '#FEF2F2', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -366,14 +376,18 @@ export default function ProdukPage() {
                 <div style={{ fontSize: '0.75rem', color: '#B91C1C' }}>Rescue Score rendah — tindakan segera diperlukan untuk menghindari food waste</div>
               </div>
             </div>
-            <Badge type="critical" customStyle={{ borderRadius: '20px' }}>3 produk</Badge>
+            <Badge type="critical" customStyle={{ borderRadius: '20px' }}>{products.filter(p => p && p.score < 50).length} produk</Badge>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {[products[1], products[3], products[7]].map((p, idx) => (
+            {products.filter(p => p && p.score < 50).slice(0, 3).map((p, idx) => (
               <div key={idx} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #FEE2E2' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '30%' }}>
-                  <div style={{ width: '40px', height: '40px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}></div>
+                  {p.photo_url && p.photo_url !== 'EMPTY' ? (
+                    <img src={p.photo_url} alt={p.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '40px', height: '40px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}></div>
+                  )}
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{p.name}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
@@ -397,6 +411,7 @@ export default function ProdukPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Charts & Insights */}
         <div className="grid-sidebar-right" style={{ marginBottom: '20px' }}>
