@@ -548,6 +548,37 @@ export async function fetchMarketplaceProducts() {
   }
 }
 
+/**
+ * Pilih produk rekomendasi untuk section "Makanan Rekomendasi".
+ *
+ * @param {Array} products - array produk yang sudah difilter/sorted
+ * @param {object} [options] - opsi untuk pemilihan (now, elapsedSeconds)
+ * @returns {Array} max 4 produk untuk section rekomendasi
+ */
+export function selectRecommendedProducts(products, options = {}) {
+  const { now = Date.now(), elapsedSeconds = 0 } = options;
+
+  // Jika catalog besar (> 12 produk), gunakan produk ke-13 s.d. ke-16
+  if (products.length > 12) {
+    return products.slice(12, 16);
+  }
+
+  // Jika tidak ada produk sama sekali
+  if (products.length === 0) {
+    return [];
+  }
+
+  // Jika catalog kecil (<= 12 produk), pilih subset berdasarkan Food Score tertinggi
+  const scored = products.map(product => {
+    const { score } = computeProductScore(product, now, elapsedSeconds);
+    return { product, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, 4).map(item => item.product);
+}
+
 export async function fetchMarketplaceProduct(id) {
   const result = await fetchMarketplaceProducts();
   const product = result.products.find((product) => product.id === String(id));

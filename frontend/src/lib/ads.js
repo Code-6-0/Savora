@@ -69,6 +69,11 @@ export function normalizeAd(raw) {
 /**
  * Ambil iklan aktif dari backend, fallback ke demo lokal.
  * Mengikuti kontrak & pola fetch src/lib/marketplace.js.
+ *
+ * Mengembalikan objek `{ ads, source }`:
+ *   - `ads`    — array iklan yang sudah dinormalisasi.
+ *   - `source` — `"api"` jika backend hidup (termasuk respons kosong), `"fallback"` jika backend mati.
+ *
  * @param {number} [limit] jumlah maksimal iklan yang dikembalikan.
  */
 export async function fetchAds(limit = 3) {
@@ -76,11 +81,25 @@ export async function fetchAds(limit = 3) {
   try {
     const response = await fetch(`${baseUrl}/api/ads/active`);
     const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) throw new Error("Ads API tidak tersedia");
+
+    if (!response.ok || !contentType.includes("application/json")) {
+      throw new Error("Ads API tidak tersedia");
+    }
+
     const data = await response.json();
-    if (!Array.isArray(data) || data.length === 0) throw new Error("Respons ads tidak valid");
-    return data.map(normalizeAd).slice(0, limit);
+
+    if (!Array.isArray(data)) {
+      return { ads: [], source: 'api' };
+    }
+
+    return {
+      ads: data.map(normalizeAd).slice(0, limit),
+      source: 'api'
+    };
   } catch {
-    return fallbackAds.map(normalizeAd).slice(0, limit);
+    return {
+      ads: fallbackAds.map(normalizeAd).slice(0, limit),
+      source: 'fallback'
+    };
   }
 }

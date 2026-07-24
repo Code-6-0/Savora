@@ -15,7 +15,7 @@ import {
   ShoppingCart,
   RefreshCw,
 } from "lucide-react";
-import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
+import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts, selectRecommendedProducts } from "@/lib/marketplace";
 import { fetchAds, AD_TYPES } from "@/lib/ads";
 import { deriveRestaurantSafety } from "@/lib/reviews";
 import { useCart } from "@/lib/CartContext";
@@ -30,6 +30,7 @@ export default function MarketplacePage() {
   const [sortMode, setSortMode] = useState("default");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [ads, setAds] = useState([]);
+  const [adsSource, setAdsSource] = useState("api");
   const [elapsed, setElapsed] = useState(0);
   const sortDropdownRef = useRef(null);
 
@@ -51,7 +52,10 @@ export default function MarketplacePage() {
 
   // Fetch ads
   useEffect(() => {
-    fetchAds(2).then(setAds);
+    fetchAds(2).then(result => {
+      setAds(result.ads);
+      setAdsSource(result.source);
+    });
   }, []);
 
   useEffect(() => {
@@ -144,9 +148,14 @@ export default function MarketplacePage() {
   };
 
   const nearbyProducts = products.slice(0, 12);
-  // Inject ads into recommended products (max 2)
-  const recommendedBase = products.slice(12, 16);
-  const recommendedProducts = [...ads.slice(0, 2), ...recommendedBase].slice(0, 6);
+  // Pilih produk rekomendasi dengan logika adaptif untuk katalog kecil
+  const now = Date.now();
+  const recommendedBase = selectRecommendedProducts(products, { now, elapsedSeconds: elapsed });
+  // Inject ads hanya jika: mode fallback ATAU (mode api DAN ada iklan)
+  const shouldShowAds = adsSource === 'fallback' || (adsSource === 'api' && ads.length > 0);
+  const recommendedProducts = shouldShowAds
+    ? [...ads.slice(0, 2), ...recommendedBase].slice(0, 6)
+    : recommendedBase;
 
   const categories = [
     { name: "Bakery", icon: "/categories/bakery.svg", bgColor: "#ecfdf5", iconColor: "#059669" },
@@ -573,7 +582,20 @@ export default function MarketplacePage() {
               Lihat Semua <ChevronRight size={16} />
             </Link>
           </div>
-          <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+          {recommendedProducts.length === 0 ? (
+            <div style={{
+              textAlign: "center",
+              padding: "32px 24px",
+              backgroundColor: "#f9fafb",
+              borderRadius: "12px",
+              border: "1px solid #e5e7eb",
+            }}>
+              <p style={{ fontSize: "14px", color: "#6b7280" }}>
+                Tidak ada rekomendasi tersedia saat ini
+              </p>
+            </div>
+          ) : (
+            <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
             {recommendedProducts.map((item) => {
               // Check if this is an ad or a product
               const isAd = item.sponsor !== undefined;
@@ -713,6 +735,7 @@ export default function MarketplacePage() {
               );
             })}
           </div>
+          )}
         </div>
       </section>
 
