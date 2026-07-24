@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/savora/backend/handlers"
+	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
 )
 
@@ -42,7 +43,10 @@ func main() {
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
 	}))
 
-	// Setup routes
+	// Setup routes from routes package (products, notifications, analytics, etc.)
+	routes.SetupRoutes(app)
+
+	// Setup routes from main (orders, payments, reviews, help-tickets)
 	setupRoutes(app, xenditService)
 
 	port := os.Getenv("PORT")

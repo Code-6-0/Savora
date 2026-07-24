@@ -15,24 +15,16 @@ func SetupRoutes(app *fiber.App) {
 	api.Put("/products/:id", handlers.UpdateProduct)
 	api.Delete("/products/:id", handlers.DeleteProduct)
 
-	// Orders
-	api.Get("/orders/umkm/:umkm_id", handlers.GetOrdersByUMKM)
-	api.Put("/orders/:id/status", handlers.UpdateOrderStatus)
-
 	// Notifications
 	api.Get("/notifications/user/:user_id", handlers.GetNotificationsByUser)
 	api.Get("/notifications/unread/:user_id", handlers.GetUnreadCount)
 	api.Put("/notifications/:id/read", handlers.MarkAsRead)
 	api.Put("/notifications/read-all/:user_id", handlers.MarkAllAsRead)
 
-	// Analytics
-	api.Get("/analytics/dashboard/:umkm_id", handlers.GetAnalyticsDashboard)
-	api.Get("/analytics/sales/:umkm_id", handlers.GetAnalyticsSales)
-	api.Get("/analytics/products/:umkm_id", handlers.GetProductAnalytics)
+	// Analytics (stub handlers)
+	api.Get("/analytics/dashboard/:umkm_id", handlers.GetUmkmAnalytics)
+	api.Get("/analytics/sales/:umkm_id", handlers.GetProductSalesAnalytics)
 	api.Get("/analytics/trend/:umkm_id", handlers.GetSalesTrend)
-	api.Get("/analytics/top-products/:umkm_id", handlers.GetTopProducts)
-	api.Get("/analytics/insight/:umkm_id", handlers.GetUmkmInsight)
-	api.Get("/analytics/listing-metrics/:umkm_id", handlers.GetListingMetrics)
 
 	// Ads (Iklan UMKM)
 	api.Get("/ads/packages", handlers.GetAdPackages)
@@ -44,11 +36,6 @@ func SetupRoutes(app *fiber.App) {
 	// Waste Logs
 	api.Get("/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
 	api.Post("/waste-logs", handlers.CreateWasteLog)
-
-	// Reviews & Keywords
-	api.Post("/reviews", handlers.CreateReview)
-	api.Get("/reviews/umkm/:umkm_id", handlers.GetReviewsByUMKM)
-	api.Get("/keywords/badge/:umkm_id", handlers.GetKeywordSafetyBadge)
 
 	// Dynamic Discount
 	api.Post("/discount/calculate", handlers.CalculateDynamicDiscount)
