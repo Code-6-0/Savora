@@ -4,7 +4,6 @@ import {
   normalizeAdStatus,
   normalizeAdPackage,
   normalizeUmkmAd,
-  fallbackAdPackages,
   AD_STATUS,
 } from "../src/lib/umkmAds.js";
 
@@ -21,11 +20,12 @@ test("normalizeAdPackage coerces duration and price", () => {
   assert.equal(pkg.price, 35000);
 });
 
-test("fallbackAdPackages match backend catalog contract", () => {
-  const kilat = fallbackAdPackages.find((p) => p.id === "kilat");
-  assert.equal(kilat.duration_days, 3);
-  assert.equal(kilat.price, 15000);
-  assert.equal(fallbackAdPackages.length, 3);
+test("normalizeAdPackage supplies safe defaults for missing fields", () => {
+  const pkg = normalizeAdPackage({});
+  assert.equal(pkg.id, "paket");
+  assert.equal(pkg.name, "Paket");
+  assert.equal(pkg.duration_days, 0);
+  assert.equal(pkg.price, 0);
 });
 
 test("normalizeUmkmAd fills display-safe defaults", () => {
