@@ -7,7 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/savora/backend/database"
 	"github.com/savora/backend/handlers"
+	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
 )
 
@@ -21,6 +23,9 @@ func main() {
 	if err := services.InitDB(); err != nil {
 		log.Fatalf("❌ Failed to initialize database: %v", err)
 	}
+
+	// Init database.DB (for admin module - uses backend/database package)
+	database.ConnectDB()
 
 	// Init Xendit service
 	xenditService := services.NewXenditService()
@@ -38,12 +43,15 @@ func main() {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
 	}))
 
-	// Setup routes
+	// Setup routes (inline routes for order/payment/review/help-ticket - milik anggota lain)
 	setupRoutes(app, xenditService)
+
+	// Setup centralized routes (auth/admin - dari routes/routes.go)
+	routes.SetupRoutes(app)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -55,6 +63,13 @@ func main() {
 }
 
 func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
+	// Product routes
+	app.Get("/api/products/umkm/:umkm_id", handlers.GetProductsByUMKM)
+	app.Get("/api/products/marketplace", handlers.GetActiveMarketplaceProducts)
+	app.Post("/api/products", handlers.CreateProduct)
+	app.Put("/api/products/:id", handlers.UpdateProduct)
+	app.Delete("/api/products/:id", handlers.DeleteProduct)
+
 	// Order routes
 	orderHandler := handlers.NewOrderHandler(xenditService)
 	app.Post("/orders", orderHandler.CreateOrder)
@@ -80,4 +95,19 @@ func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
 	app.Get("/help-tickets", helpHandler.GetHelpTickets)
 	app.Get("/payments/:payment_id/logs", helpHandler.GetPaymentLogs)
 	app.Patch("/help-tickets/:id/status", helpHandler.UpdateTicketStatus)
+
+	// // Ad routes (Tugas 1)
+	// TODO(iklan-soon): dinonaktifkan sementara mengikuti build tag di handlers/ads.go
+	// app.Get("/api/ads/packages", handlers.GetAdPackages)
+	// app.Post("/api/ads", handlers.CreateAd)
+	// app.Get("/api/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
+	// app.Put("/api/ads/:id/status", handlers.UpdateAdStatus)
+	// app.Get("/api/ads/active", handlers.GetActiveAds)
+
+	// Waste Log routes (Tugas 2)
+	app.Get("/api/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
+	app.Post("/api/waste-logs", handlers.CreateWasteLog)
+
+	// Analytics routes (Tugas 4)
+	app.Get("/api/analytics/insight/:umkm_id", handlers.GetUmkmInsight)
 }

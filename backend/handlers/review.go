@@ -150,3 +150,16 @@ func (h *ReviewHandler) GetReviewsByProduct(c *fiber.Ctx) error {
 		"reviews": reviews,
 	})
 }
+
+// Standalone function stubs for routes.go compatibility
+func CreateReview(c *fiber.Ctx) error {
+	return c.Status(501).JSON(fiber.Map{"error": "Not implemented - use ReviewHandler.CreateReview"})
+}
+
+func GetReviewsByUMKM(c *fiber.Ctx) error {
+	return c.Status(501).JSON(fiber.Map{"error": "Not implemented - use ReviewHandler.GetReviewsByUmkm"})
+}
+
+func GetKeywordSafetyBadge(c *fiber.Ctx) error {
+	return c.Status(501).JSON(fiber.Map{"error": "Not implemented - use ReviewHandler.GetKeywordSafety"})
+}

@@ -1,3 +1,7 @@
+//go:build iklan_soon
+
+// TODO(iklan-soon): dinonaktifkan sementara, menunggu penyesuaian ke model Advertisement PRD — koordinasi PIC iklan
+
 package handlers
 
 import (

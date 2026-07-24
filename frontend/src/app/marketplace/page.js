@@ -163,7 +163,7 @@ export default function MarketplacePage() {
       <header className="beranda-navbar">
         <div className="beranda-navbar-container">
           <div className="beranda-brand">
-            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
+            <img src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png" alt="Savora Logo" className="beranda-logo-img" />
             <span className="beranda-brand-text">Savora</span>
           </div>
           <nav className="beranda-nav">

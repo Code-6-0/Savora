@@ -4,15 +4,22 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Calendar, MapPin, Phone, MessageSquare, AlertTriangle, CheckCircle2, ChevronRight, Download, Package } from "lucide-react";
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
+import { fetchUMKMOrders, updateOrderStatus, fallbackOrders } from "@/lib/orders";
 
 export default function PesananPage() {
-  const [orders, setOrders] = useState([
-    { id: "SVR-0892", customer: "Rina Marlina", phone: "0812-3456-7890", items: [{name: "Nasi Padang Box", qty: 3, price: 25000}], total: 75000, status: "Menunggu", time: "13:45", date: "9 Jul 2026", payment: "GoPay" },
-    { id: "SVR-0891", customer: "Budi Santoso", phone: "0811-2233-4455", items: [{name: "Mie Ayam Spesial", qty: 2, price: 24000}], total: 48000, status: "Diproses", time: "13:20", date: "9 Jul 2026", payment: "OVO" },
-    { id: "SVR-0890", customer: "Dewi Rahayu", phone: "0899-8877-6655", items: [{name: "Paket Sarapan", qty: 4, price: 24000}], total: 96000, status: "Siap Diambil", time: "12:55", date: "9 Jul 2026", payment: "ShopeePay" },
-    { id: "SVR-0889", customer: "Ahmad Fauzi", phone: "0877-6655-4433", items: [{name: "Nasi Box Campur", qty: 1, price: 22000}], total: 22000, status: "Selesai", time: "12:30", date: "9 Jul 2026", payment: "Tunai" },
-    { id: "SVR-0888", customer: "Siti Nurhaliza", phone: "0855-4433-2211", items: [{name: "Kue Basah Assorted", qty: 6, price: 9000}], total: 54000, status: "Dibatalkan", time: "11:45", date: "9 Jul 2026", payment: "DANA" },
-  ]);
+  const [orders, setOrders] = useState(fallbackOrders);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function loadOrders() {
+      setLoading(true);
+      const data = await fetchUMKMOrders(1);
+      setOrders(data);
+      setLoading(false);
+    }
+    loadOrders();
+  }, []);
+
   const [activeTab, setActiveTab] = useState("Pesanan Aktif");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,8 +44,14 @@ export default function PesananPage() {
     setIsModalOpen(true);
   };
 
-  const handleUpdateStatus = (newStatus) => {
+  const handleUpdateStatus = async (newStatus) => {
     if (!selectedOrder) return;
+    
+    // Call the API
+    if (selectedOrder.original_id) {
+      await updateOrderStatus(selectedOrder.original_id, newStatus);
+    }
+    
     setOrders(orders.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o));
     setSelectedOrder({ ...selectedOrder, status: newStatus });
     if (newStatus === "Didonasikan" || newStatus === "Dibatalkan") {

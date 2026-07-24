@@ -73,7 +73,7 @@ function MarketplaceHeader() {
   return (
     <header className="savora-topbar">
       <Link className="savora-brand" href="/marketplace" aria-label="Savora marketplace">
-        <span className="savora-brand-mark">S</span>
+        <img src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png" alt="Savora Logo" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
         <span> Savora <small>FOOD RESCUE</small></span>
       </Link>
       <label className="savora-search">
@@ -234,7 +234,7 @@ export default function ProductDetailPage() {
       <header className="beranda-navbar">
         <div className="beranda-navbar-container">
           <div className="beranda-brand">
-            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
+            <img src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png" alt="Savora Logo" className="beranda-logo-img" />
             <span className="beranda-brand-text">Savora</span>
           </div>
           <nav className="beranda-nav">
