@@ -18,9 +18,11 @@ import {
 import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
 import { fetchAds, AD_TYPES } from "@/lib/ads";
 import { deriveRestaurantSafety } from "@/lib/reviews";
+import { useCart } from "@/lib/CartContext";
 
 export default function MarketplacePage() {
   const searchParams = useSearchParams();
+  const { count } = useCart();
   const [allProducts, setAllProducts] = useState([]);
   const [dataSource, setDataSource] = useState("api");
   const [searchTerm, setSearchTerm] = useState("");
@@ -178,6 +180,14 @@ export default function MarketplacePage() {
             <ChevronDown size={13} />
           </button>
           <div className="beranda-actions">
+            <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
+              <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
+              {count > 0 && (
+                <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
+                  {count}
+                </span>
+              )}
+            </Link>
             <Link href="/dashboard" className="beranda-btn-secondary">
               Masuk
             </Link>

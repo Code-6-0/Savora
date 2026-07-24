@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/templates/DashboardLayout'
 import LayoutWrapper from './LayoutWrapper'
 import { UmkmProvider } from '@/context/UmkmContext'
 import { NotificationProvider } from '@/context/NotificationContext'
+import { CartProvider } from '@/lib/CartContext'
 
 export const metadata = {
   title: 'Savora - UMKM Dashboard',
@@ -23,13 +24,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id" className={inter.variable} suppressHydrationWarning>
       <body>
-        <UmkmProvider>
-          <NotificationProvider userId={1} userRole="umkm">
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-          </NotificationProvider>
-        </UmkmProvider>
+        <CartProvider>
+          <UmkmProvider>
+            <NotificationProvider userId={1} userRole="umkm">
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </NotificationProvider>
+          </UmkmProvider>
+        </CartProvider>
       </body>
     </html>
   )
