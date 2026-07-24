@@ -80,6 +80,8 @@ export function normalizeOrder(order) {
       photoUrl: order.product.photo_url,
     } : null,
   };
+}
+
 // Modul Manajemen Pesanan UMKM
 //
 // Membaca data pesanan dari backend Go (services/order.go) dengan pola
@@ -122,9 +124,9 @@ const reverseStatusMap = {
 };
 
 /**
- * Normalisasi data pesanan dari backend agar cocok dengan field UI.
+ * Normalisasi data pesanan dari backend agar cocok dengan field UI UMKM.
  */
-export function normalizeOrder(raw) {
+export function normalizeUMKMOrder(raw) {
   const base = raw || {};
   
   // Format waktu dan tanggal sederhana dari created_at
@@ -177,7 +179,7 @@ const response = await fetch(`${baseUrl()}/orders`);
       throw new Error("Database kosong, fallback ke dummy");
     }
 
-    return data.map(normalizeOrder);
+    return data.map(normalizeUMKMOrder);
   } catch (error) {
     console.warn("Using fallback orders:", error.message);
     return fallbackOrders;
