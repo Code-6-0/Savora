@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getToken } from "@/lib/auth";
 import {
   LayoutDashboard,
   CheckCircle,
@@ -37,7 +38,7 @@ export default function AdminSidebar({ onClose }) {
   async function fetchBadgeCounts() {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token = getToken();
 
       const response = await fetch(`${API_BASE}/admin/reports/summary`, {
         headers: {

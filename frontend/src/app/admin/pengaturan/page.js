@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminSidebar from '@/components/organisms/AdminSidebar';
 import Button from '@/components/atoms/Button';
 import { apiGet, apiPatch } from '@/lib/api';
 import { isAdmin } from '@/lib/auth';
@@ -11,7 +10,6 @@ export default function PengaturanPage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Form states - Profil Admin
   const [name, setName] = useState('');
@@ -118,7 +116,6 @@ export default function PengaturanPage() {
   if (loading) {
     return (
       <div className="dashboard-wrapper">
-        <AdminSidebar />
         <div className="main-container">
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
             Memuat data pengaturan...
@@ -131,7 +128,6 @@ export default function PengaturanPage() {
   if (error) {
     return (
       <div className="dashboard-wrapper">
-        <AdminSidebar />
         <div className="main-container">
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <div style={{ color: 'var(--danger-color)', fontSize: '14px', marginBottom: '10px' }}>
@@ -146,18 +142,6 @@ export default function PengaturanPage() {
 
   return (
     <div className="dashboard-wrapper">
-      <div className="mobile-header">
-        <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-        <div className="sidebar-header">
-          <span style={{ color: "var(--primary-color)" }}>⚲</span> Savora Admin
-        </div>
-      </div>
-
-      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-      <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
-        <AdminSidebar onClose={() => setSidebarOpen(false)} />
-      </div>
-
       <div className="main-container">
         <div className="topbar">
           <div>
@@ -280,7 +264,8 @@ export default function PengaturanPage() {
               </form>
             </div>
 
-            {/* Section 2: Ganti Password */}
+            {/* TODO post-lomba: aktifkan setelah handler /me/password dibuat
+            {/* Section 2: Ganti Password *}
             <div className="card" style={{ marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>
                 Ganti Password
@@ -352,6 +337,7 @@ export default function PengaturanPage() {
                 </Button>
               </form>
             </div>
+            */}
 
             {/* Section 3: Parameter Platform (tipis, read-only) */}
             <div className="card" style={{ marginBottom: '1.5rem' }}>

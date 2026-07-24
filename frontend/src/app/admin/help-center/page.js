@@ -132,6 +132,74 @@ export default function HelpCenterPage() {
     'Pembayaran Midtrans sandbox gagal/expired atau status tidak berubah': 'Pembayaran Midtrans sandbox gagal/expired atau status tidak berubah'
   };
 
+  // Columns definition for help tickets DataTable (extracted from inline for BUG 3 fix)
+  const columns = [
+    { header: 'ID', render: (row) => row.id },
+    {
+      header: 'Pelapor',
+      render: (row) => (
+        <div>
+          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{row.reporter_name}</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{row.reporter_email}</div>
+        </div>
+      )
+    },
+    {
+      header: 'Kategori Aduan',
+      render: (row) => (
+        <span style={{ fontSize: '0.85rem' }}>
+          {categoryLabels[row.category] || row.category}
+        </span>
+      )
+    },
+    {
+      header: 'Order/Entitas Terkait',
+      render: (row) => (
+        row.order_id ? (
+          <span style={{ fontSize: '0.85rem', color: 'var(--primary-color)', fontWeight: 500 }}>
+            Order #{row.order_id}
+          </span>
+        ) : (
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>-</span>
+        )
+      )
+    },
+    {
+      header: 'Deskripsi',
+      render: (row) => (
+        <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {row.description}
+        </div>
+      )
+    },
+    {
+      header: 'Status',
+      render: (row) => (
+        <Badge
+          variant={
+            row.status === 'RESOLVED' ? 'success' :
+            row.status === 'IN_PROGRESS' ? 'info' :
+            row.status === 'CLOSED' ? 'secondary' :
+            'warning'
+          }
+          text={row.status.replace('_', ' ')}
+        />
+      )
+    },
+    {
+      header: 'Tanggal',
+      render: (row) => new Date(row.created_at).toLocaleDateString('id-ID')
+    },
+    {
+      header: 'Aksi',
+      render: (row) => (
+        <Button variant="primary" onClick={() => openDialog(row)}>
+          Detail
+        </Button>
+      )
+    }
+  ];
+
   return (
     <div className="dashboard-wrapper">
       <div className="main-container">
@@ -292,82 +360,15 @@ export default function HelpCenterPage() {
 
           {/* Table */}
           {!loading && !error && tickets.length > 0 && (
-            <DataTable
-              columns={[
-                { key: 'id', label: 'ID' },
-                {
-                  key: 'reporter_name',
-                  label: 'Pelapor',
-                  render: (row) => (
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{row.reporter_name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{row.reporter_email}</div>
-                    </div>
-                  )
-                },
-                {
-                  key: 'category',
-                  label: 'Kategori Aduan',
-                  render: (row) => (
-                    <span style={{ fontSize: '0.85rem' }}>
-                      {categoryLabels[row.category] || row.category}
-                    </span>
-                  )
-                },
-                {
-                  key: 'order_id',
-                  label: 'Order/Entitas Terkait',
-                  render: (row) => (
-                    row.order_id ? (
-                      <span style={{ fontSize: '0.85rem', color: 'var(--primary-color)', fontWeight: 500 }}>
-                        Order #{row.order_id}
-                      </span>
-                    ) : (
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>-</span>
-                    )
-                  )
-                },
-                {
-                  key: 'description',
-                  label: 'Deskripsi',
-                  render: (row) => (
-                    <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {row.description}
-                    </div>
-                  )
-                },
-                {
-                  key: 'status',
-                  label: 'Status',
-                  render: (row) => (
-                    <Badge
-                      variant={
-                        row.status === 'RESOLVED' ? 'success' :
-                        row.status === 'IN_PROGRESS' ? 'info' :
-                        row.status === 'CLOSED' ? 'secondary' :
-                        'warning'
-                      }
-                      text={row.status.replace('_', ' ')}
-                    />
-                  )
-                },
-                {
-                  key: 'created_at',
-                  label: 'Tanggal',
-                  render: (row) => new Date(row.created_at).toLocaleDateString('id-ID')
-                },
-                {
-                  key: 'actions',
-                  label: 'Aksi',
-                  render: (row) => (
-                    <Button variant="primary" onClick={() => openDialog(row)}>
-                      Detail
-                    </Button>
-                  )
-                }
-              ]}
-              data={tickets}
-            />
+            <DataTable headers={columns.map(col => col.header)}>
+              {tickets.map((ticket, idx) => (
+                <tr key={idx}>
+                  {columns.map((col, colIdx) => (
+                    <td key={colIdx}>{col.render(ticket)}</td>
+                  ))}
+                </tr>
+              ))}
+            </DataTable>
           )}
         </div>
       </div>

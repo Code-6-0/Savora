@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
+import { getToken } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
@@ -40,7 +41,7 @@ export default function KelolaCustomerPage() {
       if (filterStatus) params.append("status", filterStatus);
 
       const response = await fetch(`${API_BASE}/admin/users?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();
 
@@ -104,7 +105,7 @@ export default function KelolaCustomerPage() {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getToken()}`,
           },
           body: JSON.stringify({ action: actionType, note }),
         }
@@ -419,7 +420,15 @@ export default function KelolaCustomerPage() {
             </p>
           </div>
         ) : (
-          <DataTable columns={columns} data={filteredCustomers} />
+          <DataTable headers={columns.map(col => col.header)}>
+            {filteredCustomers.map((customer, idx) => (
+              <tr key={idx}>
+                {columns.map((col, colIdx) => (
+                  <td key={colIdx}>{col.render(customer)}</td>
+                ))}
+              </tr>
+            ))}
+          </DataTable>
         )}
       </div>
 

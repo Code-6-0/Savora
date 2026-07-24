@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminSidebar from '@/components/organisms/AdminSidebar';
 import DataTable from '@/components/organisms/DataTable';
 import Badge from '@/components/atoms/Badge';
 import Button from '@/components/atoms/Button';
@@ -20,7 +19,6 @@ export default function ManajemenIklanPage() {
   const [action, setAction] = useState('');
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [viewAd, setViewAd] = useState(null);
   const router = useRouter();
@@ -58,7 +56,7 @@ export default function ManajemenIklanPage() {
       };
 
       const status = statusMap[activeTab];
-      const response = await apiGet(`/advertisements?status=${status}`);
+      const response = await apiGet(`/admin/advertisements?status=${status}`);
       if (response.success) {
         setAdList(response.data.advertisements || []);
       }
@@ -90,7 +88,7 @@ export default function ManajemenIklanPage() {
 
     try {
       setSubmitting(true);
-      const response = await apiPatch(`/advertisements/${selectedAd.id}/status`, {
+      const response = await apiPatch(`/admin/advertisements/${selectedAd.id}/status`, {
         status: action,
         note: note,
       });
@@ -245,18 +243,6 @@ export default function ManajemenIklanPage() {
 
   return (
     <div className="dashboard-wrapper">
-      <div className="mobile-header">
-        <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-        <div className="sidebar-header">
-          <span style={{ color: "var(--primary-color)" }}>⚲</span> Savora Admin
-        </div>
-      </div>
-
-      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-      <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
-        <AdminSidebar onClose={() => setSidebarOpen(false)} />
-      </div>
-
       <div className="main-container">
         <div className="topbar">
           <div>
@@ -392,10 +378,15 @@ export default function ManajemenIklanPage() {
 
           {/* Table */}
           {!loading && !error && adList.length > 0 && (
-            <DataTable
-              columns={getColumns()}
-              data={adList}
-            />
+            <DataTable headers={getColumns().map(col => col.label)}>
+              {adList.map((ad, idx) => (
+                <tr key={idx}>
+                  {getColumns().map((col, colIdx) => (
+                    <td key={colIdx}>{col.render ? col.render(ad) : (ad[col.key] ?? '-')}</td>
+                  ))}
+                </tr>
+              ))}
+            </DataTable>
           )}
         </div>
       </div>

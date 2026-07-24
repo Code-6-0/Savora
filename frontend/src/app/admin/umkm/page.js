@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
+import { getToken } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
@@ -43,7 +44,7 @@ export default function KelolaUMKMPage() {
       if (filterVerification) params.append("verification_status", filterVerification);
 
       const response = await fetch(`${API_BASE}/admin/umkm?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();
 
@@ -121,7 +122,7 @@ export default function KelolaUMKMPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify(body),
       });
@@ -434,7 +435,15 @@ export default function KelolaUMKMPage() {
             </p>
           </div>
         ) : (
-          <DataTable columns={columns} data={filteredUMKM} />
+          <DataTable headers={columns.map(col => col.header)}>
+            {filteredUMKM.map((umkm, idx) => (
+              <tr key={idx}>
+                {columns.map((col, colIdx) => (
+                  <td key={colIdx}>{col.render(umkm)}</td>
+                ))}
+              </tr>
+            ))}
+          </DataTable>
         )}
       </div>
 

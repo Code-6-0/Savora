@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Badge from '../../../components/atoms/Badge';
+import { getToken } from '@/lib/auth';
+
+// Base API URL dengan fallback (sama seperti lib/api.js)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
 export default function ModerasiListingPage() {
   // State
@@ -82,7 +86,7 @@ export default function ModerasiListingPage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
 
       // Build query params
       const params = new URLSearchParams();
@@ -93,7 +97,7 @@ export default function ModerasiListingPage() {
       if (expiredOnly) params.append('expired', 'true');
 
       const queryString = params.toString();
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/products${queryString ? '?' + queryString : ''}`;
+      const url = `${API_BASE_URL}/admin/products${queryString ? '?' + queryString : ''}`;
 
       const response = await fetch(url, {
         headers: {
@@ -149,7 +153,7 @@ export default function ModerasiListingPage() {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
 
       // Map dialog action to API status
       let status;
@@ -158,7 +162,7 @@ export default function ModerasiListingPage() {
       else if (dialogAction === 'warning') status = 'Warning';
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/products/${selectedProduct.id}/status`,
+        `${API_BASE_URL}/admin/products/${selectedProduct.id}/status`,
         {
           method: 'PATCH',
           headers: {

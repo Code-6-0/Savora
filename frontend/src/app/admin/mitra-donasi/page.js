@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
+import { getToken } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
@@ -39,7 +40,7 @@ export default function KelolaMitraDonasiPage() {
       if (filterStatus) params.append("status", filterStatus);
 
       const response = await fetch(`${API_BASE}/admin/mitra-donasi?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();
 
@@ -104,7 +105,7 @@ export default function KelolaMitraDonasiPage() {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getToken()}`,
           },
           body: JSON.stringify({ action: actionType, note }),
         }
@@ -412,7 +413,15 @@ export default function KelolaMitraDonasiPage() {
             </p>
           </div>
         ) : (
-          <DataTable columns={columns} data={filteredMitra} />
+          <DataTable headers={columns.map(col => col.header)}>
+            {filteredMitra.map((mitra, idx) => (
+              <tr key={idx}>
+                {columns.map((col, colIdx) => (
+                  <td key={colIdx}>{col.render(mitra)}</td>
+                ))}
+              </tr>
+            ))}
+          </DataTable>
         )}
       </div>
 

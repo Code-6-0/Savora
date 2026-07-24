@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import AdminSidebar from '@/components/organisms/AdminSidebar';
 import SummaryCard from '@/components/molecules/SummaryCard';
 import Button from '@/components/atoms/Button';
 import { apiGet } from '@/lib/api';
@@ -15,7 +14,6 @@ export default function KeuanganPage() {
   const [error, setError] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -107,7 +105,6 @@ export default function KeuanganPage() {
   if (loading) {
     return (
       <div className="dashboard-wrapper">
-        <AdminSidebar />
         <div className="main-container">
           <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
             Memuat data keuangan...
@@ -120,7 +117,6 @@ export default function KeuanganPage() {
   if (error) {
     return (
       <div className="dashboard-wrapper">
-        <AdminSidebar />
         <div className="main-container">
           <div style={{ textAlign: 'center', padding: '100px 20px' }}>
             <div style={{ color: 'var(--danger-color)', marginBottom: '20px' }}>{error}</div>
@@ -133,18 +129,6 @@ export default function KeuanganPage() {
 
   return (
     <div className="dashboard-wrapper">
-      <div className="mobile-header">
-        <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-        <div className="sidebar-header">
-          <span style={{ color: "var(--primary-color)" }}>⚲</span> Savora Admin
-        </div>
-      </div>
-
-      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-      <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
-        <AdminSidebar onClose={() => setSidebarOpen(false)} />
-      </div>
-
       <div className="main-container">
         <div className="topbar">
           <div>

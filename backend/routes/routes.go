@@ -14,6 +14,10 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/auth/register", handlers.RegisterHandler)
 	api.Post("/auth/login", handlers.LoginHandler)
 
+	// Profile Routes (protected) - Added by Alia (admin module, BUG 2 fix)
+	api.Get("/me", middleware.AuthMiddleware, handlers.GetProfileHandler)
+	api.Patch("/me", middleware.AuthMiddleware, handlers.UpdateProfileHandler)
+
 	// Product Routes
 	api.Get("/products/umkm/:umkm_id", handlers.GetProductsByUMKM)
 	api.Get("/products/marketplace", handlers.GetActiveMarketplaceProducts)
@@ -78,6 +82,8 @@ func SetupRoutes(app *fiber.App) {
 	admin.Get("/revenue/export", handlers.ExportRevenueHandler)
 	admin.Get("/advertisements", handlers.GetAdsHandler)
 	admin.Patch("/advertisements/:id/status", handlers.ApproveRejectAdHandler)
+	admin.Get("/products", handlers.GetProductsHandler)
+	admin.Patch("/products/:id/status", handlers.ModerateProductHandler)
 	admin.Get("/mitra-donasi", handlers.GetMitraDonasiListHandler)
 	admin.Patch("/mitra-donasi/:id/verify", handlers.VerifyMitraDonasiHandler)
 	admin.Get("/help-tickets", handlers.GetTicketsHandler)
