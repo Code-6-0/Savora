@@ -400,18 +400,18 @@ export const fallbackMarketplaceProducts = [
 ];
 
 const defaultMetadata = {
-  vendor: "UMKM Savora",
-  distanceKm: 1,
+  vendor: null,
+  distanceKm: null,
   food_trust_status: "Layak Dijual",
   trustScore: 82,
   timerMinutes: 120,
   photo_url: FALLBACK_IMAGE,
-  description: "Rescue deal dari UMKM lokal. Periksa detail dan kondisi makanan saat pickup.",
-  pickup_address: "Lokasi pickup dikonfirmasi setelah order dibuat.",
-  productionTime: "Hari ini",
-  shelfLife: "Sesuai informasi UMKM",
-  storage: "Sesuai informasi UMKM",
-  packaging: "Kemasan aman",
+  description: null,
+  pickup_address: null,
+  productionTime: null,
+  shelfLife: null,
+  storage: null,
+  packaging: null,
   reviews: [],
 };
 
@@ -441,8 +441,8 @@ export function normalizeMarketplaceProduct(raw) {
     original_price: originalPrice,
     rescue_price: rescuePrice,
     stock: Number.isFinite(Number(base.stock)) ? Number(base.stock) : 0,
-    vendor: base.vendor || base.umkm_name || defaultMetadata.vendor,
-    distanceKm: Number(base.distanceKm ?? defaultMetadata.distanceKm),
+    vendor: base.vendor || base.umkm_name || null,
+    distanceKm: base.distanceKm != null ? Number(base.distanceKm) : null,
     discountPercent: Number(base.discountPercent ?? fallbackDiscount),
     food_trust_status: base.food_trust_status || defaultMetadata.food_trust_status,
     trustScore: Number(base.trustScore ?? defaultMetadata.trustScore),
