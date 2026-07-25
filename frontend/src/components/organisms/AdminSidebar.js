@@ -144,8 +144,8 @@ export default function AdminSidebar({ onClose }) {
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('savora_token');
+      localStorage.removeItem('savora_user');
       window.location.href = '/login';
     }
   };

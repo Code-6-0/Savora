@@ -547,7 +547,8 @@ export default function MarketplacePage() {
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
-              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+              const hasReviews = product.reviews && product.reviews.length > 0;
+              const rating = hasReviews ? product.rating : null;
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               // Safety badge (PRD 12.7)
@@ -589,14 +590,21 @@ export default function MarketplacePage() {
                     <div className="beranda-product-info">
                       <div className="beranda-product-title-row">
                         <h3>{product.name}</h3>
-                        <div className="beranda-product-rating">
-                          <Star size={9} fill="#16a34a" color="#16a34a" />
-                          <span>{rating.toFixed(1)}</span>
-                        </div>
+                        {rating != null && (
+                          <div className="beranda-product-rating">
+                            <Star size={9} fill="#16a34a" color="#16a34a" />
+                            <span>{rating.toFixed(1)}</span>
+                          </div>
+                        )}
                       </div>
-                      <p className="beranda-product-vendor">
-                        <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
-                      </p>
+                      {(product.vendor || product.distanceKm != null) && (
+                        <p className="beranda-product-vendor">
+                          <MapPin size={9} />
+                          {product.vendor && <span> {product.vendor}</span>}
+                          {product.vendor && product.distanceKm != null && <span> •</span>}
+                          {product.distanceKm != null && <span> {product.distanceKm} km</span>}
+                        </p>
+                      )}
                       {Number.isFinite(product.stock) && (
                         <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
                           Sisa {product.stock} porsi
@@ -716,7 +724,8 @@ export default function MarketplacePage() {
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
-              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+              const hasReviews = product.reviews && product.reviews.length > 0;
+              const rating = hasReviews ? product.rating : null;
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               // Safety badge (PRD 12.7)
@@ -758,14 +767,21 @@ export default function MarketplacePage() {
                     <div className="beranda-product-info">
                       <div className="beranda-product-title-row">
                         <h3>{product.name}</h3>
-                        <div className="beranda-product-rating">
-                          <Star size={9} fill="#16a34a" color="#16a34a" />
-                          <span>{rating.toFixed(1)}</span>
-                        </div>
+                        {rating != null && (
+                          <div className="beranda-product-rating">
+                            <Star size={9} fill="#16a34a" color="#16a34a" />
+                            <span>{rating.toFixed(1)}</span>
+                          </div>
+                        )}
                       </div>
-                      <p className="beranda-product-vendor">
-                        <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
-                      </p>
+                      {(product.vendor || product.distanceKm != null) && (
+                        <p className="beranda-product-vendor">
+                          <MapPin size={9} />
+                          {product.vendor && <span> {product.vendor}</span>}
+                          {product.vendor && product.distanceKm != null && <span> •</span>}
+                          {product.distanceKm != null && <span> {product.distanceKm} km</span>}
+                        </p>
+                      )}
                       {Number.isFinite(product.stock) && (
                         <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
                           Sisa {product.stock} porsi
