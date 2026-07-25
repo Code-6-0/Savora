@@ -4,8 +4,8 @@ import React, { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  LayoutDashboard, Package, ShoppingCart, BarChart2, Bell, Settings,
-  Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft, Megaphone
+  LayoutDashboard, Package, ShoppingCart, BarChart2, Settings,
+  Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft, Megaphone, LogOut
 } from "lucide-react";
 import { useUmkm } from '@/context/UmkmContext';
 import { logout } from '@/lib/auth';
@@ -39,39 +39,40 @@ function SidebarContent({ onClose }) {
     { id: 'bantuan', label: 'Bantuan', icon: <LifeBuoy size={20} /> },
   ];
 
+  const sidebarContainerClass = "flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300 w-full md:w-[260px]";
+
   if (isProfilPage) {
     return (
-      <div className="sidebar">
-        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '16px' }}>
-          <Link href="/dashboard" onClick={onClose} style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
-            <ArrowLeft size={20} style={{ marginRight: '8px' }} />
+      <div className={sidebarContainerClass}>
+        <div className="flex items-center gap-2 p-6 border-b border-gray-100">
+          <Link href="/dashboard" onClick={onClose} className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors font-medium">
+            <ArrowLeft size={20} />
             <span>Kembali</span>
           </Link>
         </div>
-        <div style={{ padding: '0 20px', marginBottom: '15px', fontSize: '11px', fontWeight: 700, color: '#9CA3AF', letterSpacing: '1px' }}>
-          NAVIGASI PROFIL
+        <div className="px-6 py-4">
+          <div className="text-[11px] font-bold text-slate-400 tracking-wider mb-2">NAVIGASI PROFIL</div>
         </div>
-        <ul className="sidebar-menu" style={{ flexGrow: 1 }}>
+        <ul className="flex-1 overflow-y-auto px-4 space-y-1 pb-4">
           {profilMenus.map((menu) => (
             <li key={menu.id}>
               <Link 
                 href={`/profil?tab=${menu.id}`} 
-                className={currentTab === menu.id ? "active" : ""} 
                 onClick={onClose}
-                style={currentTab === menu.id ? { backgroundColor: '#ECFDF5', color: '#10B981' } : {}}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  currentTab === menu.id 
+                    ? "bg-emerald-50 text-emerald-600" 
+                    : "text-slate-600 hover:bg-slate-50 hover:text-emerald-600"
+                }`}
               >
-                <span style={{ marginRight: '10px' }}>{menu.icon}</span> {menu.label}
+                <span>{menu.icon}</span> {menu.label}
               </Link>
             </li>
           ))}
-          <li style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '10px' }}>
+          <li className="mt-4 pt-4 border-t border-slate-100">
             <button 
               onClick={onClose}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 15px', width: '100%', 
-                border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left',
-                backgroundColor: 'transparent', color: '#EF4444', fontWeight: 500, fontSize: '1rem'
-              }}
+              className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
             >
               <AlertTriangle size={20} />
               Hapus Akun
@@ -83,37 +84,55 @@ function SidebarContent({ onClose }) {
   }
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <span style={{ color: "var(--primary-color)", fontSize: "24px" }}>⚲</span> Savora
+    <div className={sidebarContainerClass}>
+      <div className="flex items-center gap-3 p-6 border-b border-gray-100">
+        <div className="w-8 h-8 flex items-center justify-center overflow-hidden rounded-lg bg-emerald-50">
+          <img src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png" alt="Savora Logo" className="w-full h-full object-cover" />
+        </div>
+        <span className="font-bold text-slate-900 text-xl tracking-tight">Savora</span>
       </div>
-      <ul className="sidebar-menu" style={{ flexGrow: 1 }}>
+      
+      <ul className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
         {dashboardMenus.map((menu) => (
           <li key={menu.name}>
-            <Link href={menu.href} className={pathname === menu.href ? "active" : ""} onClick={onClose}>
-              <span style={{ marginRight: '10px' }}>{menu.icon}</span> {menu.name}
+            <Link 
+              href={menu.href} 
+              onClick={onClose}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                pathname === menu.href 
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20" 
+                  : "text-slate-600 hover:bg-slate-50 hover:text-emerald-600"
+              }`}
+            >
+              <span>{menu.icon}</span> {menu.name}
             </Link>
           </li>
         ))}
       </ul>
-      <div className="sidebar-footer">
-        <div className="profile-section">
-          <div className="avatar" style={{ backgroundColor: '#10B981', color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+      
+      <div className="border-t border-slate-200 p-4 mt-auto">
+        <div className="flex items-center gap-3 px-2 mb-6">
+          <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-sm">
             {umkmData?.users?.name ? umkmData.users.name.charAt(0).toUpperCase() : 'U'}
           </div>
-          <div>
-            <div style={{fontWeight: 700, fontSize: '0.875rem', color: '#111827'}}>{umkmData?.users?.name || 'User'}</div>
-            <div style={{fontSize: '0.75rem', color: '#6B7280'}}>{umkmData?.umkm_profiles?.level || 'UMKM'}</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-sm text-slate-900 truncate">{umkmData?.users?.name || 'User'}</div>
+            <div className="text-xs text-slate-500 truncate">{umkmData?.umkm_profiles?.level || 'UMKM'}</div>
           </div>
         </div>
-        <ul className="sidebar-footer-menu">
+        
+        <ul className="space-y-1">
           <li>
-            <Link href="/profil" onClick={onClose}>
-              <span style={{ marginRight: '10px' }}><Settings size={20} /></span> Profil
+            <Link 
+              href="/profil" 
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+            >
+              <Settings size={18} /> Profil
             </Link>
           </li>
           <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} style={{ color: '#EF4444' }}>
+            <a href="#" style={{ color: '#EF4444' }}>
               <span style={{ marginRight: '10px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
               </span> Logout
@@ -127,7 +146,11 @@ function SidebarContent({ onClose }) {
 
 export default function Sidebar({ onClose }) {
   return (
-    <Suspense fallback={<div className="sidebar"><div style={{ padding: '20px' }}>Loading...</div></div>}>
+    <Suspense fallback={
+      <div className="flex flex-col h-full bg-white border-r border-gray-200 w-[260px] p-6 text-slate-500 text-sm">
+        Loading...
+      </div>
+    }>
       <SidebarContent onClose={onClose} />
     </Suspense>
   );

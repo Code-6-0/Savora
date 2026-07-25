@@ -41,6 +41,7 @@ import {
 import { foodScoreBand, rescueTimeColor, rescueTimeParts } from "@/lib/foodScore";
 import { classifyReviewText, deriveRestaurantSafety } from "@/lib/reviews";
 import { computeCheckoutPricing } from "@/lib/pricing";
+import { useCart } from "@/lib/CartContext";
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
@@ -69,22 +70,38 @@ function useNow() {
   return now;
 }
 
-function MarketplaceHeader() {
+function BerandaNavbar({ count }) {
   return (
-    <header className="savora-topbar">
-      <Link className="savora-brand" href="/marketplace" aria-label="Savora marketplace">
-        <span className="savora-brand-mark">S</span>
-        <span> Savora <small>FOOD RESCUE</small></span>
-      </Link>
-      <label className="savora-search">
-        <Search size={17} aria-hidden="true" />
-        <input placeholder="Cari nasi, roti, warung, atau UMKM..." aria-label="Cari produk atau UMKM" readOnly />
-      </label>
-      <nav className="savora-main-nav" aria-label="Navigasi marketplace"><Link href="/marketplace">Rescue Deals</Link><a href="#assessment">Food Score</a><a href="#pickup">Pickup</a><Link href="/akun">Riwayat &amp; Impact</Link></nav>
-      <button className="savora-icon-button" type="button" aria-label="Tema terang demo"><Sun size={18} /></button>
-      <button className="savora-cart" type="button" aria-label="Keranjang demo"><ShoppingBag size={19} /> <b>2</b></button>
-      <button className="savora-login" type="button">Masuk</button>
-      <button className="savora-signup" type="button">Daftar</button>
+    <header className="beranda-navbar">
+      <div className="beranda-navbar-container">
+        <div className="beranda-brand">
+          <img src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png" alt="Savora Logo" className="beranda-logo-img" />
+          <span className="beranda-brand-text">Savora</span>
+        </div>
+        <nav className="beranda-nav">
+          <Link href="/">Home</Link>
+          <Link href="/marketplace" className="nav-active">Marketplace</Link>
+          <a href="#mitra">Mitra</a>
+          <a href="#tentang">Tentang</a>
+        </nav>
+        <button className="beranda-location">
+          <MapPin size={14} />
+          <span>Masukkan Alamat Kamu</span>
+          <ChevronDown size={13} />
+        </button>
+        <div className="beranda-actions">
+          <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
+            <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
+            {count > 0 && (
+              <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
+                {count}
+              </span>
+            )}
+          </Link>
+          <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: '#1d1d1d' }}>Masuk</Link>
+          <Link href="/marketplace" className="beranda-btn-primary">Daftar Sekarang</Link>
+        </div>
+      </div>
     </header>
   );
 }
@@ -128,6 +145,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = String(params.id || "");
+  const { items, count, addItem } = useCart();
   const [product, setProduct] = useState(() => fallbackMarketplaceProducts.map(normalizeMarketplaceProduct).find((item) => item.id === id));
   const [quantity, setQuantity] = useState(1);
   const [notice, setNotice] = useState("");
@@ -164,18 +182,18 @@ export default function ProductDetailPage() {
   // Loading state: tampilkan skeleton
   if (isLoading) {
     return (
-      <div className="savora-marketplace">
-        <MarketplaceHeader />
-        <main className="savora-detail-main">
-          <div className="savora-skeleton-line" style={{ width: "120px", height: "20px", marginBottom: "25px" }} />
-          <div className="savora-detail-layout">
-            <div>
-              <div className="savora-skeleton-pulse" style={{ width: "100%", height: "391px", borderRadius: "24px" }} />
+      <div style={{ background: '#ffffff', minHeight: '100vh' }}>
+        <BerandaNavbar count={count} />
+        <main style={{ maxWidth: '1151px', margin: '0 auto', padding: '24px 32px' }}>
+          <div className="savora-skeleton-line" style={{ width: "120px", height: "20px", marginBottom: "25px", background: '#e5e7eb' }} />
+          <div style={{ display: 'flex', gap: '40px' }}>
+            <div style={{ width: '639px' }}>
+              <div className="savora-skeleton-pulse" style={{ width: "100%", height: "479px", borderRadius: "18px", background: '#f3f4f6' }} />
             </div>
-            <div>
-              <div className="savora-skeleton-line" style={{ width: "70%", height: "32px", marginBottom: "12px" }} />
-              <div className="savora-skeleton-line" style={{ width: "90%", height: "16px", marginBottom: "8px" }} />
-              <div className="savora-skeleton-line" style={{ width: "60%", height: "24px" }} />
+            <div style={{ width: '408px' }}>
+              <div className="savora-skeleton-line" style={{ width: "70%", height: "32px", marginBottom: "12px", background: '#e5e7eb' }} />
+              <div className="savora-skeleton-line" style={{ width: "90%", height: "16px", marginBottom: "8px", background: '#e5e7eb' }} />
+              <div className="savora-skeleton-line" style={{ width: "60%", height: "24px", background: '#e5e7eb' }} />
             </div>
           </div>
         </main>
@@ -184,7 +202,18 @@ export default function ProductDetailPage() {
   }
 
   if (!product) {
-    return <div className="savora-marketplace"><MarketplaceHeader /><main className="savora-not-found"><h1>Produk tidak ditemukan</h1><p>Rescue deal ini mungkin sudah habis atau tidak aktif.</p><Link href="/marketplace" className="savora-primary-action">Kembali ke marketplace</Link></main></div>;
+    return (
+      <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+        <BerandaNavbar count={count} />
+        <main style={{ maxWidth: '600px', margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1d1d1d', marginBottom: '16px' }}>Produk tidak ditemukan</h1>
+          <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>Rescue deal ini mungkin sudah habis atau tidak aktif.</p>
+          <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: '#16a34a', color: 'white', borderRadius: '24px', fontSize: '14px', fontWeight: '600', textDecoration: 'none' }}>
+            <ArrowLeft size={16} /> Kembali ke Marketplace
+          </Link>
+        </main>
+      </div>
+    );
   }
 
   const { score, remainingSeconds } = computeProductScore(product, now);
@@ -195,12 +224,15 @@ export default function ProductDetailPage() {
   // Produk expired: tampilkan state "deal berakhir" (PRD 12.6).
   if (expired) {
     return (
-      <div className="savora-marketplace savora-detail-page">
-        <MarketplaceHeader />
-        <main className="savora-not-found">
-          <h1>Rescue deal telah berakhir</h1>
-          <p>Food Score untuk <strong>{product.name}</strong> dari {product.vendor} telah mencapai 0. Deal ini sudah kedaluwarsa dan tidak lagi tersedia.</p>
-          <Link href="/marketplace" className="savora-primary-action">← Kembali ke marketplace</Link>
+      <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+        <BerandaNavbar count={count} />
+        <main style={{ maxWidth: '600px', margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1d1d1d', marginBottom: '16px' }}>Rescue deal telah berakhir</h1>
+          <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.6' }}>Food Score untuk <strong style={{ color: '#1d1d1d' }}>{product.name}</strong> dari {product.vendor} telah mencapai 0.</p>
+          <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>Deal ini sudah kedaluwarsa dan tidak lagi tersedia.</p>
+          <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: '#16a34a', color: 'white', borderRadius: '24px', fontSize: '14px', fontWeight: '600', textDecoration: 'none' }}>
+            <ArrowLeft size={16} /> Kembali ke Marketplace
+          </Link>
         </main>
       </div>
     );
@@ -222,37 +254,27 @@ export default function ProductDetailPage() {
   const deadlineMinute = String(deadlineTime.getMinutes()).padStart(2, '0');
   const totalPrice = computeCheckoutPricing(product.rescue_price, quantity).total;
 
+  // Cek qty produk ini yang sudah ada di cart
+  const itemInCart = items.find(item => item.id === product.id);
+  const qtyInCart = itemInCart ? itemInCart.qty : 0;
+  const canAddMore = qtyInCart < product.stock;
+
   function updateQuantity(delta) { setQuantity((current) => Math.min(product.stock, Math.max(1, current + delta))); }
   function reserveProduct() {
-    setNotice(`${quantity} porsi ${product.name} berhasil dipilih. Lanjutkan ke Checkout untuk pembayaran.`);
+    // Redirect ke checkout page dengan query params product_id dan qty
+    router.push(`/marketplace/checkout?product_id=${product.id}&qty=${quantity}`);
+  }
+  function handleAddToCart() {
+    if (!canAddMore) return;
+    const qtyToAdd = Math.min(quantity, product.stock - qtyInCart);
+    addItem(product, qtyToAdd);
+    setNotice(`${qtyToAdd} porsi ${product.name} ditambahkan ke keranjang.`);
+    setQuantity(1);
   }
 
   return (
     <div className="savora-marketplace savora-detail-page" style={{ background: '#ffffff', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-      {/* Navbar from beranda with "Marketplace" active */}
-      <header className="beranda-navbar">
-        <div className="beranda-navbar-container">
-          <div className="beranda-brand">
-            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
-            <span className="beranda-brand-text">Savora</span>
-          </div>
-          <nav className="beranda-nav">
-            <Link href="/">Home</Link>
-            <Link href="/marketplace" className="nav-active">Marketplace</Link>
-            <a href="#mitra">Mitra</a>
-            <a href="#tentang">Tentang</a>
-          </nav>
-          <button className="beranda-location">
-            <MapPin size={14} />
-            <span>Masukkan Alamat Kamu</span>
-            <ChevronDown size={13} />
-          </button>
-          <div className="beranda-actions">
-            <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: '#1d1d1d' }}>Masuk</Link>
-            <Link href="/marketplace" className="beranda-btn-primary">Daftar Sekarang</Link>
-          </div>
-        </div>
-      </header>
+      <BerandaNavbar count={count} />
 
       <main style={{ maxWidth: '1151px', margin: '0 auto', padding: '24px 32px' }}>
         {/* Breadcrumb */}
@@ -409,9 +431,13 @@ export default function ProductDetailPage() {
             </button>
 
             {/* Secondary CTA */}
-            <button style={{ width: '100%', height: '48px', background: '#eaf8ec', color: '#0b7a3b', border: 'none', borderRadius: '16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAddMore || expired}
+              style={{ width: '100%', height: '48px', background: (!canAddMore || expired) ? '#e8e8e8' : '#eaf8ec', color: (!canAddMore || expired) ? '#999999' : '#0b7a3b', border: 'none', borderRadius: '16px', fontSize: '13px', fontWeight: '600', cursor: (!canAddMore || expired) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
               <ShoppingCart size={16} />
-              Tambah ke Keranjang
+              {!canAddMore ? `Stok di Keranjang (${qtyInCart}/${product.stock})` : 'Tambah ke Keranjang'}
             </button>
           </div>
         </div>

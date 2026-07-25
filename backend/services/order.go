@@ -64,8 +64,12 @@ func TransitionOrderStatus(db *gorm.DB, orderID uint, newStatus string) error {
 
 // CreateOrderRequest adalah payload request checkout
 type CreateOrderRequest struct {
-	ProductID uint `json:"product_id" binding:"required"`
-	Quantity  int  `json:"quantity" binding:"required,min=1"`
+	ProductID uint   `json:"product_id" binding:"required"`
+	Quantity  int    `json:"quantity" binding:"required,min=1"`
+	BillingName    string `json:"billing_name" binding:"required"`
+	BillingEmail   string `json:"billing_email" binding:"required,email"`
+	BillingPhone   string `json:"billing_phone" binding:"required"`
+	CustomerNote   string `json:"customer_note"`
 }
 
 // CreateOrderResponse adalah response setelah order dibuat

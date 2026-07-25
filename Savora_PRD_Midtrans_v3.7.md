@@ -21,6 +21,8 @@
 
 > 📝 **Catatan Revisi v3.7 (21 Juli 2026):** Perbaikan hasil review eksternal menyeluruh — (1) enum order_status dilengkapi `PAYMENT_FAILED` yang sudah dipakai di 14.1/14.2 tetapi tertinggal dari enum [REVISI #33]; (2) field `min_price` ditambahkan ke tabel products sebagai penopang guardrail harga minimum 13.3/FR-23 [REVISI #34]; (3) catatan implementasi expiry Midtrans ditambahkan di 14.5: batas 15 menit wajib diset via parameter `expiry` Snap token (default 24 jam) dan auto-expire order dilakukan scheduler Savora sendiri karena Midtrans tidak mengirim webhook saat halaman pembayaran expired [REVISI #35]; (4) ambiguitas FR-23 diputuskan mengikuti 5.2/13.1: sistem menghitung rekomendasi diskon otomatis, keputusan final tetap di UMKM dalam rentang aturan 13.2 + guardrail 13.3 [REVISI #36]; (5) Testing Plan: skenario webhook Midtrans dinaikkan Should → Must (konsisten dengan FR-14 P0) dan skenario moderasi listing (FR-12 P0) ditambahkan [REVISI #37]; (6) Food Rescue Score (5.2) diberi status Demo Only, metrik Help Ticket diberi label Should Have, dan catatan input FTI yang tidak memengaruhi aturan 12.4 ditambahkan di 12.2 [REVISI #38].
 
+> 📝 **Catatan Revisi v3.8 (24 Juli 2026):** Penambahan fitur Keranjang Belanja Customer — (1) Customer dapat mengumpulkan beberapa produk ke dalam keranjang sebelum checkout; (2) implementasi frontend-only dengan persistence di localStorage; (3) checkout tetap melalui alur order existing (1 order per item); (4) validasi stok tetap di backend saat order dibuat; (5) service fee 5% ditampilkan di ringkasan keranjang. Fitur ini dikategorikan sebagai Should Have dan tidak mengubah happy path inti MVP. Perubahan ditandai 📝 **[REVISI #39]**.
+
 ---
 
 ## 1. Ringkasan Produk
@@ -373,6 +375,7 @@ Cakupan wajib = fitur yang didukung 10 tabel **"Inti MVP"** di Section 18 dan FR
 13. Rating dan review dengan input keyword.
 
 ### 9.2 Should Have (Perluasan — dikerjakan setelah happy path inti stabil)
+- Keranjang belanja customer (frontend-only dengan localStorage, checkout tetap per item via alur order existing). 📝 *[REVISI #39]*
 - Pengiklanan produk UMKM dan iklan pihak ketiga (slot iklan + approval admin).
 - Registrasi dan verifikasi Mitra Donasi (alur lengkap).
 - Help Center untuk laporan customer.
@@ -476,6 +479,7 @@ Cakupan wajib = fitur yang didukung 10 tabel **"Inti MVP"** di Section 18 dan FR
 | FR-21 | Admin dapat export laporan | P1 | Export CSV/Excel/PDF dengan date range picker |
 | FR-22 | UMKM dapat melihat analitik & insight | P1 | Grafik penjualan, produk terlaris, rating summary, keyword safety, tracking metrics |
 | FR-23 | Sistem menghitung dynamic discount rule-based | P0 | Sistem otomatis menghitung rekomendasi diskon sesuai aturan per status kelayakan (13.2); UMKM menetapkan diskon final dalam rentang tersebut dan harga tidak pernah melanggar guardrail harga minimum (13.3) 📝 *[REVISI #36]* |
+| FR-24 | Customer dapat mengelola keranjang belanja | P1 | Customer dapat menambah produk ke keranjang, mengubah kuantitas item (dibatasi stok tersedia), menghapus item dari keranjang, melihat ringkasan total harga termasuk service fee 5%, dan melakukan checkout dari keranjang; data keranjang persisten di localStorage (frontend-only); checkout tetap melalui alur order existing (1 order per item) dengan validasi stok di backend 📝 *[REVISI #39]* |
 
 > 📝 **[REVISI #3]** FR-06: pembuat pickup code dikoreksi dari "Midtrans" menjadi "Sistem Savora"; Midtrans hanya mengirim status pembayaran.
 > 📝 **[REVISI #6 & #7]** FR-15 dan FR-16 kini merujuk ke spesifikasi baru di subbab 12.6 dan 12.7.
@@ -785,6 +789,7 @@ Waste Log membantu UMKM mencatat makanan yang tidak layak dijual atau tidak berh
 | Register/Login | Guest | Autentikasi pengguna dengan pilihan role Customer, UMKM, atau Mitra Donasi |
 | Customer Marketplace | Customer | Browse rescue deal dengan Food Score, Rescue Time, badge keyword, dan slot iklan |
 | Product Detail | Customer | Melihat detail makanan, Food Trust Index, Food Score Decay, keyword safety, dan harga |
+| Cart | Customer | Mengelola keranjang belanja: menambah produk, mengubah kuantitas, menghapus item, melihat ringkasan total termasuk service fee 5%, dan checkout 📝 *[REVISI #39]* |
 | Checkout & Pembayaran | Customer | Membuat order cashless via Midtrans sandbox dengan service fee 5% |
 | Order Tracking | Customer | Melihat status order, pickup code, batas waktu, dan memberi review dengan keyword |
 | Customer Impact | Customer | Melihat riwayat dan dampak personal |

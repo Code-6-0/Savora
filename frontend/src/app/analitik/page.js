@@ -61,6 +61,17 @@ export default function AnalitikPage() {
     if (section && section.toLowerCase() === "insight") setView("Insight");
   }, []);
 
+  const formatRupiah = (number) => {
+    if (number >= 1000000) {
+      return `Rp ${(number / 1000000).toFixed(2).replace('.', ',')}jt`;
+    }
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(number);
+  };
+
   const mockChartData = [
     { name: '1/6', value: 850 }, { name: '7/6', value: 1200 }, { name: '13/6', value: 1800 },
     { name: '19/6', value: 1500 }, { name: '25/6', value: 2400 }, { name: '30/6', value: 2900 }
@@ -84,12 +95,12 @@ export default function AnalitikPage() {
       case "Penjualan":
         return (
           <div className="grid-3">
-            <SummaryCard title="Total Penjualan" value="Rp 48.200.000" icon={<DollarSign size={20} color="#10B981" />} trend="+12.4%" trendLabel="vs bulan lalu" trendUp={true} chartData={mockChartData} />
-            <SummaryCard title="Total Pendapatan" value="Rp 12.850.000" icon={<TrendingUp size={20} color="#10B981" />} trend="+8.2%" trendLabel="vs bulan lalu" trendUp={true} chartData={mockChartData} />
-            <SummaryCard title="Jumlah Pesanan" value="1.248" icon={<Package size={20} color="#10B981" />} trend="+15.1%" trendLabel="vs bulan lalu" trendUp={true} chartData={mockChartData} />
+            <SummaryCard title="Total Penjualan" value={insightData ? formatRupiah(insightData.total_revenue) : "Loading..."} icon={<DollarSign size={20} color="#10B981" />} trend="+12.4%" trendLabel="vs bulan lalu" trendUp={true} chartData={mockChartData} />
+            <SummaryCard title="Total Pendapatan" value={insightData ? formatRupiah(insightData.total_revenue * 0.8) : "Loading..."} icon={<TrendingUp size={20} color="#10B981" />} trend="+8.2%" trendLabel="vs bulan lalu" trendUp={true} chartData={mockChartData} />
+            <SummaryCard title="Jumlah Pesanan" value={insightData ? insightData.total_units : "Loading..."} icon={<Package size={20} color="#10B981" />} trend="+15.1%" trendLabel="vs bulan lalu" trendUp={true} chartData={mockChartData} />
             <div className="card">
               <h3 style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '10px' }}>Rata-rata Nilai Transaksi</h3>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '5px' }}>Rp 38.621</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '5px' }}>{insightData ? formatRupiah(insightData.total_revenue / (insightData.total_units || 1)) : "Rp 0"}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', color: '#10B981' }}><ArrowUpRight size={14} /> +2.5% vs bulan lalu</div>
             </div>
             <div className="card">

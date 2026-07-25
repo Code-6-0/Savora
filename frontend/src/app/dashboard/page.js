@@ -12,6 +12,10 @@ import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
 import { useUmkm } from '@/context/UmkmContext';
 import { useAuthGuard } from '@/lib/useAuthGuard';
 
+import { fetchUmkmInsight, fetchSalesTrend } from "@/lib/analytics";
+import { fetchUMKMProducts } from "@/lib/products";
+import { fetchUMKMOrders } from "@/lib/orders";
+
 const COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1D5DB'];
 
 export default function DashboardPage() {
@@ -31,6 +35,33 @@ export default function DashboardPage() {
     trust_score: 4.8,
     rating: 4.9,
   });
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const insight = await fetchUmkmInsight(1);
+        const products = await fetchUMKMProducts(1);
+        const orders = await fetchUMKMOrders(1);
+
+        const activeOrders = orders.filter(o => ["Menunggu", "Diproses", "Siap Diambil"].includes(o.status)).length;
+        const activeProducts = products.filter(p => p.status === "Aktif").length;
+
+        setData(prev => ({
+          ...prev,
+          sales_today: insight.total_revenue > 0 ? insight.total_revenue / 30 : prev.sales_today,
+          active_orders: activeOrders || prev.active_orders,
+          active_products: activeProducts || prev.active_products,
+          monthly_revenue: insight.total_revenue || prev.monthly_revenue,
+          trust_score: insight.avg_rating || prev.trust_score,
+          rating: insight.avg_rating || prev.rating,
+        }));
+      } catch (err) {
+        console.error("Dashboard data load error:", err);
+      }
+    }
+    loadDashboardData();
+  }, []);
+
 
   const formatRupiah = (number) => {
     if (number >= 1000000) {
