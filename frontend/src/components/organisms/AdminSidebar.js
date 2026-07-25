@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getToken } from "@/lib/auth";
+import { getToken, logout } from "@/lib/auth";
 import {
   LayoutDashboard,
   CheckCircle,
@@ -143,11 +143,7 @@ export default function AdminSidebar({ onClose }) {
   ];
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
+    logout();
   };
 
   return (

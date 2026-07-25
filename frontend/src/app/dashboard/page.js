@@ -10,12 +10,14 @@ import SummaryCard from "@/components/molecules/SummaryCard";
 import Badge from "@/components/atoms/Badge";
 import ProgressTargetBar from "@/components/molecules/ProgressTargetBar";
 import { useUmkm } from '@/context/UmkmContext';
+import { useAuthGuard } from '@/lib/useAuthGuard';
 
 const COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1D5DB'];
 
 export default function DashboardPage() {
   const router = useRouter();
   const { umkmData } = useUmkm();
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [data, setData] = useState({
     sales_today: 2450000,
     sales_trend: 12.4,
@@ -41,6 +43,7 @@ export default function DashboardPage() {
     }).format(number);
   };
 
+  if (authLoading) return null;
   if (!data) return <div>Loading...</div>;
 
   const mockChartData = [

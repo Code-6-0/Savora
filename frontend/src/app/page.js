@@ -149,10 +149,10 @@ export default function BerandaPage() {
             <ChevronDown size={13} />
           </button>
           <div className="beranda-actions">
-            <Link href="/dashboard" className="beranda-btn-secondary">
+            <Link href="/login" className="beranda-btn-secondary">
               Masuk
             </Link>
-            <Link href="/marketplace" className="beranda-btn-primary">
+            <Link href="/register" className="beranda-btn-primary">
               Daftar Sekarang
             </Link>
           </div>
