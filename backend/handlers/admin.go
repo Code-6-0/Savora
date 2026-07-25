@@ -471,7 +471,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 
 	// Count products
 	database.DB.Model(&models.Product{}).Count(&summary.TotalProducts)
-	database.DB.Model(&models.Product{}).Where("status = ?", "Active").Count(&summary.ActiveProducts)
+	database.DB.Model(&models.Product{}).Where("status = ?", models.ProductStatusAktif).Count(&summary.ActiveProducts)
 
 	// Count orders per status (status existing: Bahasa Indonesia)
 	database.DB.Model(&models.Order{}).Count(&summary.TotalOrders)
@@ -571,7 +571,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 	// Listing perlu moderasi (expired tapi masih aktif OR food_trust warning)
 	database.DB.Model(&models.Product{}).
 		Where("status = ? AND (expires_at < ? OR food_trust_status IN (?))",
-			"Active", now, []string{"Tidak Disarankan Dijual", "Tidak Layak Konsumsi"}).
+			models.ProductStatusAktif, now, []string{"Tidak Disarankan Dijual", "Tidak Layak Konsumsi"}).
 		Count(&summary.ListingModerasiCount)
 
 	// Tiket help baru (status OPEN)
@@ -597,7 +597,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 
 	// Produk rescue aktif (status Active & belum expired)
 	database.DB.Model(&models.Product{}).
-		Where("status = ? AND (expires_at IS NULL OR expires_at > ?)", "Active", now).
+		Where("status = ? AND (expires_at IS NULL OR expires_at > ?)", models.ProductStatusAktif, now).
 		Count(&summary.ProdukRescueAktif)
 
 	// Pickup sukses % - Selesai / (Selesai + Dibatalkan) * 100
@@ -795,8 +795,15 @@ func ModerateProductHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Validasi status/action
-	if req.Status != "Active" && req.Status != "Suspended" && req.Status != "Warning" {
+	// Normalisasi input dari Bahasa Inggris ke Bahasa Indonesia (backward compatibility)
+	statusMap := map[string]string{
+		"Active":    models.ProductStatusAktif,
+		"Suspended": models.ProductStatusSuspended,
+		"Warning":   "Warning", // special action, tidak diset ke product.Status
+	}
+
+	normalizedStatus, valid := statusMap[req.Status]
+	if !valid {
 		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
 			Success: false,
 			Data:    nil,
@@ -824,8 +831,8 @@ func ModerateProductHandler(c *fiber.Ctx) error {
 	}
 
 	// Update status (only if not Warning action)
-	if req.Status != "Warning" {
-		product.Status = req.Status
+	if normalizedStatus != "Warning" {
+		product.Status = normalizedStatus
 		if err := database.DB.Save(&product).Error; err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(APIResponse{
 				Success: false,
@@ -835,7 +842,7 @@ func ModerateProductHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	// Create audit log
+	// Create audit log (gunakan req.Status asli untuk backward compatibility)
 	action := "MODERATE_PRODUCT_WARNING"
 	if req.Status == "Active" {
 		action = "MODERATE_PRODUCT_ACTIVE"

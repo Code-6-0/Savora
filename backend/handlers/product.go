@@ -24,7 +24,7 @@ func GetProductsByUMKM(c *fiber.Ctx) error {
 func GetActiveMarketplaceProducts(c *fiber.Ctx) error {
 	var products []models.Product
 
-	if err := services.GetDB().Where("status = ?", "Aktif").Order("created_at desc").Find(&products).Error; err != nil {
+	if err := services.GetDB().Where("status = ?", models.ProductStatusAktif).Order("created_at desc").Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -42,14 +42,14 @@ func CreateProduct(c *fiber.Ctx) error {
 	product.FoodTrustStatus = CalculateFoodTrustStatus(product)
 
 	if product.FoodTrustStatus == "Tidak Layak Konsumsi" {
-		product.Status = "Limbah"
+		product.Status = models.ProductStatusLimbah
 	}
 
 	if err := services.GetDB().Create(&product).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if product.Status == "Limbah" {
+	if product.Status == models.ProductStatusLimbah {
 		estimatedWeight := float64(product.Stock) * product.WeightPerPortion / 1000.0
 		wasteLog := models.WasteLog{
 			UmkmID:          product.UmkmID,
@@ -89,13 +89,13 @@ func UpdateProduct(c *fiber.Ctx) error {
 
 	updateData.FoodTrustStatus = CalculateFoodTrustStatus(&updateData)
 
-	if updateData.FoodTrustStatus == "Tidak Layak Konsumsi" && product.Status != "Limbah" {
-		updateData.Status = "Limbah"
+	if updateData.FoodTrustStatus == "Tidak Layak Konsumsi" && product.Status != models.ProductStatusLimbah {
+		updateData.Status = models.ProductStatusLimbah
 	}
 
 	services.GetDB().Model(&product).Updates(updateData)
 
-	if updateData.Status == "Limbah" && product.Status != "Limbah" {
+	if updateData.Status == models.ProductStatusLimbah && product.Status != models.ProductStatusLimbah {
 		estimatedWeight := float64(product.Stock) * product.WeightPerPortion / 1000.0
 		wasteLog := models.WasteLog{
 			UmkmID:          product.UmkmID,

@@ -24,13 +24,13 @@ func processExpiredProducts() {
 	var expiredProducts []models.Product
 	now := time.Now()
 
-	if err := db.Where("status = ? AND expires_at < ?", "Active", now).Find(&expiredProducts).Error; err != nil {
+	if err := db.Where("status = ? AND expires_at < ?", models.ProductStatusAktif, now).Find(&expiredProducts).Error; err != nil {
 		log.Println("❌ Error fetching expired products:", err)
 		return
 	}
 
 	for _, product := range expiredProducts {
-		product.Status = "Expired"
+		product.Status = models.ProductStatusKedaluwarsa
 		if err := db.Save(&product).Error; err != nil {
 			log.Println("❌ Error updating product status:", err)
 		}

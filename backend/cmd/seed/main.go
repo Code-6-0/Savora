@@ -143,7 +143,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Layak Dijual",
 			ExpiresAt:        timePtr(time.Now().Add(4 * time.Hour)),
-			Status:           "Active",
+			Status:           models.ProductStatusAktif,
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -158,7 +158,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Fresh",
 			ExpiresAt:        timePtr(time.Now().Add(6 * time.Hour)),
-			Status:           "Active",
+			Status:           models.ProductStatusAktif,
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -173,7 +173,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Layak Dijual",
 			ExpiresAt:        timePtr(time.Now().Add(2 * time.Hour)),
-			Status:           "Active",
+			Status:           models.ProductStatusAktif,
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -188,7 +188,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Fresh",
 			ExpiresAt:        timePtr(time.Now().Add(3 * time.Hour)),
-			Status:           "Sold Out",
+			Status:           models.ProductStatusHabis,
 		},
 	}
 
