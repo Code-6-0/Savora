@@ -185,8 +185,8 @@ function MarketplaceContent() {
   // Pilih produk rekomendasi dengan logika adaptif untuk katalog kecil
   const now = Date.now();
   const recommendedBase = selectRecommendedProducts(products, { now, elapsedSeconds: elapsed });
-  // Inject ads hanya jika: mode fallback ATAU (mode api DAN ada iklan)
-  const shouldShowAds = adsSource === 'fallback' || (adsSource === 'api' && ads.length > 0);
+  // Inject ads hanya jika: mode api DAN ada iklan (fallback tidak pernah dirender)
+  const shouldShowAds = adsSource === 'api' && ads.length > 0;
   const recommendedProducts = shouldShowAds
     ? [...ads.slice(0, 2), ...recommendedBase].slice(0, 6)
     : recommendedBase;
