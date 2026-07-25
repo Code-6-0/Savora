@@ -41,7 +41,7 @@ export default function CartPage() {
     setTimeout(() => setNotice(""), 3000);
   }
 
-  async function handleCheckout() {
+  function handleCheckout() {
     if (items.length === 0) return;
 
     setIsProcessing(true);
@@ -49,45 +49,9 @@ export default function CartPage() {
     // Ambil item pertama untuk checkout (PRD: 1 order = 1 produk)
     const firstItem = items[0];
 
-    try {
-      // Stub API call - akan diganti dengan implementasi sesungguhnya saat backend ready
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/orders`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     product_id: firstItem.id,
-      //     quantity: firstItem.qty,
-      //     subtotal: firstItem.rescue_price * firstItem.qty,
-      //     service_fee: Math.round((firstItem.rescue_price * firstItem.qty) * 0.05),
-      //     total_price: firstItem.rescue_price * firstItem.qty + Math.round((firstItem.rescue_price * firstItem.qty) * 0.05)
-      //   })
-      // });
-
-      // Simulasi delay API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Hapus item pertama dari keranjang
-      removeItem(firstItem.id);
-
-      // Redirect ke halaman pembayaran Midtrans atau success page
-      // Sementara tampilkan notice dan redirect ke marketplace
-      setNotice(`Checkout berhasil! ${firstItem.name} sedang diproses.`);
-
-      setTimeout(() => {
-        if (items.length > 1) {
-          // Masih ada item lain di keranjang
-          setNotice("Item lain masih ada di keranjang. Lanjutkan checkout untuk item berikutnya.");
-        } else {
-          // Keranjang kosong, redirect ke marketplace
-          router.push("/marketplace");
-        }
-        setIsProcessing(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Checkout error:", error);
-      setNotice("Terjadi kesalahan saat checkout. Silakan coba lagi.");
-      setIsProcessing(false);
-    }
+    // Redirect ke halaman checkout dengan product_id dan qty
+    // TODO: Item akan dihapus dari keranjang setelah order berhasil dibuat di halaman checkout
+    router.push(`/marketplace/checkout?product_id=${firstItem.id}&qty=${firstItem.qty}`);
   }
 
   return (
