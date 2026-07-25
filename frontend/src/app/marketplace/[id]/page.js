@@ -293,11 +293,13 @@ export default function ProductDetailPage() {
           <div style={{ width: '639px' }}>
             {/* Main image with badges and buttons */}
             <div style={{ position: 'relative', height: '479px', background: '#eaf8ec', borderRadius: '18px', overflow: 'hidden' }}>
-              <img src="/detail/main.png" alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              {/* Badge "59% OFF" top-left */}
-              <div style={{ position: 'absolute', top: '16px', left: '16px', background: '#0b7a3b', color: 'white', padding: '6px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700' }}>
-                {product.discountPercent > 0 ? `${product.discountPercent}% OFF` : '59% OFF'}
-              </div>
+              <img src={product.photo_url && product.photo_url.trim() ? product.photo_url : "/detail/main.png"} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {/* Badge diskon top-left - hanya tampil jika discountPercent > 0 */}
+              {product.discountPercent > 0 && (
+                <div style={{ position: 'absolute', top: '16px', left: '16px', background: '#0b7a3b', color: 'white', padding: '6px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700' }}>
+                  {product.discountPercent}% OFF
+                </div>
+              )}
               {/* Icon buttons top-right */}
               <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} aria-label="Wishlist">
@@ -334,7 +336,7 @@ export default function ProductDetailPage() {
                 </div>
               </div>
               <div style={{ fontSize: '11px', color: '#999999', paddingLeft: '48px' }}>
-                Restoran · Jakarta Selatan
+                {product.pickup_address || 'Restoran · Jakarta Selatan'}
               </div>
             </div>
 
@@ -350,8 +352,10 @@ export default function ProductDetailPage() {
                   <Star key={i} size={13} fill="#ffb900" stroke="#ffb900" />
                 ))}
               </div>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d' }}>4.8</span>
-              <span style={{ fontSize: '13px', color: '#999999' }}>(247 ulasan)</span>
+              <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d' }}>{reviewAverage}</span>
+              <span style={{ fontSize: '13px', color: '#999999' }}>
+                ({product.reviews?.length ? `${product.reviews.length} ulasan` : '247 ulasan'})
+              </span>
             </div>
 
             {/* Meta info */}
@@ -362,7 +366,7 @@ export default function ProductDetailPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Clock size={14} />
-                <span>Ambil 12:00–14:00</span>
+                <span>Ambil sebelum {deadlineHour}:{deadlineMinute}</span>
               </div>
             </div>
 

@@ -83,15 +83,36 @@ async function fetchOrders() {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
-    const response = await fetch(`${baseUrl}/api/orders`, {
-      credentials: "include",
-    });
+    const response = await fetch(`${baseUrl}/orders`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json"))
       throw new Error("API orders tidak tersedia");
     const data = await response.json();
+
+    if (data === null) {
+      return { orders: [], source: "api" };
+    }
+
     if (!Array.isArray(data)) throw new Error("Respons orders tidak valid");
-    return { orders: data, source: "api" };
+
+    // Normalisasi field dari backend ke format yang dipakai UI
+    const normalized = data.map(order => ({
+      id: order.id || "—",
+      product_name: order.product?.name || "—",
+      vendor: "—", // UMKM name belum di-preload dari backend, fallback dulu
+      umkm_name: "—",
+      quantity: order.quantity ?? "—",
+      original_price: order.product?.original_price || 0,
+      rescue_price: order.product?.rescue_price || 0,
+      subtotal: order.subtotal || 0,
+      service_fee: order.service_fee || 0,
+      total_price: order.total_price || 0,
+      status: order.status || "—",
+      created_at: order.created_at || null,
+      completed_at: order.completed_at || null,
+    }));
+
+    return { orders: normalized, source: "api" };
   } catch {
     return { orders: DEMO_ORDERS, source: "fallback" };
   }
