@@ -452,6 +452,8 @@ export function normalizeMarketplaceProduct(raw) {
     _publishMs: Number.isFinite(publishMs) ? publishMs : undefined,
     _expiresMs: Number.isFinite(expiresMs) ? expiresMs : undefined,
     _baseScore: baseScore,
+    // Flag produk dengan timestamp asli vs fallback — timer hanya tampil jika true.
+    hasRealTimer: Number.isFinite(expiresMs),
   };
 }
 
