@@ -19,14 +19,36 @@ func NewOrderHandler(xendit *services.XenditService) *OrderHandler {
 // CreateOrder - POST /orders (Customer checkout)
 func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	db := services.GetDB()
-	
+
 	// TODO: Extract customerID dari JWT middleware (Wa Ode)
 	customerID := uint(1) // mock untuk development
-	
+
 	var req services.CreateOrderRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid request body",
+			"error": "Invalid request body: " + err.Error(),
+		})
+	}
+
+	// Validasi manual (Fiber tidak support tag binding: seperti Gin)
+	if req.ProductID == 0 {
+		return c.Status(422).JSON(fiber.Map{
+			"error": "Product ID wajib diisi",
+		})
+	}
+	if req.Quantity < 1 {
+		return c.Status(422).JSON(fiber.Map{
+			"error": "Jumlah harus minimal 1",
+		})
+	}
+	if req.BillingName == "" {
+		return c.Status(422).JSON(fiber.Map{
+			"error": "Nama pemesan wajib diisi",
+		})
+	}
+	if req.BillingPhone == "" {
+		return c.Status(422).JSON(fiber.Map{
+			"error": "Nomor telepon wajib diisi",
 		})
 	}
 

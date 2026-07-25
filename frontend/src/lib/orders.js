@@ -11,14 +11,28 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
  * @returns {Promise<Object>} Order response with invoice URL
  */
 export async function createOrder(orderData) {
+  // Validasi & konversi tipe di boundary API
+  const productId = Number(orderData.productId);
+  const quantity = parseInt(orderData.quantity, 10);
+
+  // Guard: product_id harus integer positif
+  if (!Number.isInteger(productId) || productId <= 0) {
+    throw new Error('Product ID tidak valid');
+  }
+
+  // Guard: quantity harus integer >= 1
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    throw new Error('Jumlah harus minimal 1');
+  }
+
   const response = await fetch(`${API_BASE}/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      product_id: orderData.productId,
-      quantity: orderData.quantity,
+      product_id: productId,        // number, bukan string
+      quantity: quantity,            // number, sudah divalidasi
       billing_name: orderData.billingName,
       billing_email: orderData.billingEmail,
       billing_phone: orderData.billingPhone,
