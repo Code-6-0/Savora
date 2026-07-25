@@ -15,19 +15,26 @@ import {
   ShoppingCart,
   RefreshCw,
 } from "lucide-react";
-import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
+import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts, selectRecommendedProducts } from "@/lib/marketplace";
 import { fetchAds, AD_TYPES } from "@/lib/ads";
 import { deriveRestaurantSafety } from "@/lib/reviews";
+import { useCart } from "@/lib/CartContext";
 
 export default function MarketplacePage() {
   const searchParams = useSearchParams();
+  const { count } = useCart();
   const [allProducts, setAllProducts] = useState([]);
   const [dataSource, setDataSource] = useState("api");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [sortMode, setSortMode] = useState("default");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [promoActive, setPromoActive] = useState(false);
+  const [ratingActive, setRatingActive] = useState(false);
+  const [distanceActive, setDistanceActive] = useState(false);
+  const [openNowActive, setOpenNowActive] = useState(false);
   const [ads, setAds] = useState([]);
+  const [adsSource, setAdsSource] = useState("api");
   const [elapsed, setElapsed] = useState(0);
   const sortDropdownRef = useRef(null);
 
@@ -49,7 +56,10 @@ export default function MarketplacePage() {
 
   // Fetch ads
   useEffect(() => {
-    fetchAds(2).then(setAds);
+    fetchAds(2).then(result => {
+      setAds(result.ads);
+      setAdsSource(result.source);
+    });
   }, []);
 
   useEffect(() => {
@@ -92,6 +102,10 @@ export default function MarketplacePage() {
     search: searchTerm,
     category: selectedCategory,
     sort: sortMode,
+    promo: promoActive,
+    minRating: ratingActive ? 4.5 : null,
+    maxDistanceKm: distanceActive ? 1 : null,
+    openNow: openNowActive,
   });
 
   // Handlers
@@ -118,6 +132,32 @@ export default function MarketplacePage() {
     setSelectedCategory((prev) => (prev === categoryName ? "Semua" : categoryName));
   };
 
+  const handlePromoToggle = () => {
+    setPromoActive((prev) => !prev);
+  };
+
+  const handleRatingToggle = () => {
+    setRatingActive((prev) => !prev);
+  };
+
+  const handleDistanceToggle = () => {
+    setDistanceActive((prev) => !prev);
+  };
+
+  const handleOpenNowToggle = () => {
+    setOpenNowActive((prev) => !prev);
+  };
+
+  const handleResetAllFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("Semua");
+    setSortMode("default");
+    setPromoActive(false);
+    setRatingActive(false);
+    setDistanceActive(false);
+    setOpenNowActive(false);
+  };
+
   const handleRetry = () => {
     fetchMarketplaceProducts().then((result) => {
       setAllProducts(result.products || []);
@@ -142,9 +182,14 @@ export default function MarketplacePage() {
   };
 
   const nearbyProducts = products.slice(0, 12);
-  // Inject ads into recommended products (max 2)
-  const recommendedBase = products.slice(12, 16);
-  const recommendedProducts = [...ads.slice(0, 2), ...recommendedBase].slice(0, 6);
+  // Pilih produk rekomendasi dengan logika adaptif untuk katalog kecil
+  const now = Date.now();
+  const recommendedBase = selectRecommendedProducts(products, { now, elapsedSeconds: elapsed });
+  // Inject ads hanya jika: mode fallback ATAU (mode api DAN ada iklan)
+  const shouldShowAds = adsSource === 'fallback' || (adsSource === 'api' && ads.length > 0);
+  const recommendedProducts = shouldShowAds
+    ? [...ads.slice(0, 2), ...recommendedBase].slice(0, 6)
+    : recommendedBase;
 
   const categories = [
     { name: "Bakery", icon: "/categories/bakery.svg", bgColor: "#ecfdf5", iconColor: "#059669" },
@@ -178,6 +223,14 @@ export default function MarketplacePage() {
             <ChevronDown size={13} />
           </button>
           <div className="beranda-actions">
+            <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
+              <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
+              {count > 0 && (
+                <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
+                  {count}
+                </span>
+              )}
+            </Link>
             <Link href="/dashboard" className="beranda-btn-secondary">
               Masuk
             </Link>
@@ -295,72 +348,92 @@ export default function MarketplacePage() {
               backgroundColor: "#bdcabe",
             }}></div>
 
-            <button style={{
-              backgroundColor: "rgba(6,134,81,0.10)",
-              color: "#006a3f",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "none",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handlePromoToggle}
+              style={{
+                backgroundColor: promoActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: promoActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: promoActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Promo
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handleRatingToggle}
+              style={{
+                backgroundColor: ratingActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: ratingActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: ratingActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Rating 4.5+
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handleDistanceToggle}
+              style={{
+                backgroundColor: distanceActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: distanceActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: distanceActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Di bawah 1 km
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-            }}>
+            <button
+              onClick={handleOpenNowToggle}
+              style={{
+                backgroundColor: openNowActive ? "rgba(6,134,81,0.10)" : "#fff",
+                color: openNowActive ? "#006a3f" : "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: openNowActive ? "none" : "1px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
               Buka Sekarang
             </button>
 
-            <button style={{
-              backgroundColor: "#fff",
-              color: "#3e4941",
-              fontSize: "12px",
-              fontWeight: 700,
-              padding: "8px 16px",
-              borderRadius: "999px",
-              border: "1px solid #e8e8e8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginLeft: "auto",
-            }}>
+            <button
+              onClick={handleResetAllFilters}
+              style={{
+                backgroundColor: "#fff",
+                color: "#3e4941",
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: "1px solid #e8e8e8",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginLeft: "auto",
+                transition: "all 0.2s",
+              }}
+            >
               <SlidersHorizontal size={14} />
               Semua Filter
             </button>
@@ -523,6 +596,11 @@ export default function MarketplacePage() {
                       <p className="beranda-product-vendor">
                         <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
                       </p>
+                      {Number.isFinite(product.stock) && (
+                        <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
+                          Sisa {product.stock} porsi
+                        </span>
+                      )}
                       <div className="beranda-product-footer">
                         <div className="beranda-product-price">
                           <div className="beranda-price-old-row">
@@ -563,7 +641,20 @@ export default function MarketplacePage() {
               Lihat Semua <ChevronRight size={16} />
             </Link>
           </div>
-          <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+          {recommendedProducts.length === 0 ? (
+            <div style={{
+              textAlign: "center",
+              padding: "32px 24px",
+              backgroundColor: "#f9fafb",
+              borderRadius: "12px",
+              border: "1px solid #e5e7eb",
+            }}>
+              <p style={{ fontSize: "14px", color: "#6b7280" }}>
+                Tidak ada rekomendasi tersedia saat ini
+              </p>
+            </div>
+          ) : (
+            <div className="beranda-products-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
             {recommendedProducts.map((item) => {
               // Check if this is an ad or a product
               const isAd = item.sponsor !== undefined;
@@ -674,6 +765,11 @@ export default function MarketplacePage() {
                       <p className="beranda-product-vendor">
                         <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
                       </p>
+                      {Number.isFinite(product.stock) && (
+                        <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
+                          Sisa {product.stock} porsi
+                        </span>
+                      )}
                       <div className="beranda-product-footer">
                         <div className="beranda-product-price">
                           <div className="beranda-price-old-row">
@@ -703,6 +799,7 @@ export default function MarketplacePage() {
               );
             })}
           </div>
+          )}
         </div>
       </section>
 

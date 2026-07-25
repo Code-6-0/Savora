@@ -1277,6 +1277,19 @@
   gap: 4px;
 }
 
+.beranda-product-stock {
+  font-size: 9px;
+  font-weight: 400;
+  color: #6b7280;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.beranda-product-stock.is-low {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
 .beranda-product-distance {
   display: inline-flex;
   align-items: center;

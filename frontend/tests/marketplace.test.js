@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { filterMarketplaceProducts, normalizeMarketplaceProduct } from "../src/lib/marketplace.js";
+import { filterMarketplaceProducts, normalizeMarketplaceProduct, selectRecommendedProducts } from "../src/lib/marketplace.js";
 
 const now = Date.now();
 const products = [
@@ -85,4 +85,121 @@ test("filterMarketplaceProducts treats null/undefined stock as available", () =>
   ];
   const result = filterMarketplaceProducts(testProducts, {});
   assert.equal(result.length, 2);
+});
+
+test("selectRecommendedProducts returns slice(12, 16) when products > 12", () => {
+  const now = Date.now();
+  const largeProductSet = Array.from({ length: 20 }, (_, i) => ({
+    id: i + 1,
+    name: `Product ${i + 1}`,
+    category: "Nasi",
+    vendor: "Vendor",
+    rescue_price: 10000,
+    distanceKm: 1,
+    food_trust_status: "Fresh",
+    stock: 5,
+    _baseScore: 100,
+    _publishMs: now - 3600000,
+    _expiresMs: now + 3600000,
+  }));
+  const result = selectRecommendedProducts(largeProductSet, { now });
+  assert.equal(result.length, 4);
+  assert.equal(result[0].id, 13);
+  assert.equal(result[3].id, 16);
+});
+
+test("selectRecommendedProducts returns top 4 by score when products <= 12", () => {
+  const now = Date.now();
+  const smallProductSet = [
+    { id: 1, name: "Low Score", rescue_price: 10000, distanceKm: 1, food_trust_status: "Segera Dijual", _baseScore: 70, _publishMs: now - 3600000, _expiresMs: now + 1800000 },
+    { id: 2, name: "High Score", rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 7200000 },
+    { id: 3, name: "Medium Score", rescue_price: 10000, distanceKm: 1, food_trust_status: "Layak Dijual", _baseScore: 85, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = selectRecommendedProducts(smallProductSet, { now });
+  assert.equal(result.length, 3);
+  assert.equal(result[0].id, 2);
+  assert.equal(result[1].id, 3);
+  assert.equal(result[2].id, 1);
+});
+
+test("selectRecommendedProducts returns empty array when products is empty", () => {
+  const result = selectRecommendedProducts([], { now: Date.now() });
+  assert.equal(result.length, 0);
+});
+
+test("selectRecommendedProducts returns all products when < 4 products available", () => {
+  const now = Date.now();
+  const twoProducts = [
+    { id: 1, name: "Product A", rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "Product B", rescue_price: 10000, distanceKm: 1, food_trust_status: "Layak Dijual", _baseScore: 85, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = selectRecommendedProducts(twoProducts, { now });
+  assert.equal(result.length, 2);
+});
+
+test("filterMarketplaceProducts filters by promo (discount >= 40%)", () => {
+  const now = Date.now();
+  const testProducts = [
+    { id: 1, name: "High Discount", category: "Nasi", vendor: "Vendor A", original_price: 20000, rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "Low Discount", category: "Nasi", vendor: "Vendor B", original_price: 20000, rescue_price: 15000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = filterMarketplaceProducts(testProducts, { promo: true });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, 1);
+});
+
+test("filterMarketplaceProducts filters by rating >= 4.5", () => {
+  const now = Date.now();
+  const testProducts = [
+    { id: 1, name: "High Rating", category: "Nasi", vendor: "Vendor A", rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, rating: 4.8, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "Low Rating", category: "Nasi", vendor: "Vendor B", rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, rating: 3.9, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = filterMarketplaceProducts(testProducts, { minRating: 4.5 });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, 1);
+});
+
+test("filterMarketplaceProducts filters by distance < 1 km", () => {
+  const now = Date.now();
+  const testProducts = [
+    { id: 1, name: "Near", category: "Nasi", vendor: "Vendor A", rescue_price: 10000, distanceKm: 0.5, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "Far", category: "Nasi", vendor: "Vendor B", rescue_price: 10000, distanceKm: 2.0, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = filterMarketplaceProducts(testProducts, { maxDistanceKm: 1 });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, 1);
+});
+
+test("filterMarketplaceProducts filters by openNow (not expired)", () => {
+  const now = Date.now();
+  const testProducts = [
+    { id: 1, name: "Open", category: "Nasi", vendor: "Vendor A", rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "Expired", category: "Nasi", vendor: "Vendor B", rescue_price: 10000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 7200000, _expiresMs: now - 1000 },
+  ];
+  const result = filterMarketplaceProducts(testProducts, { openNow: true });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, 1);
+});
+
+test("filterMarketplaceProducts combines multiple filters with AND logic", () => {
+  const now = Date.now();
+  const testProducts = [
+    { id: 1, name: "Match All", category: "Nasi", vendor: "Vendor A", original_price: 20000, rescue_price: 10000, distanceKm: 0.5, food_trust_status: "Fresh", stock: 5, rating: 4.8, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "No Promo", category: "Nasi", vendor: "Vendor B", original_price: 20000, rescue_price: 15000, distanceKm: 0.5, food_trust_status: "Fresh", stock: 5, rating: 4.8, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 3, name: "Far", category: "Nasi", vendor: "Vendor C", original_price: 20000, rescue_price: 10000, distanceKm: 2.0, food_trust_status: "Fresh", stock: 5, rating: 4.8, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = filterMarketplaceProducts(testProducts, { promo: true, minRating: 4.5, maxDistanceKm: 1 });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, 1);
+});
+
+test("filterMarketplaceProducts sorts by lowest-price", () => {
+  const now = Date.now();
+  const testProducts = [
+    { id: 1, name: "Expensive", category: "Nasi", vendor: "Vendor A", rescue_price: 20000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 2, name: "Cheap", category: "Nasi", vendor: "Vendor B", rescue_price: 8000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+    { id: 3, name: "Medium", category: "Nasi", vendor: "Vendor C", rescue_price: 15000, distanceKm: 1, food_trust_status: "Fresh", stock: 5, _baseScore: 100, _publishMs: now - 3600000, _expiresMs: now + 3600000 },
+  ];
+  const result = filterMarketplaceProducts(testProducts, { sort: "lowest-price" });
+  assert.deepEqual(result.map(p => p.id), [2, 3, 1]);
 });

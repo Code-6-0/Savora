@@ -486,7 +486,7 @@ export function computeProductScore(product, now, elapsedSeconds = 0) {
   return { score, remainingSeconds };
 }
 
-export function filterMarketplaceProducts(products, { search = "", category = "Semua", trustStatus = "Semua", sort = "default" } = {}) {
+export function filterMarketplaceProducts(products, { search = "", category = "Semua", trustStatus = "Semua", sort = "default", promo = false, minRating = null, maxDistanceKm = null, openNow = false } = {}) {
   const term = search.trim().toLowerCase();
   const now = Date.now();
 
@@ -505,9 +505,36 @@ export function filterMarketplaceProducts(products, { search = "", category = "S
 
     // Filter search, kategori, dan status
     const searchTarget = `${product.name} ${product.vendor} ${product.category}`.toLowerCase();
-    return (!term || searchTarget.includes(term))
-      && (category === "Semua" || product.category === category)
-      && (trustStatus === "Semua" || product.food_trust_status === trustStatus);
+    if (term && !searchTarget.includes(term)) return false;
+    if (category !== "Semua" && product.category !== category) return false;
+    if (trustStatus !== "Semua" && product.food_trust_status !== trustStatus) return false;
+
+    // Filter promo: diskon >= 40%
+    if (promo) {
+      const originalPrice = Number(product.original_price) || 0;
+      const rescuePrice = Number(product.rescue_price) || originalPrice;
+      const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - rescuePrice) / originalPrice) * 100) : 0;
+      if (discountPercent < 40) return false;
+    }
+
+    // Filter rating: rating >= minRating (pakai fallback rating seperti di render kartu)
+    if (minRating !== null) {
+      const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+      if (rating < minRating) return false;
+    }
+
+    // Filter distance: distanceKm < maxDistanceKm
+    if (maxDistanceKm !== null) {
+      const distance = Number(product.distanceKm ?? 999);
+      if (distance >= maxDistanceKm) return false;
+    }
+
+    // Filter openNow: remainingSeconds > 0 (produk belum expired)
+    if (openNow) {
+      if (remainingSeconds <= 0) return false;
+    }
+
+    return true;
   });
 
   if (sort === "nearest") return [...filtered].sort((first, second) => first.distanceKm - second.distanceKm);
@@ -546,6 +573,37 @@ export async function fetchMarketplaceProducts() {
   } catch {
     return makeResult(fallbackMarketplaceProducts.map(normalizeMarketplaceProduct), "fallback");
   }
+}
+
+/**
+ * Pilih produk rekomendasi untuk section "Makanan Rekomendasi".
+ *
+ * @param {Array} products - array produk yang sudah difilter/sorted
+ * @param {object} [options] - opsi untuk pemilihan (now, elapsedSeconds)
+ * @returns {Array} max 4 produk untuk section rekomendasi
+ */
+export function selectRecommendedProducts(products, options = {}) {
+  const { now = Date.now(), elapsedSeconds = 0 } = options;
+
+  // Jika catalog besar (> 12 produk), gunakan produk ke-13 s.d. ke-16
+  if (products.length > 12) {
+    return products.slice(12, 16);
+  }
+
+  // Jika tidak ada produk sama sekali
+  if (products.length === 0) {
+    return [];
+  }
+
+  // Jika catalog kecil (<= 12 produk), pilih subset berdasarkan Food Score tertinggi
+  const scored = products.map(product => {
+    const { score } = computeProductScore(product, now, elapsedSeconds);
+    return { product, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, 4).map(item => item.product);
 }
 
 export async function fetchMarketplaceProduct(id) {

@@ -21,9 +21,11 @@ import {
   Utensils,
   Lock,
 } from "lucide-react";
-import { fetchMarketplaceProducts, computeProductScore } from "@/lib/marketplace";
+import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
+import { useCart } from "@/lib/CartContext";
 
 export default function BerandaPage() {
+  const { count } = useCart();
   const [products, setProducts] = useState([]);
   const [elapsed, setElapsed] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,7 +74,8 @@ export default function BerandaPage() {
     return "#ba1a1a";
   };
 
-  const topProducts = products.slice(0, 8);
+  const filteredProducts = filterMarketplaceProducts(products);
+  const topProducts = filteredProducts.slice(0, 8);
 
   const categories = [
     { name: "Bakery", icon: "/categories/bakery.svg", bgColor: "#ecfdf5", iconColor: "#059669" },
@@ -149,6 +152,14 @@ export default function BerandaPage() {
             <ChevronDown size={13} />
           </button>
           <div className="beranda-actions">
+            <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
+              <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
+              {count > 0 && (
+                <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
+                  {count}
+                </span>
+              )}
+            </Link>
             <Link href="/dashboard" className="beranda-btn-secondary">
               Masuk
             </Link>
@@ -260,76 +271,88 @@ export default function BerandaPage() {
             </Link>
           </div>
           <div className="beranda-products-grid">
-            {topProducts.map((product) => {
-              const now = Date.now();
-              const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
-              const badge = getFoodScoreBadge(score);
-              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
-              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
-              const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
+            {topProducts.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', color: '#9ca3af' }}>
+                <p style={{ fontSize: '15px', margin: '0 0 8px 0' }}>Tidak ada produk tersedia saat ini.</p>
+                <p style={{ fontSize: '13px', margin: 0 }}>Coba lagi nanti untuk rescue deal baru.</p>
+              </div>
+            ) : (
+              topProducts.map((product) => {
+                const now = Date.now();
+                const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
+                const badge = getFoodScoreBadge(score);
+                const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
+                const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+                const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
-              return (
-                <div key={product.id} className="beranda-product-card">
-                  <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
-                    <div className="beranda-product-image">
-                      <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                      </div>
-                      {score !== undefined && (
-                        <span
-                          className="beranda-badge-foodscore"
-                          style={{ backgroundColor: score >= 70 ? "#16a34a" : "#f0d944" }}
-                        >
-                          <span className="beranda-badge-foodscore-icon">●</span>
-                          FRS {Math.round(score)}%
-                        </span>
-                      )}
-                    </div>
-                    <div className="beranda-product-info">
-                      <div className="beranda-product-title-row">
-                        <h3>{product.name}</h3>
-                        <div className="beranda-product-rating">
-                          <Star size={9} fill="#16a34a" color="#16a34a" />
-                          <span>{rating.toFixed(1)}</span>
-                        </div>
-                      </div>
-                      <p className="beranda-product-vendor">
-                        <MapPin size={9} /> {product.vendor} • {product.distanceKm} km
-                      </p>
-                      <div className="beranda-product-footer">
-                        <div className="beranda-product-price">
-                          <div className="beranda-price-old-row">
-                            <span className="beranda-price-original">
-                              Rp {product.original_price.toLocaleString("id-ID")}
-                            </span>
-                            <span className="beranda-price-discount">-{discountPercent}%</span>
-                          </div>
-                          <span className="beranda-price-rescue">
-                            Rp {product.rescue_price.toLocaleString("id-ID")}
+                return (
+                  <div key={product.id} className="beranda-product-card">
+                    <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
+                      <div className="beranda-product-image">
+                        <img src={product.photo_url} alt={product.name} />
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
                           </span>
                         </div>
+                        {score !== undefined && (
+                          <span
+                            className="beranda-badge-foodscore"
+                            style={{ backgroundColor: score >= 70 ? "#16a34a" : "#f0d944" }}
+                          >
+                            <span className="beranda-badge-foodscore-icon">●</span>
+                            FRS {Math.round(score)}%
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                  <button
-                    className="beranda-product-cart"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.location.href = `/marketplace/${product.id}`;
-                    }}
-                    aria-label="Tambah ke keranjang"
-                  >
-                    <ShoppingCart size={17} />
-                  </button>
-                </div>
-              );
-            })}
+                      <div className="beranda-product-info">
+                        <div className="beranda-product-title-row">
+                          <h3>{product.name}</h3>
+                          <div className="beranda-product-rating">
+                            <Star size={9} fill="#16a34a" color="#16a34a" />
+                            <span>{rating.toFixed(1)}</span>
+                          </div>
+                        </div>
+                        <p className="beranda-product-vendor">
+                          <MapPin size={9} /> {product.vendor} • {product.distanceKm} km
+                        </p>
+                        {Number.isFinite(product.stock) && (
+                          <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
+                            Sisa {product.stock} porsi
+                          </span>
+                        )}
+                        <div className="beranda-product-footer">
+                          <div className="beranda-product-price">
+                            <div className="beranda-price-old-row">
+                              <span className="beranda-price-original">
+                                Rp {product.original_price.toLocaleString("id-ID")}
+                              </span>
+                              <span className="beranda-price-discount">-{discountPercent}%</span>
+                            </div>
+                            <span className="beranda-price-rescue">
+                              Rp {product.rescue_price.toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                    <button
+                      className="beranda-product-cart"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.location.href = `/marketplace/${product.id}`;
+                      }}
+                      aria-label="Tambah ke keranjang"
+                    >
+                      <ShoppingCart size={17} />
+                    </button>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </section>
