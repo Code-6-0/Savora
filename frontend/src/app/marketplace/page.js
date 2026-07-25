@@ -216,6 +216,7 @@ export default function MarketplacePage() {
             <Link href="/marketplace" className="nav-active">Marketplace</Link>
             <a href="#mitra">Mitra</a>
             <a href="#tentang">Tentang</a>
+            <Link href="/akun">Impact</Link>
           </nav>
           <button className="beranda-location">
             <MapPin size={14} />
@@ -545,7 +546,7 @@ export default function MarketplacePage() {
               const now = Date.now();
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
-              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
+              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
               const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
@@ -714,7 +715,7 @@ export default function MarketplacePage() {
               const now = Date.now();
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
-              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
+              const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
               const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
