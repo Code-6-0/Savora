@@ -130,6 +130,16 @@ Solusi digital yang sederhana, mudah digunakan, dan sesuai kebiasaan pengguna lo
 >    (mitra_donasi_profiles, /mitra-donasi/*, role `mitra`) DIPERTAHANKAN dulu — rename adalah
 >    utang refactor pasca-lomba. FR-19 dibaca sebagai "verifikasi Mitra".
 
+### 34.9 (REVISI #35) — Jalur Donasi Surplus Acara
+Mitra kategori "Donasi Makanan (Penyalur)" ditambahkan sebagai kategori ke-7.
+Sumber donasi: surplus acara/katering/hajatan milik UMKM maupun Customer — BUKAN
+produk tidak laku (produk tidak layak jual tetap ke jalur mitra pengolah via Waste Log).
+Syarat kelayakan donasi (v2): makanan disiapkan < 4 jam & disimpan layak, bukan pangan
+berisiko tinggi tanpa rantai dingin, porsi minimum, jendela waktu penjemputan.
+Hierarki SAVORA: (1) jual berdiskon → (2) layak makan: donasikan → (3) tidak layak:
+olah (kompos/maggot/daur ulang). Form donasi + matching mitra = backlog v2.
+Dashboard: SATU dashboard mitra untuk semua kategori (tidak ada dashboard terpisah).
+
 ## 4. Target Pengguna
 
 ### 4.1 Customer

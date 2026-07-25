@@ -21,88 +21,6 @@ export default function MitraPage() {
               makanan, mengurangi limbah, dan membangun masa depan."
             </span>
           </blockquote>
-
-          {/* Dekorasi ikon line-art (SVG inline sederhana) */}
-          {/* Pizza slice — pojok kiri bawah */}
-          <svg
-            className="mitra-deco mitra-deco-pizza"
-            width="80"
-            height="80"
-            viewBox="0 0 80 80"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M40 10 L70 70 L10 70 Z"
-              stroke="#151c27"
-              strokeWidth="2"
-              fill="none"
-            />
-            <circle cx="35" cy="50" r="3" stroke="#151c27" strokeWidth="2" fill="none" />
-            <circle cx="48" cy="55" r="3" stroke="#151c27" strokeWidth="2" fill="none" />
-            <circle cx="40" cy="38" r="3" stroke="#151c27" strokeWidth="2" fill="none" />
-            <line x1="40" y1="10" x2="40" y2="70" stroke="#151c27" strokeWidth="1.5" />
-          </svg>
-
-          {/* Roti/Croissant — pojok kanan atas */}
-          <svg
-            className="mitra-deco mitra-deco-bread"
-            width="80"
-            height="80"
-            viewBox="0 0 80 80"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M20 35 Q30 20, 45 25 Q60 30, 65 40 Q68 50, 60 60 L20 60 Q15 50, 20 35 Z"
-              stroke="#151c27"
-              strokeWidth="2"
-              fill="none"
-            />
-            <path
-              d="M25 40 Q35 32, 45 38"
-              stroke="#151c27"
-              strokeWidth="1.5"
-              fill="none"
-            />
-            <path
-              d="M30 50 Q40 45, 50 50"
-              stroke="#151c27"
-              strokeWidth="1.5"
-              fill="none"
-            />
-          </svg>
-
-          {/* Cangkir teh — pojok kanan bawah */}
-          <svg
-            className="mitra-deco mitra-deco-cup"
-            width="80"
-            height="80"
-            viewBox="0 0 80 80"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M20 30 L25 60 L55 60 L60 30 Z"
-              stroke="#151c27"
-              strokeWidth="2"
-              fill="none"
-            />
-            <line x1="20" y1="30" x2="60" y2="30" stroke="#151c27" strokeWidth="2" />
-            <path
-              d="M60 35 Q70 35, 70 45 Q70 55, 60 55"
-              stroke="#151c27"
-              strokeWidth="2"
-              fill="none"
-            />
-            <path
-              d="M30 20 Q35 12, 40 20"
-              stroke="#151c27"
-              strokeWidth="1.5"
-              fill="none"
-              opacity="0.6"
-            />
-          </svg>
         </div>
       </section>
 
@@ -127,6 +45,113 @@ export default function MitraPage() {
           <div className="mitra-stat-item">
             <div className="mitra-stat-number">95%</div>
             <div className="mitra-stat-label">Pickup Tepat Waktu</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2 — Pilih peran Anda dalam ekosistem */}
+      <section className="mitra-roles">
+        <div className="mitra-roles-container">
+          <h2 className="mitra-roles-title">Pilih peran Anda dalam ekosistem</h2>
+          <p className="mitra-roles-subtitle">
+            Platform terintegrasi untuk pengelolaan sisa makanan yang efisien dan berdampak sosial.
+          </p>
+
+          {/* Card 1 — UMKM Kuliner */}
+          <div className="mitra-role-card mitra-role-umkm">
+            <div className="mitra-role-image">
+              <img src="/images/karakter-mitra1.png" alt="UMKM Kuliner" />
+            </div>
+            <div className="mitra-role-content">
+              <h3 className="mitra-role-card-title">Saya UMKM Kuliner</h3>
+              <p className="mitra-role-card-desc">
+                Restoran, Café, Bakery, atau Hotel yang ingin mengelola sisa makanan secara bertanggung jawab dan mematuhi regulasi lingkungan.
+              </p>
+              <ul className="mitra-role-features">
+                <li>
+                  <span className="mitra-check-icon">✓</span> Reduksi Waste & Cost Saving
+                </li>
+                <li>
+                  <span className="mitra-check-icon">✓</span> Meningkatkan Value Brand & CSR
+                </li>
+                <li>
+                  <span className="mitra-check-icon">✓</span> Dashboard Monitoring Real-time
+                </li>
+              </ul>
+              <button className="mitra-role-button">Daftar Sekarang</button>
+            </div>
+          </div>
+
+          {/* Card 2 — Mitra Pengolah */}
+          <div className="mitra-role-card mitra-role-pengolah">
+            <div className="mitra-role-content">
+              <h3 className="mitra-role-card-title">Saya Mitra Pengolah</h3>
+              <p className="mitra-role-card-desc">
+                Organisasi sosial, pembudidaya maggot, atau pengelola kompos yang membutuhkan suplai bahan organik berkualitas tinggi secara konsisten.
+              </p>
+              <ul className="mitra-role-features">
+                <li>
+                  <span className="mitra-check-icon">✓</span> Menerima Donasi Bahan Berkualitas
+                </li>
+                <li>
+                  <span className="mitra-check-icon">✓</span> Manajemen Pickup Terjadwal
+                </li>
+                <li>
+                  <span className="mitra-check-icon">✓</span> Verifikasi Badge "Mitra Berdampak"
+                </li>
+              </ul>
+              <button className="mitra-role-button">Gabung Ekosistem</button>
+            </div>
+            <div className="mitra-role-image">
+              <img src="/images/karakter-mitra2.png" alt="Mitra Pengolah" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3 — Bagaimana Cara Bergabung? */}
+      <section className="mitra-steps">
+        <div className="mitra-steps-container">
+          <h2 className="mitra-steps-title">Bagaimana Cara Bergabung?</h2>
+          <p className="mitra-steps-subtitle">
+            Proses pendaftaran hanya membutuhkan beberapa langkah sederhana.
+          </p>
+
+          <div className="mitra-steps-grid">
+            {/* Step 1 - Daftar (Active) */}
+            <div className="mitra-step-item">
+              <div className="mitra-step-circle mitra-step-active">1</div>
+              <h3 className="mitra-step-title">Daftar</h3>
+              <p className="mitra-step-desc">Buat akun di platform Savora</p>
+            </div>
+
+            {/* Step 2 - Lengkapi Profil */}
+            <div className="mitra-step-item">
+              <div className="mitra-step-circle">2</div>
+              <h3 className="mitra-step-title">Lengkapi Profil</h3>
+              <p className="mitra-step-desc">Isi data bisnis Anda</p>
+            </div>
+
+            {/* Step 3 - Upload Dokumen */}
+            <div className="mitra-step-item">
+              <div className="mitra-step-circle">3</div>
+              <h3 className="mitra-step-title">Upload Dokumen</h3>
+              <p className="mitra-step-desc">Unggah berkas pendukung</p>
+            </div>
+
+            {/* Step 4 - Verifikasi */}
+            <div className="mitra-step-item">
+              <div className="mitra-step-circle">4</div>
+              <h3 className="mitra-step-title">Verifikasi</h3>
+              <p className="mitra-step-desc">Review oleh tim Savora</p>
+            </div>
+
+            {/* Step 5 - Menjadi Mitra */}
+            <div className="mitra-step-item">
+              <div className="mitra-step-circle">5</div>
+              <h3 className="mitra-step-title">Menjadi Mitra</h3>
+              <p className="mitra-step-desc">Mulai kelola sisa makanan</p>
+            </div>
           </div>
         </div>
       </section>
