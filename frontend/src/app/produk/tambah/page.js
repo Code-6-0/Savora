@@ -2192,7 +2192,13 @@ export default function App() {
         pickup_address: "Alamat UMKM", // TODO: Ambil dari profil UMKM
         packaging_condition: assessment.packaging || "Baik",
         storage_method: assessment.storage || "Sesuai",
-        production_time: form.productionTime ? new Date(`2026-01-01T${form.productionTime}:00Z`).toISOString() : null,
+        production_time: form.productionTime ? (() => {
+          const [h, m] = form.productionTime.split(":").map(Number);
+          const d = new Date();
+          d.setHours(h, m, 0, 0);
+          if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
+          return d.toISOString();
+        })() : null,
         expires_at: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
         status: "Aktif",
       };
