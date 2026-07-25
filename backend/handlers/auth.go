@@ -66,22 +66,17 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 
 	// Validasi input
-	if req.Name == "" || req.Email == "" || req.Password == "" || req.Role == "" {
+	if req.Name == "" || req.Email == "" || req.Password == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
 			Success: false,
 			Data:    nil,
-			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Nama, email, password, dan role wajib diisi"},
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Nama, email, dan password wajib diisi"},
 		})
 	}
 
-	// Validasi role (tidak boleh ADMIN)
-	if req.Role != models.RoleCustomer && req.Role != models.RoleUmkm && req.Role != models.RoleMitraDonasi {
-		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
-			Success: false,
-			Data:    nil,
-			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Role tidak valid. Pilih CUSTOMER, UMKM, atau MITRA_DONASI"},
-		})
-	}
+	// Hard-code role sebagai CUSTOMER untuk endpoint register publik (REVISI #33 PRD)
+	// Field role dari client diabaikan - upgrade ke UMKM dilakukan melalui endpoint terpisah
+	req.Role = models.RoleCustomer
 
 	// Cek email sudah terdaftar
 	var existingUser models.User
@@ -108,12 +103,8 @@ func RegisterHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Set status PENDING untuk UMKM dan MITRA_DONASI, ACTIVE untuk CUSTOMER
-	if req.Role == models.RoleUmkm || req.Role == models.RoleMitraDonasi {
-		user.Status = models.StatusPending
-	} else {
-		user.Status = models.StatusActive
-	}
+	// Set status ACTIVE untuk semua user baru (register publik = CUSTOMER saja)
+	user.Status = models.StatusActive
 
 	// Simpan user
 	if err := database.DB.Create(&user).Error; err != nil {
@@ -211,13 +202,32 @@ func LoginHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	// Tambahkan verification_status untuk UMKM (K4: solusi ADITIF untuk redirect logic)
+	responseData := fiber.Map{
+		"user":  sanitizeUser(user),
+		"token": token,
+	}
+
+	// Jika role UMKM, sertakan verification_status dari UmkmProfile untuk redirect logic
+	if user.Role == models.RoleUmkm {
+		var umkmProfile models.UmkmProfile
+		if err := database.DB.Where("user_id = ?", user.ID).First(&umkmProfile).Error; err == nil {
+			responseData["verification_status"] = umkmProfile.VerificationStatus
+		}
+	}
+
+	// Jika role MITRA_DONASI, sertakan verification_status dari MitraDonasiProfile
+	if user.Role == models.RoleMitraDonasi {
+		var mitraProfile models.MitraDonasiProfile
+		if err := database.DB.Where("user_id = ?", user.ID).First(&mitraProfile).Error; err == nil {
+			responseData["verification_status"] = mitraProfile.VerificationStatus
+		}
+	}
+
 	return c.JSON(APIResponse{
 		Success: true,
-		Data: fiber.Map{
-			"user":  sanitizeUser(user),
-			"token": token,
-		},
-		Error: nil,
+		Data:    responseData,
+		Error:   nil,
 	})
 }
 
@@ -247,12 +257,18 @@ func GetProfileHandler(c *fiber.Ctx) error {
 
 	// Ambil profile berdasarkan role
 	var customerProfile *models.CustomerProfile
+	var umkmProfile *models.UmkmProfile
 	var mitraProfileResponse interface{}
 
 	if user.Role == models.RoleCustomer {
 		var cp models.CustomerProfile
 		if err := database.DB.Where("user_id = ?", user.ID).First(&cp).Error; err == nil {
 			customerProfile = &cp
+		}
+	} else if user.Role == models.RoleUmkm {
+		var up models.UmkmProfile
+		if err := database.DB.Where("user_id = ?", user.ID).First(&up).Error; err == nil {
+			umkmProfile = &up
 		}
 	} else if user.Role == models.RoleMitraDonasi {
 		var mp models.MitraDonasiProfile
@@ -291,6 +307,7 @@ func GetProfileHandler(c *fiber.Ctx) error {
 		Data: fiber.Map{
 			"user":             sanitizeUser(user),
 			"customer_profile": customerProfile,
+			"umkm_profile":     umkmProfile,
 			"mitra_profile":    mitraProfileResponse,
 		},
 		Error: nil,

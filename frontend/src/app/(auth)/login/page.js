@@ -16,6 +16,7 @@ export default function LoginPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -51,7 +52,7 @@ export default function LoginPage() {
         setToken(response.data.token);
         setUser(response.data.user);
 
-        const redirectUrl = getRedirectAfterLogin(response.data.user.role);
+        const redirectUrl = getRedirectAfterLogin(response.data);
         router.push(redirectUrl);
       } else {
         setError(response.error?.message || 'Login gagal');
@@ -64,46 +65,111 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: '24px', left: '24px', fontSize: '20px', fontWeight: 700, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '24px' }}>🌿</span>
-        Savora
+    <div style={{ minHeight: '100vh', backgroundColor: '#F7F8F9' }}>
+      {/* Top Bar */}
+      <div style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB', padding: '12px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="/images/savora-logo.png" alt="Savora Logo" style={{ width: '28px', height: '28px' }} />
+          <span style={{ fontSize: '18px', fontWeight: 600, color: '#1B7A43' }}>Savora</span>
+        </div>
       </div>
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ width: '100%', maxWidth: '440px', backgroundColor: 'var(--card-bg)', borderRadius: '20px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '20px' }}>🌿</span>
-              Savora
-            </div>
-            <Link href="/" style={{ fontSize: '24px', color: 'var(--text-muted)', textDecoration: 'none', lineHeight: 1, cursor: 'pointer' }}>
-              ✕
-            </Link>
+
+      {/* Main Content */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 52px)', padding: '32px 16px' }}>
+        <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#FFFFFF', borderRadius: '16px', padding: '32px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          {/* Logo dalam kartu */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '24px' }}>
+            <img src="/images/savora-logo.png" alt="Savora Logo" style={{ width: '24px', height: '24px' }} />
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#1B7A43' }}>Savora</span>
           </div>
+
+          {/* Ilustrasi Maskot */}
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ctext x='50%25' y='50%25' font-size='80' text-anchor='middle' dy='.3em'%3E🌿%3C/text%3E%3C/svg%3E" alt="Maskot Savora" style={{ maxWidth: '200px', height: 'auto', margin: '0 auto' }} />
+            <img src="/images/maskot-masuk-akun.png" alt="Maskot Savora" style={{ width: '180px', height: 'auto', margin: '0 auto' }} />
           </div>
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px', color: 'var(--text-main)' }}>Selamat Datang di Savora!</h1>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>Selamatkan makanan, hemat biaya, kurangi limbah.<br />Masuk untuk melanjutkan.</p>
+
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 8px', color: '#1F2937' }}>Selamat Datang di Savora!</h1>
+            <p style={{ fontSize: '12px', color: '#6B7280', margin: 0, lineHeight: '1.5' }}>Solusi cerdas untuk menyelamatkan makanan dan menghemat pengeluaran, kapan saja dan di mana saja</p>
           </div>
+
+          {/* Error Banner */}
           {error && (
-            <div style={{ padding: '12px 16px', backgroundColor: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', color: '#991B1B' }}>{error}</div>
+            <div style={{ padding: '12px 16px', backgroundColor: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', color: '#991B1B' }}>
+              {error}
+            </div>
           )}
+
+          {/* Form */}
           <form onSubmit={handleSubmit}>
+            {/* Email */}
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-main)' }}>Email</label>
-              <Input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="nama@email.com" disabled={loading} required />
+              <label style={labelStyle}>Email</label>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="email@contoh.com"
+                disabled={loading}
+                required
+                style={{ height: '42px', borderRadius: '10px', border: '1px solid #E5E7EB' }}
+              />
             </div>
+
+            {/* Kata Sandi */}
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-main)' }}>Password</label>
-              <Input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" disabled={loading} required />
+              <label style={labelStyle}>Kata Sandi</label>
+              <div style={{ position: 'relative' }}>
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  disabled={loading}
+                  required
+                  style={{ height: '42px', borderRadius: '10px', border: '1px solid #E5E7EB', paddingRight: '40px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                  disabled={loading}
+                >
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
-            <Button type="submit" variant="primary" disabled={loading} style={{ width: '100%', padding: '12px', fontSize: '15px', fontWeight: 600, marginBottom: '12px' }}>
+
+            {/* Tombol Masuk */}
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={loading}
+              style={{ width: '100%', height: '44px', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, backgroundColor: '#1B7A43', marginBottom: '12px' }}
+            >
               {loading ? 'Memproses...' : 'Masuk'}
             </Button>
+
+            {/* Tombol Daftar (Outline) */}
             <Link href="/register" style={{ textDecoration: 'none', display: 'block' }}>
-              <Button type="button" variant="secondary" disabled={loading} style={{ width: '100%', padding: '12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'transparent', border: '2px solid var(--border-color)', color: 'var(--text-main)' }}>
+              <Button
+                type="button"
+                disabled={loading}
+                style={{ width: '100%', height: '44px', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, backgroundColor: '#FFFFFF', border: '2px solid #1B7A43', color: '#1B7A43' }}
+              >
                 Saya baru, daftar sekarang!
               </Button>
             </Link>
@@ -113,3 +179,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+const labelStyle = { display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '6px', color: '#1F2937', textAlign: 'left' };

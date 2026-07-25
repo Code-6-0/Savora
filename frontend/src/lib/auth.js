@@ -73,19 +73,40 @@ export function logout() {
 
 /**
  * Get redirect URL based on user role after login
- * @param {string} role - User role (CUSTOMER, UMKM, ADMIN, MITRA_DONASI)
+ * @param {string|Object} roleOrData - User role string (old signature) or login response data (new signature)
+ * @param {string} [verificationStatus] - Optional verification status (for old signature with UMKM/MITRA)
  * @returns {string} Redirect URL
+ *
+ * Supports both signatures for backward compatibility:
+ * - getRedirectAfterLogin('CUSTOMER') // old way
+ * - getRedirectAfterLogin(responseData) // new way with verification_status from login
  */
-export function getRedirectAfterLogin(role) {
+export function getRedirectAfterLogin(roleOrData, verificationStatus = null) {
+  let role, status;
+
+  // Handle both old signature (role string) and new signature (data object)
+  if (typeof roleOrData === 'string') {
+    role = roleOrData;
+    status = verificationStatus;
+  } else {
+    // New signature: extract role and verification_status from login response data
+    role = roleOrData.user?.role || roleOrData.role;
+    status = roleOrData.verification_status;
+  }
+
   switch (role) {
     case 'ADMIN':
       return '/admin/dashboard';
     case 'UMKM':
-      return '/dashboard';
+      // Cek verification_status untuk UMKM (K3: PENDING/APPROVED/REJECTED)
+      if (status === 'APPROVED') {
+        return '/dashboard'; // UMKM dashboard existing
+      }
+      return '/verifikasi-umkm'; // PENDING atau REJECTED → halaman menunggu verifikasi
     case 'CUSTOMER':
       return '/marketplace';
     case 'MITRA_DONASI':
-      return '/mitra-donasi/dashboard';
+      return '/mitra-donasi/dashboard'; // Halaman status mitra dengan badge
     default:
       return '/';
   }

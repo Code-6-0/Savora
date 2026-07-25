@@ -108,6 +108,26 @@ Solusi digital yang sederhana, mudah digunakan, dan sesuai kebiasaan pengguna lo
 
 ---
 
+> 📝 **[REVISI #33 — 24 Jul 2026] Refactor Auth & Pivot Mitra**
+> 1. **Register publik = Customer saja.** Halaman register TIDAK lagi menampilkan pilihan
+>    role (menggantikan deskripsi Register/Login di Section 16). Endpoint register publik
+>    hard-code role customer (menutup celah role injection — NFR 20.2).
+> 2. **UMKM via upgrade akun.** Customer yang ingin berjualan mengajukan upgrade dari dalam
+>    aplikasi (halaman /gabung-umkm) → profil usaha tersimpan ber-status PENDING → role tetap
+>    customer selama ditinjau → saat Admin APPROVE, verification_status=APPROVED DAN user.role
+>    berubah menjadi umkm (atomik). REJECT → role tetap customer + alasan. Gating publish
+>    listing (FR-02) tidak berubah.
+> 3. **Mitra Donasi → Mitra (pengolah limbah).** Role "mitra donasi" diganti konsep "Mitra"
+>    dengan kategori: Bank Sampah, Daur Ulang, Kompos, Maggot (BSF), Pengangkutan Sampah,
+>    Waste Management. Alasan: (a) menghindari isu martabat penerima donasi makanan ber-food-
+>    score rendah; (b) jalur "feed people" sudah dipenuhi rescue deals; sisa tak terjual masuk
+>    hierarki pengolahan limbah; (c) selaras Pergub DKI 102/2021 (kewajiban horeka mengelola
+>    food waste mandiri) — Savora menjadi jalur kepatuhan UMKM kuliner.
+> 4. **Implementasi bertahap.** Pendaftaran & dashboard Mitra berstatus "Segera hadir" pada
+>    rilis lomba; verifikasi Admin memakai halaman existing. Nama teknis lama
+>    (mitra_donasi_profiles, /mitra-donasi/*, role `mitra`) DIPERTAHANKAN dulu — rename adalah
+>    utang refactor pasca-lomba. FR-19 dibaca sebagai "verifikasi Mitra".
+
 ## 4. Target Pengguna
 
 ### 4.1 Customer
