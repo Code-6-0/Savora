@@ -2157,7 +2157,9 @@ export default function App() {
         });
 
         // Upload ke backend
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+        const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const trimmedBase = rawBase.replace(/\/+$/, "");
+        const apiUrl = trimmedBase.endsWith("/api") ? trimmedBase : `${trimmedBase}/api`;
         const uploadResponse = await fetch(`${apiUrl}/upload/image`, {
           method: "POST",
           headers: {
@@ -2195,7 +2197,9 @@ export default function App() {
         status: "Aktif",
       };
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+      const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const trimmedBase = rawBase.replace(/\/+$/, "");
+      const apiUrl = trimmedBase.endsWith("/api") ? trimmedBase : `${trimmedBase}/api`;
       const response = await fetch(`${apiUrl}/products`, {
         method: "POST",
         headers: {
