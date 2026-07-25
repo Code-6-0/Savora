@@ -47,15 +47,21 @@ export function useAuthGuard(allowedRoles = [], options = {}) {
         return;
       }
 
+      // Normalisasi case defensif: lowercase untuk role
+      const normalizedRole = String(user.role || '').toLowerCase();
+
+      // Normalisasi allowedRoles juga (terima UPPERCASE/lowercase dari pemanggil)
+      const normalizedAllowedRoles = allowedRoles.map(r => String(r || '').toLowerCase());
+
       // 3. Cek role - jika tidak sesuai, redirect ke halaman sesuai role-nya
-      if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+      if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedRole)) {
         const redirectUrl = getRedirectAfterLogin(user.role, user.verification_status);
         router.replace(redirectUrl);
         return;
       }
 
       // 4. Cek verification status untuk UMKM (opsional)
-      if (checkVerification && user.role === 'UMKM') {
+      if (checkVerification && normalizedRole === 'umkm') {
         let verificationStatus = user.verification_status;
 
         // Jika tidak ada di localStorage, fetch dari API
@@ -71,8 +77,11 @@ export function useAuthGuard(allowedRoles = [], options = {}) {
           }
         }
 
+        // Normalisasi verification_status dengan uppercase untuk comparison
+        const normalizedStatus = String(verificationStatus || '').toUpperCase();
+
         // Jika PENDING atau REJECTED, redirect ke /verifikasi-umkm
-        if (verificationStatus === 'PENDING' || verificationStatus === 'REJECTED') {
+        if (normalizedStatus === 'PENDING' || normalizedStatus === 'REJECTED') {
           router.replace('/verifikasi-umkm');
           return;
         }

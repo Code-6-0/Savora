@@ -94,21 +94,28 @@ export function getRedirectAfterLogin(roleOrData, verificationStatus = null) {
     status = roleOrData.verification_status;
   }
 
-  switch (role) {
-    case 'ADMIN':
+  // Normalisasi case defensif: lowercase untuk role, uppercase untuk status
+  const normalizedRole = String(role || '').toLowerCase();
+  const normalizedStatus = String(status || '').toUpperCase();
+
+  switch (normalizedRole) {
+    case 'admin':
       return '/admin/dashboard';
-    case 'UMKM':
+    case 'umkm':
       // Cek verification_status untuk UMKM (K3: PENDING/APPROVED/REJECTED)
-      if (status === 'APPROVED') {
+      if (normalizedStatus === 'APPROVED') {
         return '/dashboard'; // UMKM dashboard existing
       }
       return '/verifikasi-umkm'; // PENDING atau REJECTED → halaman menunggu verifikasi
-    case 'CUSTOMER':
+    case 'customer':
       return '/marketplace';
-    case 'MITRA_DONASI':
+    case 'mitra_donasi':
+    case 'mitra':
       return '/mitra-donasi/dashboard'; // Halaman status mitra dengan badge
     default:
-      return '/';
+      // Fail-closed: role tak dikenal → logout dan redirect ke /login
+      removeToken();
+      return '/login';
   }
 }
 
