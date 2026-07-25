@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,7 +20,7 @@ import { fetchAds, AD_TYPES } from "@/lib/ads";
 import { deriveRestaurantSafety } from "@/lib/reviews";
 import { useCart } from "@/lib/CartContext";
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const { count } = useCart();
   const [allProducts, setAllProducts] = useState([]);
@@ -985,5 +985,14 @@ export default function MarketplacePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// Wrapper with Suspense boundary for useSearchParams
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
