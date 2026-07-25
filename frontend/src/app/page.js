@@ -292,14 +292,16 @@ export default function BerandaPage() {
                     <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                       <div className="beranda-product-image">
                         <img src={product.photo_url} alt={product.name} />
-                        <div className="beranda-product-badges">
-                          <span
-                            className="beranda-badge-timer"
-                            style={{ backgroundColor: timerColor, color: "#fff" }}
-                          >
-                            <Clock size={12} /> {formatTimer(remainingSeconds)}
-                          </span>
-                        </div>
+                        {product.hasRealTimer && (
+                          <div className="beranda-product-badges">
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: timerColor, color: "#fff" }}
+                            >
+                              <Clock size={12} /> {formatTimer(remainingSeconds)}
+                            </span>
+                          </div>
+                        )}
                         {score !== undefined && (
                           <span
                             className="beranda-badge-foodscore"

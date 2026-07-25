@@ -561,22 +561,34 @@ function MarketplaceContent() {
                   <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                     <div className="beranda-product-image">
                       <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                        {safetyData && (
+                      {product.hasRealTimer && (
+                        <div className="beranda-product-badges">
                           <span
                             className="beranda-badge-timer"
-                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
+                          </span>
+                          {safetyData && (
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            >
+                              {safetyData.level.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {!product.hasRealTimer && safetyData && (
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff" }}
                           >
                             {safetyData.level.label}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
@@ -738,22 +750,34 @@ function MarketplaceContent() {
                   <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                     <div className="beranda-product-image">
                       <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                        {safetyData && (
+                      {product.hasRealTimer && (
+                        <div className="beranda-product-badges">
                           <span
                             className="beranda-badge-timer"
-                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
+                          </span>
+                          {safetyData && (
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            >
+                              {safetyData.level.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {!product.hasRealTimer && safetyData && (
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff" }}
                           >
                             {safetyData.level.label}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
