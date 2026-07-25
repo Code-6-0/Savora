@@ -113,7 +113,18 @@ func main() {
 	}
 	mitraUser.SetPassword("mitra123")
 	database.DB.Create(&mitraUser)
-	log.Printf("✓ Mitra Donasi created (ID: %d, email: %s, password: mitra123)", mitraUser.ID, mitraUser.Email)
+
+	mitraProfile := models.MitraDonasiProfile{
+		UserID:             mitraUser.ID,
+		OrgName:            "Yayasan Berbagi",
+		Phone:              "081234567891",
+		Address:            "Jl. Pahlawan No. 10, Jakarta Timur",
+		Description:        "Yayasan sosial yang berfokus pada penyaluran makanan surplus kepada masyarakat yang membutuhkan",
+		DocumentURL:        "https://drive.google.com/file/d/example-doc-mitra",
+		VerificationStatus: "PENDING",
+	}
+	database.DB.Create(&mitraProfile)
+	log.Printf("✓ Mitra Donasi created (ID: %d, email: %s, password: mitra123, profile_id: %d)", mitraUser.ID, mitraUser.Email, mitraProfile.ID)
 
 	// Create products
 	log.Println("Creating products...")
