@@ -1,0 +1,240 @@
+/* ============================================
+   MITRA (LANDING PAGE PARTNERSHIP)
+   ============================================ */
+
+.mitra-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ============================================
+   HERO SECTION — Kutipan inspiratif
+   ============================================ */
+
+.mitra-hero {
+  position: relative;
+  width: 100%;
+  background-color: #fcc304;
+  padding: 80px 40px;
+  overflow: hidden;
+}
+
+.mitra-hero-container {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mitra-hero-quote {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.mitra-quote-dark {
+  color: #151c27;
+}
+
+.mitra-quote-green {
+  color: #0b7a3b;
+}
+
+/* Dekorasi SVG — posisi absolute di pojok-pojok */
+.mitra-deco {
+  position: absolute;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Pizza slice — pojok kiri bawah */
+.mitra-deco-pizza {
+  bottom: 50px;
+  left: 80px;
+  width: 80px;
+  height: 80px;
+}
+
+/* Roti/Croissant — pojok kanan atas */
+.mitra-deco-bread {
+  top: 50px;
+  right: 120px;
+  width: 80px;
+  height: 80px;
+}
+
+/* Cangkir teh — pojok kanan bawah */
+.mitra-deco-cup {
+  bottom: 60px;
+  right: 100px;
+  width: 80px;
+  height: 80px;
+}
+
+/* Hover effect pada dekorasi (subtle) */
+.mitra-hero:hover .mitra-deco {
+  opacity: 0.5;
+}
+
+.mitra-hero:hover .mitra-deco-pizza {
+  transform: rotate(-5deg);
+}
+
+.mitra-hero:hover .mitra-deco-bread {
+  transform: rotate(5deg);
+}
+
+.mitra-hero:hover .mitra-deco-cup {
+  transform: translateY(-5px);
+}
+
+/* ============================================
+   STATS BAR — Statistik mitra
+   ============================================ */
+
+.mitra-stats {
+  width: 100%;
+  background-color: #0b7a3b;
+  padding: 40px 40px;
+}
+
+.mitra-stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+
+.mitra-stat-item {
+  text-align: center;
+  color: white;
+}
+
+.mitra-stat-number {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 8px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.mitra-stat-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* ============================================
+   RESPONSIVE — Mobile & Tablet
+   ============================================ */
+
+/* Tablet (max-width: 900px) */
+@media (max-width: 900px) {
+  .mitra-hero {
+    padding: 60px 32px;
+  }
+
+  .mitra-hero-quote {
+    font-size: clamp(24px, 3.5vw, 32px);
+  }
+
+  /* Dekorasi lebih kecil di tablet */
+  .mitra-deco-pizza {
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    left: 30px;
+  }
+
+  .mitra-deco-bread {
+    width: 60px;
+    height: 60px;
+    top: 30px;
+    right: 40px;
+  }
+
+  .mitra-deco-cup {
+    width: 60px;
+    height: 60px;
+    bottom: 30px;
+    right: 30px;
+  }
+
+  /* Stats grid 2 kolom di tablet */
+  .mitra-stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .mitra-stat-number {
+    font-size: 32px;
+  }
+
+  .mitra-stat-label {
+    font-size: 13px;
+  }
+}
+
+/* Mobile (max-width: 570px) */
+@media (max-width: 570px) {
+  .mitra-hero {
+    padding: 50px 20px;
+  }
+
+  .mitra-hero-quote {
+    font-size: 22px;
+    line-height: 1.4;
+  }
+
+  /* Sembunyikan dekorasi di mobile untuk clean look */
+  .mitra-deco {
+    display: none;
+  }
+
+  /* Stats padding lebih compact */
+  .mitra-stats {
+    padding: 32px 20px;
+  }
+
+  /* Stats grid 1 kolom di mobile (stack vertikal) */
+  .mitra-stats-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .mitra-stat-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .mitra-stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .mitra-stat-number {
+    font-size: 28px;
+  }
+
+  .mitra-stat-label {
+    font-size: 12px;
+  }
+}
+
+/* Ultra-wide screens (>1400px) — batasi lebar quote */
+@media (min-width: 1400px) {
+  .mitra-hero-container {
+    max-width: 1000px;
+  }
+}
