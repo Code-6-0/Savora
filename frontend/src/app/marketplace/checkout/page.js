@@ -488,7 +488,14 @@ export default function CheckoutPage() {
       const orderResponse = await createOrder(orderData);
       const normalized = normalizeOrder(orderResponse);
       if (!normalized.id) throw new Error("Invalid order response");
-      router.push(`/orders/${normalized.id}/pay`);
+
+      // Redirect langsung ke Xendit jika ada invoice_url
+      if (normalized.paymentUrl) {
+        window.location.href = normalized.paymentUrl;
+      } else {
+        // Fallback: ke halaman payment lokal jika invoice_url tidak tersedia
+        router.push(`/orders/${normalized.id}/pay`);
+      }
     } catch (err) {
       throw err;
     }

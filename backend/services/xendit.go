@@ -199,10 +199,12 @@ func processPaymentStatus(db *gorm.DB, payment models.Payment, status string) er
 			payment.PaidAt = &now
 			tx.Save(&payment)
 
+			// Set pickup deadline (24 jam setelah paid)
+			deadline := now.Add(24 * time.Hour)
 			order.Status = models.OrderPaid
 			order.PaymentStatus = models.PaymentPaid
 			order.PaidAt = &now
-			order.PickupDeadline = now.Add(24 * time.Hour)
+			order.PickupDeadline = &deadline
 			order.PickupCode = generatePickupCode()
 			tx.Save(&order)
 

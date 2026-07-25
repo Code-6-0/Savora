@@ -79,7 +79,7 @@ export function normalizeOrder(order) {
     id: order.id || order.order_id,
     status: order.status,
     paymentStatus: order.payment_status,
-    paymentUrl: order.payment_url || order.invoice_url,
+    paymentUrl: order.payment?.payment_url || order.payment_url || order.invoice_url,
     pickupCode: order.pickup_code,
     pickupDeadline: order.pickup_deadline,
     reservedUntil: order.reserved_until,

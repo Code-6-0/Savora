@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/savora/backend/models"
 	"github.com/savora/backend/services"
@@ -81,15 +83,64 @@ func (h *OrderHandler) GetOrders(c *fiber.Ctx) error {
 func (h *OrderHandler) GetOrderDetail(c *fiber.Ctx) error {
 	db := services.GetDB()
 	id := c.Params("id")
-	
+
 	var order models.Order
-	if err := db.Preload("Product").Preload("Customer").First(&order, id).Error; err != nil {
+	if err := db.Preload("Product").Preload("Customer").Preload("Payment").First(&order, id).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": "Order tidak ditemukan",
 		})
 	}
 
-	return c.JSON(order)
+	// DTO response untuk tidak bocorkan data sensitif customer
+	type OrderDetailResponse struct {
+		ID             uint       `json:"id"`
+		ProductID      uint       `json:"product_id"`
+		CustomerID     uint       `json:"customer_id"`
+		Quantity       int        `json:"quantity"`
+		Subtotal       float64    `json:"subtotal"`
+		ServiceFee     float64    `json:"service_fee"`
+		TotalPrice     float64    `json:"total_price"`
+		PaymentMethod  string     `json:"payment_method"`
+		PaymentStatus  string     `json:"payment_status"`
+		PickupCode     string     `json:"pickup_code,omitempty"`
+		ReservedUntil  time.Time  `json:"reserved_until"`
+		PickupDeadline *time.Time `json:"pickup_deadline,omitempty"`
+		Status         string     `json:"status"`
+		CancelReason   string     `json:"cancel_reason,omitempty"`
+		CreatedAt      time.Time  `json:"created_at"`
+		PaidAt         *time.Time `json:"paid_at,omitempty"`
+		CompletedAt    *time.Time `json:"completed_at,omitempty"`
+
+		// Relations (selective fields only)
+		Product      models.Product  `json:"product,omitempty"`
+		CustomerName string          `json:"customer_name"`
+		Payment      *models.Payment `json:"payment,omitempty"`
+	}
+
+	response := OrderDetailResponse{
+		ID:             order.ID,
+		ProductID:      order.ProductID,
+		CustomerID:     order.CustomerID,
+		Quantity:       order.Quantity,
+		Subtotal:       order.Subtotal,
+		ServiceFee:     order.ServiceFee,
+		TotalPrice:     order.TotalPrice,
+		PaymentMethod:  order.PaymentMethod,
+		PaymentStatus:  order.PaymentStatus,
+		PickupCode:     order.PickupCode,
+		ReservedUntil:  order.ReservedUntil,
+		PickupDeadline: order.PickupDeadline,
+		Status:         order.Status,
+		CancelReason:   order.CancelReason,
+		CreatedAt:      order.CreatedAt,
+		PaidAt:         order.PaidAt,
+		CompletedAt:    order.CompletedAt,
+		Product:        order.Product,
+		CustomerName:   order.Customer.Name,
+		Payment:        order.Payment,
+	}
+
+	return c.JSON(response)
 }
 
 // UpdateOrderStatus - PATCH /orders/:id/status (UMKM/Admin)
