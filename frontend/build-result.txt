@@ -6,25 +6,15 @@
 - Environments: .env.local, .env
 
   Creating an optimized production build ...
-Found 1 warning while optimizing generated CSS:
-
-[2m│   }[22m
-[2m│ }[22m
-[2m│[22m @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Manrope:wght@400;500;600;700;800&display=swap');
-[2m┆[22m        [33m[2m^--[22m @import rules must precede all rules aside from @charset and @layer statements[39m
-[2m┆[22m
-[2m│ :root {[22m
-[2m│   --font-size: 15px;[22m
-
-✓ Compiled successfully in 4.8s
+✓ Compiled successfully in 4.5s
   Running TypeScript ...
-  Finished TypeScript in 115ms ...
+  Finished TypeScript in 132ms ...
   Collecting page data using 11 workers ...
   Generating static pages using 11 workers (0/37) ...
   Generating static pages using 11 workers (9/37) 
   Generating static pages using 11 workers (18/37) 
   Generating static pages using 11 workers (27/37) 
-✓ Generating static pages using 11 workers (37/37) in 703ms
+✓ Generating static pages using 11 workers (37/37) in 993ms
   Finalizing page optimization ...
   Collecting build traces ...
 

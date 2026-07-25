@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import { Plus, Search, Filter, ArrowUpDown, Clock, CheckCircle2, AlertTriangle, AlertCircle, BarChart2, Lightbulb, TrendingUp, Sparkles, Image as ImageIcon, Camera, Package, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -11,6 +12,7 @@ import { fetchUMKMProducts, deleteProduct, fallbackProducts } from "@/lib/produc
 
 export default function ProdukPage() {
   const router = useRouter();
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [activeTab, setActiveTab] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addMode, setAddMode] = useState(null); // 'manual' or 'ai'
@@ -34,6 +36,10 @@ export default function ProdukPage() {
     }
     loadProducts();
   }, []);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const [newProduct, setNewProduct] = useState({ 
     name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",

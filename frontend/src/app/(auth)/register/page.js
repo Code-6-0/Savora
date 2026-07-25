@@ -61,10 +61,8 @@ export default function RegisterPage() {
       const response = await apiPost('/auth/register', payload);
 
       if (response.success && response.data) {
-        setToken(response.data.token);
-        setUser(response.data.user);
-        const redirectUrl = getRedirectAfterLogin(response.data);
-        router.push(redirectUrl);
+        // F1: Register tanpa auto-login — redirect ke login dengan flag registered=1
+        router.push('/login?registered=1');
       } else {
         setError(response.error?.message || 'Registrasi gagal');
       }

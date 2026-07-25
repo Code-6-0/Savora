@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegisteredBanner, setShowRegisteredBanner] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -27,6 +28,16 @@ export default function LoginPage() {
       }
     }
   }, [router]);
+
+  // F1: Cek query param registered=1 via window.location.search (CSR-safe, tanpa Suspense)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('registered') === '1') {
+        setShowRegisteredBanner(true);
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,7 +61,11 @@ export default function LoginPage() {
 
       if (response.success && response.data) {
         setToken(response.data.token);
-        setUser(response.data.user);
+        // FIX 1: Gabungkan verification_status ke user object untuk disimpan di localStorage
+        setUser({
+          ...response.data.user,
+          verification_status: response.data.verification_status
+        });
 
         const redirectUrl = getRedirectAfterLogin(response.data);
         router.push(redirectUrl);
@@ -93,6 +108,13 @@ export default function LoginPage() {
             <h1 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 8px', color: '#1F2937' }}>Selamat Datang di Savora!</h1>
             <p style={{ fontSize: '12px', color: '#6B7280', margin: 0, lineHeight: '1.5' }}>Solusi cerdas untuk menyelamatkan makanan dan menghemat pengeluaran, kapan saja dan di mana saja</p>
           </div>
+
+          {/* Success Banner (F1: registered=1) */}
+          {showRegisteredBanner && (
+            <div style={{ padding: '12px 16px', backgroundColor: '#D1FAE5', border: '1px solid #059669', borderRadius: '8px', marginBottom: '16px', fontSize: '14px', color: '#065F46' }}>
+              Pendaftaran berhasil, silakan masuk.
+            </div>
+          )}
 
           {/* Error Banner */}
           {error && (

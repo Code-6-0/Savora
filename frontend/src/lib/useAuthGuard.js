@@ -73,15 +73,16 @@ export function useAuthGuard(allowedRoles = [], options = {}) {
             }
           } catch (err) {
             console.error('Failed to fetch verification status:', err);
-            // Jika fetch gagal, lanjutkan tanpa redirect (assume approved)
+            // FIX 2: Jika fetch gagal, verificationStatus tetap undefined → akan diblokir oleh whitelist logic
           }
         }
 
         // Normalisasi verification_status dengan uppercase untuk comparison
         const normalizedStatus = String(verificationStatus || '').toUpperCase();
 
-        // Jika PENDING atau REJECTED, redirect ke /verifikasi-umkm
-        if (normalizedStatus === 'PENDING' || normalizedStatus === 'REJECTED') {
+        // FIX 2: WHITELIST logic - izinkan HANYA jika APPROVED (identik dengan getRedirectAfterLogin)
+        // Ini menutup celah: status undefined/error/tidak dikenal HARUS diblokir
+        if (normalizedStatus !== 'APPROVED') {
           router.replace('/verifikasi-umkm');
           return;
         }

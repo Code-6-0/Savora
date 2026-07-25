@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
 import { useCart } from "@/lib/CartContext";
+import SavoraNavbar from "@/components/navbar/SavoraNavbar";
 
 export default function BerandaPage() {
   const { count } = useCart();
@@ -133,34 +134,8 @@ export default function BerandaPage() {
 
   return (
     <div className="beranda-page">
-      {/* 1. Navbar */}
-      <header className="beranda-navbar">
-        <div className="beranda-navbar-container">
-          <div className="beranda-brand">
-            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
-            <span className="beranda-brand-text">Savora</span>
-          </div>
-          <nav className="beranda-nav">
-            <Link href="/" className="nav-active">Home</Link>
-            <Link href="/marketplace">Marketplace</Link>
-            <a href="#mitra">Mitra</a>
-            <a href="#tentang">Tentang</a>
-          </nav>
-          <button className="beranda-location">
-            <MapPin size={14} />
-            <span>Masukkan Alamat Kamu</span>
-            <ChevronDown size={13} />
-          </button>
-          <div className="beranda-actions">
-            <Link href="/login" className="beranda-btn-secondary">
-              Masuk
-            </Link>
-            <Link href="/register" className="beranda-btn-primary">
-              Daftar Sekarang
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Navbar Global */}
+      <SavoraNavbar />
 
       {/* 2. Hero Hijau */}
       <section className="beranda-hero">

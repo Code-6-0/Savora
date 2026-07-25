@@ -5,13 +5,20 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import { getToken } from "@/lib/auth";
+import { getToken, isAdmin } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
 export default function KelolaUMKMPage() {
   const router = useRouter();
   const [umkmList, setUmkmList] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);

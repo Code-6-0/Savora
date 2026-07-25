@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthGuard } from '@/lib/useAuthGuard';
 import { isAuthenticated, getUser, logout } from '@/lib/auth';
 import { apiGet } from '@/lib/api';
 import Button from '@/components/atoms/Button';
 
 export default function MitraDashboardPage() {
   const router = useRouter();
+  const { loading: authLoading } = useAuthGuard(['MITRA_DONASI']);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
@@ -43,6 +45,10 @@ export default function MitraDashboardPage() {
 
     checkAuth();
   }, [router]);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const handleLogout = () => {
     logout();

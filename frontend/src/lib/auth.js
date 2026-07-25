@@ -67,7 +67,19 @@ export function isAuthenticated() {
 export function logout() {
   removeToken();
   if (typeof window !== 'undefined') {
-    window.location.href = '/login';
+    window.location.href = '/'; // F3a: redirect home (bukan /login)
+  }
+}
+
+/**
+ * F3b: Logout dengan konfirmasi dialog
+ */
+export function confirmLogout() {
+  if (typeof window !== 'undefined') {
+    const confirmed = window.confirm('Yakin ingin keluar?');
+    if (confirmed) {
+      logout();
+    }
   }
 }
 
@@ -108,7 +120,7 @@ export function getRedirectAfterLogin(roleOrData, verificationStatus = null) {
       }
       return '/verifikasi-umkm'; // PENDING atau REJECTED → halaman menunggu verifikasi
     case 'customer':
-      return '/marketplace';
+      return '/'; // F2: customer → home (bukan /marketplace)
     case 'mitra_donasi':
     case 'mitra':
       return '/mitra-donasi/dashboard'; // Halaman status mitra dengan badge

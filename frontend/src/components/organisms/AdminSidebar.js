@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getToken, logout } from "@/lib/auth";
+import { getToken, logout, confirmLogout } from "@/lib/auth";
 import {
   LayoutDashboard,
   CheckCircle,
@@ -143,7 +143,7 @@ export default function AdminSidebar({ onClose }) {
   ];
 
   const handleLogout = () => {
-    logout();
+    confirmLogout(); // F3c: dengan dialog konfirmasi
   };
 
   return (

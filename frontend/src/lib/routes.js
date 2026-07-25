@@ -4,6 +4,7 @@ export function isMarketplaceRoute(pathname) {
     pathname === "/marketplace" ||
     pathname.startsWith("/marketplace/") ||
     pathname === "/akun" ||
-    pathname.startsWith("/akun/")
+    pathname.startsWith("/akun/") ||
+    pathname === "/profil-saya"  // B-1: Profil semua role tanpa sidebar UMKM
   );
 }

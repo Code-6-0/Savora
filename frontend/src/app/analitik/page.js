@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, YAxis, PieChart, Pie, Legend } from "recharts";
 import {
   TrendingUp, Package, DollarSign, Calendar, Download, Leaf, Users, Star, ArrowUpRight,
@@ -20,6 +21,7 @@ const ANALITIK_TABS = ["Penjualan", "Produk", "Food Waste", "Customer", "Sustain
 const INSIGHT_TABS = ["Evaluasi Stok", "Performa Listing", "Harga", "Produk", "Customer", "Sustainability"];
 
 export default function AnalitikPage() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   // View level: gabungan Analitik + Insight jadi satu menu.
   const [view, setView] = useState("Analitik");
   const [activeTab, setActiveTab] = useState("Penjualan");
@@ -60,6 +62,10 @@ export default function AnalitikPage() {
     const section = new URLSearchParams(window.location.search).get("section");
     if (section && section.toLowerCase() === "insight") setView("Insight");
   }, []);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const formatRupiah = (number) => {
     if (number >= 1000000) {
