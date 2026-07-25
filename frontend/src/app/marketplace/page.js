@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,7 +20,7 @@ import { fetchAds, AD_TYPES } from "@/lib/ads";
 import { deriveRestaurantSafety } from "@/lib/reviews";
 import { useCart } from "@/lib/CartContext";
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const { count } = useCart();
   const [allProducts, setAllProducts] = useState([]);
@@ -985,5 +985,34 @@ export default function MarketplacePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#16a34a',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Memuat marketplace...</p>
+        </div>
+      </div>
+    }>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
