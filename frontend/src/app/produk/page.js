@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
-import { fetchUMKMProducts, deleteProduct, fallbackProducts } from "@/lib/products";
+import { fetchUMKMProducts, createProduct, updateProduct, deleteProduct, fallbackProducts } from "@/lib/products";
 
 export default function ProdukPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function ProdukPage() {
   useEffect(() => {
     async function loadProducts() {
       setLoading(true);
-      const data = await fetchUMKMProducts(1, false);
+      const data = await fetchUMKMProducts(1, true); // Enable fallback to dummy data
       setProducts(data);
       setLoading(false);
     }
@@ -75,34 +75,39 @@ export default function ProdukPage() {
   const currentFtiStatus = calculateFoodTrustStatus(newProduct);
   const ftiColor = getFtiBadgeColor(currentFtiStatus);
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.category) return;
     
+    // Prepare product data for API
+    const productData = {
+      umkm_id: 1, // TODO: Get from auth context
+      name: newProduct.name,
+      category: newProduct.category,
+      original_price: parseInt(newProduct.original_price) || 0,
+      rescue_price: parseInt(newProduct.rescue_price) || 0,
+      stock: parseInt(newProduct.stock) || 0,
+      production_time: newProduct.production_time || null,
+      expires_at: newProduct.expires_at || null,
+      packaging_condition: newProduct.packaging_condition || "Standar",
+      storage_method: newProduct.storage_method || "Sesuai",
+      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
+    };
+    
     if (editingProductId) {
-      setProducts(products.map(p => p.id === editingProductId ? {
-        ...p,
-        name: newProduct.name,
-        category: newProduct.category,
-        original_price: parseInt(newProduct.original_price) || 0,
-        rescue_price: parseInt(newProduct.rescue_price) || 0,
-        stock: parseInt(newProduct.stock) || 0,
-        status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
-        ftiStatus: currentFtiStatus
-      } : p));
+      // Update existing product
+      const updatedProduct = await updateProduct(editingProductId, productData);
+      if (updatedProduct) {
+        setProducts(products.map(p => p.id === editingProductId ? {
+          ...updatedProduct,
+          ftiStatus: currentFtiStatus
+        } : p));
+      }
     } else {
-      const addedProduct = {
-        id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-        name: newProduct.name,
-        category: newProduct.category,
-        original_price: parseInt(newProduct.original_price) || 0,
-        rescue_price: parseInt(newProduct.rescue_price) || 0,
-        stock: parseInt(newProduct.stock) || 0,
-        score: 100,
-        timer: "12j",
-        status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
-        ftiStatus: currentFtiStatus
-      };
-      setProducts([addedProduct, ...products]);
+      // Create new product
+      const createdProduct = await createProduct(productData);
+      if (createdProduct) {
+        setProducts([{ ...createdProduct, ftiStatus: currentFtiStatus }, ...products]);
+      }
     }
 
     setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" });
