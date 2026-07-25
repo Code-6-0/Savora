@@ -83,47 +83,85 @@ export async function fetchUMKMProducts(umkmId = DEFAULT_UMKM_ID, allowFallback 
 
 /**
  * Buat produk baru via API.
+ * Otomatis menghitung expires_at dari production_time + shelf_life_hours jika belum ada.
  */
 export async function createProduct(productData) {
   try {
+    const payload = { ...productData };
+    
+    // Hitung expires_at jika belum ada tapi ada production_time & shelf_life_hours
+    if (!payload.expires_at && payload.production_time && payload.shelf_life_hours) {
+      const productionMs = new Date(payload.production_time).getTime();
+      const shelfLifeMs = Number(payload.shelf_life_hours) * 60 * 60 * 1000;
+      payload.expires_at = new Date(productionMs + shelfLifeMs).toISOString();
+    }
+    
+    // Validasi: expires_at tidak boleh di masa lalu
+    if (payload.expires_at) {
+      const expiresMs = new Date(payload.expires_at).getTime();
+      if (expiresMs < Date.now()) {
+        throw new Error("Waktu kedaluwarsa tidak boleh di masa lalu");
+      }
+    }
+    
     const response = await fetch(`${baseUrl()}/api/products`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      throw new Error("Gagal membuat produk");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Gagal membuat produk");
     }
     const data = await response.json();
     return normalizeProduct(data);
   } catch (error) {
     console.error(error);
-    return null;
+    throw error; // Lempar error agar form bisa tangkap
   }
 }
 
 /**
  * Update produk via API.
+ * Otomatis menghitung expires_at dari production_time + shelf_life_hours jika belum ada.
  */
 export async function updateProduct(productId, productData) {
   try {
+    const payload = { ...productData };
+    
+    // Hitung expires_at jika belum ada tapi ada production_time & shelf_life_hours
+    if (!payload.expires_at && payload.production_time && payload.shelf_life_hours) {
+      const productionMs = new Date(payload.production_time).getTime();
+      const shelfLifeMs = Number(payload.shelf_life_hours) * 60 * 60 * 1000;
+      payload.expires_at = new Date(productionMs + shelfLifeMs).toISOString();
+    }
+    
+    // Validasi: expires_at tidak boleh di masa lalu
+    if (payload.expires_at) {
+      const expiresMs = new Date(payload.expires_at).getTime();
+      if (expiresMs < Date.now()) {
+        throw new Error("Waktu kedaluwarsa tidak boleh di masa lalu");
+      }
+    }
+    
     const response = await fetch(`${baseUrl()}/api/products/${productId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      throw new Error("Gagal mengupdate produk");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Gagal mengupdate produk");
     }
     const data = await response.json();
     return normalizeProduct(data);
   } catch (error) {
     console.error(error);
-    return null;
+    throw error; // Lempar error agar form bisa tangkap
   }
 }
 
