@@ -157,7 +157,7 @@ export function normalizeUMKMOrder(raw) {
 }
 
 function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 }
 
 /**
@@ -166,7 +166,7 @@ function baseUrl() {
 export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
   try {
     // TODO: backend belum punya filter per-UMKM; sementara ambil semua orders
-const response = await fetch(`${baseUrl()}/orders`);
+    const response = await fetch(`${baseUrl()}/api/orders`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json")) {
       throw new Error("Orders API tidak tersedia");
