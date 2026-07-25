@@ -145,6 +145,7 @@ export default function BerandaPage() {
             <Link href="/marketplace">Marketplace</Link>
             <a href="#mitra">Mitra</a>
             <a href="#tentang">Tentang</a>
+            <Link href="/akun">Impact</Link>
           </nav>
           <button className="beranda-location">
             <MapPin size={14} />

@@ -216,6 +216,7 @@ export default function MarketplacePage() {
             <Link href="/marketplace" className="nav-active">Marketplace</Link>
             <a href="#mitra">Mitra</a>
             <a href="#tentang">Tentang</a>
+            <Link href="/akun">Impact</Link>
           </nav>
           <button className="beranda-location">
             <MapPin size={14} />
