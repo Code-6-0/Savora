@@ -3,6 +3,8 @@
 // Membaca data produk dari backend Go (services/product.go) dengan pola
 // fetch + fallback demo lokal agar UI tetap jalan saat backend belum tersedia (aturan AGENTS.md).
 
+import { apiFetch } from './api';
+
 const DEFAULT_UMKM_ID = 1;
 
 // Fallback demo (dipakai bila API belum tersedia/mati).
@@ -43,34 +45,21 @@ export function normalizeProduct(raw) {
   };
 }
 
-function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-}
-
 /**
  * Ambil daftar produk UMKM. Fallback ke demo lokal bila API gagal.
  */
 export async function fetchUMKMProducts(umkmId = DEFAULT_UMKM_ID, allowFallback = true) {
   try {
-    const response = await fetch(`${baseUrl()}/api/products/umkm/${umkmId}`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) {
-      if (allowFallback) throw new Error("Products API tidak tersedia");
-      return [];
-    }
-    const data = await response.json();
-    if (!Array.isArray(data)) {
-      if (allowFallback) throw new Error("Respons products tidak valid");
-      return [];
-    }
-    
+    const data = await apiFetch(`/products/umkm/${umkmId}`);
+    const products = Array.isArray(data) ? data : [];
+
     // Jika backend kosong (array length 0), kita bisa lempar error agar fallback ke dummy berjalan
     // (Ini berguna untuk prototype lomba agar layar tidak kosong).
-    if (data.length === 0 && allowFallback) {
+    if (products.length === 0 && allowFallback) {
       throw new Error("Database kosong, fallback ke dummy");
     }
 
-    return data.map(normalizeProduct);
+    return products.map(normalizeProduct);
   } catch (error) {
     if (allowFallback) {
       console.warn("Using fallback products:", error.message);
@@ -86,17 +75,10 @@ export async function fetchUMKMProducts(umkmId = DEFAULT_UMKM_ID, allowFallback 
  */
 export async function createProduct(productData) {
   try {
-    const response = await fetch(`${baseUrl()}/api/products`, {
+    const data = await apiFetch('/products', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(productData),
+      body: productData
     });
-    if (!response.ok) {
-      throw new Error("Gagal membuat produk");
-    }
-    const data = await response.json();
     return normalizeProduct(data);
   } catch (error) {
     console.error(error);
@@ -109,17 +91,10 @@ export async function createProduct(productData) {
  */
 export async function updateProduct(productId, productData) {
   try {
-    const response = await fetch(`${baseUrl()}/api/products/${productId}`, {
+    const data = await apiFetch(`/products/${productId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(productData),
+      body: productData
     });
-    if (!response.ok) {
-      throw new Error("Gagal mengupdate produk");
-    }
-    const data = await response.json();
     return normalizeProduct(data);
   } catch (error) {
     console.error(error);
@@ -132,12 +107,9 @@ export async function updateProduct(productId, productData) {
  */
 export async function deleteProduct(productId) {
   try {
-    const response = await fetch(`${baseUrl()}/api/products/${productId}`, {
-      method: 'DELETE',
+    await apiFetch(`/products/${productId}`, {
+      method: 'DELETE'
     });
-    if (!response.ok) {
-      throw new Error("Gagal menghapus produk");
-    }
     return true;
   } catch (error) {
     console.error(error);

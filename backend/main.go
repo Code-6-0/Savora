@@ -64,51 +64,54 @@ func main() {
 }
 
 func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
+	// Grup /api untuk semua route backend (konvensi final tim)
+	api := app.Group("/api")
+
 	// Product routes
-	app.Get("/api/products/umkm/:umkm_id", handlers.GetProductsByUMKM)
-	app.Get("/api/products/marketplace", handlers.GetActiveMarketplaceProducts)
-	app.Post("/api/products", handlers.CreateProduct)
-	app.Put("/api/products/:id", handlers.UpdateProduct)
-	app.Delete("/api/products/:id", handlers.DeleteProduct)
+	api.Get("/products/umkm/:umkm_id", handlers.GetProductsByUMKM)
+	api.Get("/products/marketplace", handlers.GetActiveMarketplaceProducts)
+	api.Post("/products", handlers.CreateProduct)
+	api.Put("/products/:id", handlers.UpdateProduct)
+	api.Delete("/products/:id", handlers.DeleteProduct)
 
 	// Order routes
 	orderHandler := handlers.NewOrderHandler(xenditService)
-	app.Post("/api/orders", orderHandler.CreateOrder)
-	app.Get("/api/orders", orderHandler.GetOrders)
-	app.Get("/api/orders/:id", orderHandler.GetOrderDetail)
-	app.Patch("/api/orders/:id/status", orderHandler.UpdateOrderStatus)
-	app.Post("/api/orders/:id/validate-pickup", orderHandler.ValidatePickupCode)
+	api.Post("/orders", orderHandler.CreateOrder)
+	api.Get("/orders", orderHandler.GetOrders)
+	api.Get("/orders/:id", orderHandler.GetOrderDetail)
+	api.Patch("/orders/:id/status", orderHandler.UpdateOrderStatus)
+	api.Post("/orders/:id/validate-pickup", orderHandler.ValidatePickupCode)
 
-	// Payment routes
+	// Payment routes (webhook Xendit sekarang di /api/payments/xendit-webhook)
 	paymentHandler := handlers.NewPaymentHandler(xenditService)
-	app.Post("/payments/xendit-webhook", paymentHandler.XenditWebhook)
+	api.Post("/payments/xendit-webhook", paymentHandler.XenditWebhook)
 
 	// Review routes
 	reviewHandler := handlers.NewReviewHandler()
-	app.Post("/reviews", reviewHandler.CreateReview)
-	app.Get("/reviews/keywords/:umkm_id", reviewHandler.GetKeywordSafety)
-	app.Get("/reviews/umkm/:umkm_id", reviewHandler.GetReviewsByUmkm)
-	app.Get("/reviews/product/:product_id", reviewHandler.GetReviewsByProduct)
+	api.Post("/reviews", reviewHandler.CreateReview)
+	api.Get("/reviews/keywords/:umkm_id", reviewHandler.GetKeywordSafety)
+	api.Get("/reviews/umkm/:umkm_id", reviewHandler.GetReviewsByUmkm)
+	api.Get("/reviews/product/:product_id", reviewHandler.GetReviewsByProduct)
 
 	// Help Ticket routes (Should Have - Fase 7)
 	helpHandler := handlers.NewHelpTicketHandler()
-	app.Post("/help-tickets", helpHandler.CreateHelpTicket)
-	app.Get("/help-tickets", helpHandler.GetHelpTickets)
-	app.Get("/payments/:payment_id/logs", helpHandler.GetPaymentLogs)
-	app.Patch("/help-tickets/:id/status", helpHandler.UpdateTicketStatus)
+	api.Post("/help-tickets", helpHandler.CreateHelpTicket)
+	api.Get("/help-tickets", helpHandler.GetHelpTickets)
+	api.Get("/payments/:payment_id/logs", helpHandler.GetPaymentLogs)
+	api.Patch("/help-tickets/:id/status", helpHandler.UpdateTicketStatus)
 
 	// // Ad routes (Tugas 1)
 	// TODO(iklan-soon): dinonaktifkan sementara mengikuti build tag di handlers/ads.go
-	// app.Get("/api/ads/packages", handlers.GetAdPackages)
-	// app.Post("/api/ads", handlers.CreateAd)
-	// app.Get("/api/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
-	// app.Put("/api/ads/:id/status", handlers.UpdateAdStatus)
-	// app.Get("/api/ads/active", handlers.GetActiveAds)
+	// api.Get("/ads/packages", handlers.GetAdPackages)
+	// api.Post("/ads", handlers.CreateAd)
+	// api.Get("/ads/umkm/:umkm_id", handlers.GetAdsByUMKM)
+	// api.Put("/ads/:id/status", handlers.UpdateAdStatus)
+	// api.Get("/ads/active", handlers.GetActiveAds)
 
 	// Waste Log routes (Tugas 2)
-	app.Get("/api/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
-	app.Post("/api/waste-logs", handlers.CreateWasteLog)
+	api.Get("/waste-logs/umkm/:umkm_id", handlers.GetWasteLogsByUMKM)
+	api.Post("/waste-logs", handlers.CreateWasteLog)
 
 	// Analytics routes (Tugas 4)
-	app.Get("/api/analytics/insight/:umkm_id", handlers.GetUmkmInsight)
+	api.Get("/analytics/insight/:umkm_id", handlers.GetUmkmInsight)
 }

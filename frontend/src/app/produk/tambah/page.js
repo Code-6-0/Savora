@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { apiFetch } from "@/lib/api";
 import {
   LayoutDashboard,
   Package,
@@ -2156,24 +2157,12 @@ export default function App() {
           reader.readAsDataURL(file);
         });
 
-        // Upload ke backend
-        const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const trimmedBase = rawBase.replace(/\/+$/, "");
-        const apiUrl = trimmedBase.endsWith("/api") ? trimmedBase : `${trimmedBase}/api`;
-        const uploadResponse = await fetch(`${apiUrl}/upload/image`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ image: base64Data }),
+        // Upload ke backend - apiFetch otomatis inject prefix /api
+        const uploadResult = await apiFetch('/upload/image', {
+          method: 'POST',
+          body: { image: base64Data }
         });
 
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json();
-          throw new Error(errorData.error || "Upload gambar gagal");
-        }
-
-        const uploadResult = await uploadResponse.json();
         uploadedPhotoUrl = uploadResult.url;
         console.log("✅ Gambar berhasil diupload:", uploadedPhotoUrl);
       }
@@ -2203,23 +2192,12 @@ export default function App() {
         status: "Aktif",
       };
 
-      const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const trimmedBase = rawBase.replace(/\/+$/, "");
-      const apiUrl = trimmedBase.endsWith("/api") ? trimmedBase : `${trimmedBase}/api`;
-      const response = await fetch(`${apiUrl}/products`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      // Simpan produk ke backend - apiFetch otomatis inject prefix /api
+      const result = await apiFetch('/products', {
+        method: 'POST',
+        body: payload
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
       console.log("✅ Produk berhasil disimpan:", result);
       setPublished(true);
     } catch (error) {
