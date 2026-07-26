@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
 import { fetchUMKMProducts, createProduct, updateProduct, deleteProduct, fallbackProducts } from "@/lib/products";
+import { isoToDatetimeLocal, datetimeLocalToISO, validateProductDates, detectExpiryExtension } from "@/lib/dateValidation";
 
 export default function ProdukPage() {
   const router = useRouter();
@@ -24,6 +25,12 @@ export default function ProdukPage() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Validation states
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [expiryExtensionWarning, setExpiryExtensionWarning] = useState(null);
+  const [isProductionTimeEditable, setIsProductionTimeEditable] = useState(false);
+  const [originalProductData, setOriginalProductData] = useState(null);
 
   useEffect(() => {
     async function loadProducts() {
@@ -78,6 +85,29 @@ export default function ProdukPage() {
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.category) return;
     
+    // Reset validation state
+    setValidationErrors([]);
+    setExpiryExtensionWarning(null);
+    
+    // Convert datetime-local to ISO
+    const productionTimeISO = datetimeLocalToISO(newProduct.production_time);
+    const expiresAtISO = datetimeLocalToISO(newProduct.expires_at);
+    
+    // Validate dates
+    const validation = validateProductDates(productionTimeISO, expiresAtISO);
+    if (!validation.valid) {
+      setValidationErrors(validation.errors);
+      return; // Stop submission
+    }
+    
+    // Check for expiry extension warning (only in edit mode)
+    if (editingProductId && originalProductData?.expires_at) {
+      const extension = detectExpiryExtension(originalProductData.expires_at, expiresAtISO);
+      if (extension.extended) {
+        setExpiryExtensionWarning("Memperpanjang waktu kedaluwarsa akan menaikkan Rescue Timer & Score. Pastikan sesuai kondisi makanan sebenarnya.");
+      }
+    }
+    
     // Prepare product data for API
     const productData = {
       umkm_id: 1, // TODO: Get from auth context
@@ -86,57 +116,86 @@ export default function ProdukPage() {
       original_price: parseInt(newProduct.original_price) || 0,
       rescue_price: parseInt(newProduct.rescue_price) || 0,
       stock: parseInt(newProduct.stock) || 0,
-      production_time: newProduct.production_time || null,
-      expires_at: newProduct.expires_at || null,
+      production_time: productionTimeISO,
+      expires_at: expiresAtISO,
       packaging_condition: newProduct.packaging_condition || "Standar",
       storage_method: newProduct.storage_method || "Sesuai",
-      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
+      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Active",
     };
     
-    if (editingProductId) {
-      // Update existing product
-      const updatedProduct = await updateProduct(editingProductId, productData);
-      if (updatedProduct) {
-        setProducts(products.map(p => p.id === editingProductId ? {
-          ...updatedProduct,
-          ftiStatus: currentFtiStatus
-        } : p));
+    try {
+      if (editingProductId) {
+        // Update existing product
+        const updatedProduct = await updateProduct(editingProductId, productData);
+        if (updatedProduct) {
+          // Refetch all products to ensure timer/score are updated
+          const refreshedProducts = await fetchUMKMProducts(1);
+          setProducts(refreshedProducts);
+        }
+      } else {
+        // Create new product
+        const createdProduct = await createProduct(productData);
+        if (createdProduct) {
+          // Refetch all products
+          const refreshedProducts = await fetchUMKMProducts(1);
+          setProducts(refreshedProducts);
+        }
       }
-    } else {
-      // Create new product
-      const createdProduct = await createProduct(productData);
-      if (createdProduct) {
-        setProducts([{ ...createdProduct, ftiStatus: currentFtiStatus }, ...products]);
-      }
-    }
 
-    setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" });
-    setIsModalOpen(false);
-    setAddMode(null);
-    setEditingProductId(null);
+      setNewProduct({ name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "", production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai" });
+      setIsModalOpen(false);
+      setAddMode(null);
+      setEditingProductId(null);
+      setOriginalProductData(null);
+      setValidationErrors([]);
+      setExpiryExtensionWarning(null);
+    } catch (error) {
+      // Show API error as validation error
+      setValidationErrors([error.message || "Gagal menyimpan produk"]);
+    }
   };
 
   const handleEditClick = (p) => {
     setEditingProductId(p.id);
+    
+    // Store original data for comparison
+    setOriginalProductData({
+      production_time: p.production_time,
+      expires_at: p.expires_at
+    });
+    
+    // Populate form with existing data, converting ISO to datetime-local
     setNewProduct({
       name: p.name,
       category: p.category,
       original_price: p.original_price || "",
       rescue_price: p.rescue_price || "",
       stock: p.stock || "",
-      production_time: "", // We don't have this in dummy data, so let user set it again
-      expires_at: "",
-      packaging_condition: "Standar",
-      storage_method: "Sesuai"
+      production_time: isoToDatetimeLocal(p.production_time),
+      expires_at: isoToDatetimeLocal(p.expires_at),
+      packaging_condition: p.packaging_condition || "Standar",
+      storage_method: p.storage_method || "Sesuai"
     });
+    
+    // Reset validation states
+    setValidationErrors([]);
+    setExpiryExtensionWarning(null);
+    setIsProductionTimeEditable(false);
+    
     setAddMode('manual');
     setIsModalOpen(true);
   };
 
   const handleDeleteProduct = async (id) => {
     if (confirm("Yakin ingin menghapus produk ini?")) {
-      await deleteProduct(id);
-      setProducts(products.filter(p => p.id !== id));
+      try {
+        await deleteProduct(id);
+        // Refetch from API to ensure data consistency
+        const data = await fetchUMKMProducts(1, true);
+        setProducts(data);
+      } catch (error) {
+        alert(`Gagal menghapus produk: ${error.message}`);
+      }
     }
   };
 
@@ -162,7 +221,19 @@ export default function ProdukPage() {
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory ? p.category === filterCategory : true;
-    const matchesTab = activeTab === "Semua" ? true : (activeTab === "Mystery Box" ? p.name.includes("Mystery Box") : p.status === activeTab);
+    // Tab "Semua": Exclude Kedaluwarsa & Limbah (waste products only in "Kedaluwarsa" tab)
+    // Map Indonesian UI tab names to database status (supports both old Indonesian and new English)
+    const statusMap = {
+      "Aktif": ["Active", "Aktif"],
+      "Habis": ["Sold Out", "Habis"],
+      "Draft": ["Draft"]
+    };
+    
+    const matchesTab = activeTab === "Semua" 
+      ? (p.status !== "Kedaluwarsa" && p.status !== "Limbah" && p.status !== "Expired") 
+      : (activeTab === "Mystery Box" 
+        ? p.name.includes("Mystery Box") 
+        : (statusMap[activeTab] ? statusMap[activeTab].includes(p.status) : p.status === activeTab));
     return matchesSearch && matchesCategory && matchesTab;
   }).sort((a, b) => {
     if (sortBy === "price_asc") return a.rescue_price - b.rescue_price;
@@ -174,6 +245,15 @@ export default function ProdukPage() {
   });
 
   const categories = [...new Set(products.map(p => p.category))];
+
+  // Calculate dynamic tab counts
+  const tabCounts = {
+    "Semua": products.filter(p => p.status !== "Kedaluwarsa" && p.status !== "Limbah" && p.status !== "Expired").length,
+    "Aktif": products.filter(p => p.status === "Active" || p.status === "Aktif").length,
+    "Habis": products.filter(p => p.status === "Sold Out" || p.status === "Habis").length,
+    "Draft": products.filter(p => p.status === "Draft").length,
+    "Mystery Box": products.filter(p => p.name.includes("Mystery Box")).length
+  };
 
   return (
     <>
@@ -284,7 +364,7 @@ export default function ProdukPage() {
               }}>
                 {tab} 
                 <span style={{ fontSize: '0.65rem', backgroundColor: activeTab === tab ? '#ECFDF5' : '#F3F4F6', color: activeTab === tab ? '#10B981' : '#6B7280', padding: '2px 6px', borderRadius: '10px' }}>
-                  {tab === 'Semua' ? 10 : (tab === 'Aktif' ? 5 : 1)}
+                  {tabCounts[tab] || 0}
                 </span>
               </div>
             ))}
@@ -385,7 +465,7 @@ export default function ProdukPage() {
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {products.filter(p => p && p.score < 50).slice(0, 3).map((p, idx) => (
+            {products.filter(p => p && (p.status === "Active" || p.status === "Aktif") && p.score > 0 && p.score < 40 && p.stock > 0).slice(0, 3).map((p, idx) => (
               <div key={idx} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #FEE2E2' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '30%' }}>
                   {p.photo_url && p.photo_url !== 'EMPTY' ? (
@@ -587,14 +667,62 @@ export default function ProdukPage() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Waktu Masak / Produksi</label>
-                        <input type="datetime-local" value={newProduct.production_time} onChange={(e) => setNewProduct({...newProduct, production_time: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                          <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Waktu Masak / Produksi</label>
+                          {editingProductId && !isProductionTimeEditable && (
+                            <button
+                              type="button"
+                              onClick={() => setIsProductionTimeEditable(true)}
+                              style={{ fontSize: '0.75rem', color: '#3B82F6', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                            >
+                              Koreksi
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          type="datetime-local"
+                          value={newProduct.production_time}
+                          onChange={(e) => setNewProduct({...newProduct, production_time: e.target.value})}
+                          disabled={editingProductId && !isProductionTimeEditable}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', backgroundColor: (editingProductId && !isProductionTimeEditable) ? '#F9FAFB' : '#fff', cursor: (editingProductId && !isProductionTimeEditable) ? 'not-allowed' : 'text' }}
+                        />
+                        {editingProductId && isProductionTimeEditable && (
+                          <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '4px', marginBottom: 0 }}>
+                            Waktu produksi hanya diubah untuk koreksi salah input
+                          </p>
+                        )}
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Batas Kelayakan (Expired)</label>
-                        <input type="datetime-local" value={newProduct.expires_at} onChange={(e) => setNewProduct({...newProduct, expires_at: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB' }} />
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Waktu Kedaluwarsa *</label>
+                        <input
+                          type="datetime-local"
+                          value={newProduct.expires_at}
+                          onChange={(e) => setNewProduct({...newProduct, expires_at: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: validationErrors.length > 0 ? '1px solid #EF4444' : '1px solid #D1D5DB' }}
+                        />
                       </div>
                     </div>
+                    
+                    {/* Validation Errors */}
+                    {validationErrors.length > 0 && (
+                      <div style={{ backgroundColor: '#FEE2E2', border: '1px solid #EF4444', borderRadius: '8px', padding: '10px', marginBottom: '15px' }}>
+                        {validationErrors.map((err, idx) => (
+                          <p key={idx} style={{ fontSize: '0.875rem', color: '#991B1B', margin: 0, marginBottom: idx < validationErrors.length - 1 ? '4px' : 0 }}>
+                            • {err}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Expiry Extension Warning */}
+                    {expiryExtensionWarning && (
+                      <div style={{ backgroundColor: '#FEF3C7', border: '1px solid #F59E0B', borderRadius: '8px', padding: '10px', marginBottom: '15px' }}>
+                        <p style={{ fontSize: '0.875rem', color: '#92400E', margin: 0 }}>
+                          ⚠️ {expiryExtensionWarning}
+                        </p>
+                      </div>
+                    )}
+                    
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '5px' }}>Kondisi Kemasan</label>

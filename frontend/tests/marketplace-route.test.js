@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isMarketplaceRoute } from "../src/lib/routes.js";
+import { isCustomerRoute } from "../src/lib/routes.js";
 
-test("isMarketplaceRoute excludes the marketplace root and every customer product-detail route from the UMKM shell", () => {
-  assert.equal(isMarketplaceRoute("/"), true);
-  assert.equal(isMarketplaceRoute("/marketplace"), true);
-  assert.equal(isMarketplaceRoute("/marketplace/nasi-campur-bali"), true);
-  assert.equal(isMarketplaceRoute("/produk"), false);
+test("isCustomerRoute excludes the marketplace root and every customer product-detail route from the UMKM shell", () => {
+  assert.equal(isCustomerRoute("/"), true);
+  assert.equal(isCustomerRoute("/marketplace"), true);
+  assert.equal(isCustomerRoute("/marketplace/nasi-campur-bali"), true);
+  assert.equal(isCustomerRoute("/produk"), false);
 });

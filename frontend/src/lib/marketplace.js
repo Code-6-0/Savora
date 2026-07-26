@@ -426,8 +426,16 @@ export function normalizeMarketplaceProduct(raw) {
   // timerMinutes lama dipakai di computeProductScore).
   const publishRaw = base.published_at || base.created_at;
   const expiresRaw = base.expires_at;
-  const publishMs = publishRaw ? new Date(publishRaw).getTime() : undefined;
-  const expiresMs = expiresRaw ? new Date(expiresRaw).getTime() : undefined;
+  let publishMs = publishRaw ? new Date(publishRaw).getTime() : undefined;
+  let expiresMs = expiresRaw ? new Date(expiresRaw).getTime() : undefined;
+
+  // FIX: Jika expires_at kosong tapi published_at ada, turunkan deadline absolut
+  // dari published_at + timerMinutes agar timer konsisten lintas refresh.
+  // Jalur "timerMinutes + elapsed" hanya untuk data demo murni tanpa timestamp.
+  if (!expiresMs && publishMs) {
+    const fallbackMinutes = Number(base.timerMinutes ?? defaultMetadata.timerMinutes);
+    expiresMs = publishMs + fallbackMinutes * 60 * 1000;
+  }
 
   // Skor awal dikunci dari status Food Trust Index (PRD 12.6).
   const baseScore = initialFoodScore(base.food_trust_status || defaultMetadata.food_trust_status);

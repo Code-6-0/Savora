@@ -4,13 +4,13 @@ import { Suspense, useState } from "react";
 import Sidebar from "../organisms/Sidebar";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { isMarketplaceRoute } from "@/lib/routes";
+import { isCustomerRoute } from "@/lib/routes";
 
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
-  if (isMarketplaceRoute(pathname)) {
+  if (isCustomerRoute(pathname)) {
     return <>{children}</>;
   }
 
