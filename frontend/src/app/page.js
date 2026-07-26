@@ -134,8 +134,43 @@ export default function BerandaPage() {
 
   return (
     <div className="beranda-page">
-      {/* Navbar Global */}
-      <SavoraNavbar />
+      {/* 1. Navbar */}
+      <header className="beranda-navbar">
+        <div className="beranda-navbar-container">
+          <div className="beranda-brand">
+            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
+            <span className="beranda-brand-text">Savora</span>
+          </div>
+          <nav className="beranda-nav">
+            <Link href="/" className="nav-active">Home</Link>
+            <Link href="/marketplace">Marketplace</Link>
+            <a href="#mitra">Mitra</a>
+            <a href="#tentang">Tentang</a>
+            <Link href="/akun">Impact</Link>
+          </nav>
+          <button className="beranda-location">
+            <MapPin size={14} />
+            <span>Masukkan Alamat Kamu</span>
+            <ChevronDown size={13} />
+          </button>
+          <div className="beranda-actions">
+            <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
+              <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
+              {count > 0 && (
+                <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
+                  {count}
+                </span>
+              )}
+            </Link>
+            <Link href="/dashboard" className="beranda-btn-secondary">
+              Masuk
+            </Link>
+            <Link href="/marketplace" className="beranda-btn-primary">
+              Daftar Sekarang
+            </Link>
+          </div>
+        </div>
+      </header>
 
       {/* 2. Hero Hijau */}
       <section className="beranda-hero">
@@ -248,8 +283,9 @@ export default function BerandaPage() {
                 const now = Date.now();
                 const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
                 const badge = getFoodScoreBadge(score);
-                const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : "#16a34a";
-                const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+                const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
+                const hasReviews = product.reviews && product.reviews.length > 0;
+                const rating = hasReviews ? product.rating : null;
                 const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
                 return (
@@ -257,14 +293,16 @@ export default function BerandaPage() {
                     <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                       <div className="beranda-product-image">
                         <img src={product.photo_url} alt={product.name} />
-                        <div className="beranda-product-badges">
-                          <span
-                            className="beranda-badge-timer"
-                            style={{ backgroundColor: timerColor, color: "#fff" }}
-                          >
-                            <Clock size={12} /> {formatTimer(remainingSeconds)}
-                          </span>
-                        </div>
+                        {product.hasRealTimer && (
+                          <div className="beranda-product-badges">
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: timerColor, color: "#fff" }}
+                            >
+                              <Clock size={12} /> {formatTimer(remainingSeconds)}
+                            </span>
+                          </div>
+                        )}
                         {score !== undefined && (
                           <span
                             className="beranda-badge-foodscore"
@@ -278,14 +316,21 @@ export default function BerandaPage() {
                       <div className="beranda-product-info">
                         <div className="beranda-product-title-row">
                           <h3>{product.name}</h3>
-                          <div className="beranda-product-rating">
-                            <Star size={9} fill="#16a34a" color="#16a34a" />
-                            <span>{rating.toFixed(1)}</span>
-                          </div>
+                          {rating != null && (
+                            <div className="beranda-product-rating">
+                              <Star size={9} fill="#16a34a" color="#16a34a" />
+                              <span>{rating.toFixed(1)}</span>
+                            </div>
+                          )}
                         </div>
-                        <p className="beranda-product-vendor">
-                          <MapPin size={9} /> {product.vendor} • {product.distanceKm} km
-                        </p>
+                        {(product.vendor || product.distanceKm != null) && (
+                          <p className="beranda-product-vendor">
+                            <MapPin size={9} />
+                            {product.vendor && <span> {product.vendor}</span>}
+                            {product.vendor && product.distanceKm != null && <span> •</span>}
+                            {product.distanceKm != null && <span> {product.distanceKm} km</span>}
+                          </p>
+                        )}
                         {Number.isFinite(product.stock) && (
                           <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
                             Sisa {product.stock} porsi

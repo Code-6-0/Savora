@@ -3,7 +3,7 @@
  * Handles order creation and retrieval for Savora checkout flow
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 /**
  * Create order and get Xendit invoice
@@ -11,7 +11,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
  * @returns {Promise<Object>} Order response with invoice URL
  */
 export async function createOrder(orderData) {
-  const response = await fetch(`${API_BASE}/orders`, {
+  const response = await fetch(`${API_BASE}/api/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export async function createOrder(orderData) {
  * @returns {Promise<Object>} Order detail with payment status
  */
 export async function getOrderDetail(orderId) {
-  const response = await fetch(`${API_BASE}/orders/${orderId}`, {
+  const response = await fetch(`${API_BASE}/api/orders/${orderId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -102,25 +102,17 @@ export const fallbackOrders = [
  * Pemetaan status pesanan dari Backend (Eng) ke UI (Indo)
  */
 const statusMap = {
-  "CREATED": "Menunggu",
-  "PAYMENT_PENDING": "Menunggu",
+  "CREATED": "Menunggu Pembayaran",
+  "PAYMENT_PENDING": "Menunggu Pembayaran",
   "PAID": "Diproses",
+  "PAYMENT_FAILED": "Gagal Bayar",
   "READY_FOR_PICKUP": "Siap Diambil",
   "COMPLETED": "Selesai",
+  "NO_SHOW": "Tidak Diambil",
   "CANCELLED": "Dibatalkan",
+  "EXPIRED": "Kedaluwarsa",
+  "HELP_REQUESTED": "Butuh Bantuan",
   "DONATED": "Didonasikan"
-};
-
-/**
- * Pemetaan status pesanan dari UI (Indo) ke Backend (Eng)
- */
-const reverseStatusMap = {
-  "Menunggu": "CREATED",
-  "Diproses": "PAID",
-  "Siap Diambil": "READY_FOR_PICKUP",
-  "Selesai": "COMPLETED",
-  "Dibatalkan": "CANCELLED",
-  "Didonasikan": "DONATED"
 };
 
 /**
@@ -142,69 +134,128 @@ export function normalizeUMKMOrder(raw) {
   const productName = base.product ? base.product.name : "Produk Makanan";
   const productPrice = base.product ? (base.product.rescue_price || base.product.original_price) : 0;
 
+  // Extract payment method dari berbagai kemungkinan field
+  let paymentMethod = "Belum Tersedia";
+  if (base.payment_method) {
+    paymentMethod = base.payment_method;
+  } else if (base.payment && base.payment.method) {
+    paymentMethod = base.payment.method;
+  }
+
   return {
     id: `SVR-${String(base.id || 0).padStart(4, '0')}`,
     original_id: base.id, // simpan ID asli untuk update
+    backend_status: base.status, // simpan status backend asli
     customer: base.user ? base.user.name : "Pelanggan Guest",
     phone: base.user ? base.user.phone : "0812-XXXX-XXXX",
     items: [{ name: productName, qty: base.quantity || 1, price: productPrice }],
     total: base.total_price ? Number(base.total_price) : 0,
-    status: statusMap[base.status] || "Menunggu",
+    status: statusMap[base.status] || "Menunggu Pembayaran",
     time: timeStr,
     date: dateStr,
-    payment: "GoPay", // Mock payment method
+    payment: paymentMethod,
   };
 }
 
-function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-}
-
 /**
- * Ambil daftar pesanan UMKM. Fallback ke demo lokal bila API gagal.
+ * Ambil daftar pesanan UMKM dari backend.
  */
 export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+
   try {
-    // TODO: backend belum punya filter per-UMKM; sementara ambil semua orders
-const response = await fetch(`${baseUrl()}/orders`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) {
-      throw new Error("Orders API tidak tersedia");
-    }
-    const data = await response.json();
-    if (!Array.isArray(data)) throw new Error("Respons orders tidak valid");
-    
-    // Jika backend kosong (array length 0), kita bisa lempar error agar fallback ke dummy berjalan
-    if (data.length === 0) {
-      throw new Error("Database kosong, fallback ke dummy");
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    // Backend hanya punya GET /api/orders (mengembalikan semua orders)
+    const response = await fetch(`${API_BASE}/api/orders`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: Gagal mengambil pesanan`);
     }
 
-    return data.map(normalizeUMKMOrder);
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error("Response bukan JSON");
+    }
+
+    let data = await response.json();
+
+    // Handle response format: array langsung atau { data: [...] }
+    if (data && typeof data === 'object' && Array.isArray(data.data)) {
+      data = data.data;
+    }
+
+    if (!Array.isArray(data)) {
+      throw new Error("Respons orders tidak valid");
+    }
+
+    // Filter orders by UMKM ID (client-side filtering karena backend belum support)
+    const filteredData = data.filter(order =>
+      order.product && order.product.umkm_id === umkmId
+    );
+
+    // Array kosong adalah hasil VALID, bukan error
+    return filteredData.map(normalizeUMKMOrder);
   } catch (error) {
-    console.warn("Using fallback orders:", error.message);
-    return fallbackOrders;
+    // Hanya gunakan fallback jika NEXT_PUBLIC_USE_MOCK=true
+    if (useMock) {
+      console.warn("Using fallback orders:", error.message);
+      return fallbackOrders;
+    }
+    // Jika tidak mock, lempar error ke komponen
+    throw error;
   }
 }
 
 /**
  * Update status pesanan via API.
+ * @param {number} orderId - ID numerik asli pesanan (bukan string SVR-xxxx)
+ * @param {string} backendStatus - Status backend (PAID, READY_FOR_PICKUP, dll)
+ * @returns {Promise<{ok: boolean, error?: string}>}
  */
-export async function updateOrderStatus(orderId, uiStatus) {
-  const backendStatus = reverseStatusMap[uiStatus] || uiStatus;
+export async function updateOrderStatus(orderId, backendStatus) {
   try {
-    const response = await fetch(`${baseUrl()}/api/orders/${orderId}/status`, {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    const response = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ status: backendStatus })
     });
+    
     if (!response.ok) {
-      throw new Error("Gagal mengupdate pesanan");
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        ok: false,
+        error: errorData.error || errorData.message || `HTTP ${response.status}: Gagal mengubah status`
+      };
     }
-    return true;
+    
+    return { ok: true };
   } catch (error) {
-    console.error(error);
-    return false; // Anggap berhasil untuk fallback UI
+    return {
+      ok: false,
+      error: error.message || "Gagal terhubung ke server"
+    };
   }
+}
+
+/**
+ * Transisi status yang diizinkan untuk UMKM sesuai backend state machine.
+ * UMKM hanya boleh: PAID → READY_FOR_PICKUP, READY_FOR_PICKUP → COMPLETED
+ */
+export const allowedUmkmTransitions = {
+  "PAID": ["READY_FOR_PICKUP"],
+  "READY_FOR_PICKUP": ["COMPLETED"]
+};
+
+/**
+ * Cek apakah transisi dari status A ke B diizinkan untuk UMKM.
+ * @param {string} fromStatus - Status backend saat ini
+ * @param {string} toStatus - Status backend tujuan
+ * @returns {boolean}
+ */
+export function canTransition(fromStatus, toStatus) {
+  const allowed = allowedUmkmTransitions[fromStatus] || [];
+  return allowed.includes(toStatus);
 }

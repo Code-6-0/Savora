@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
-	"github.com/savora/backend/database"
 	"github.com/savora/backend/handlers"
 	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
@@ -24,8 +23,14 @@ func main() {
 		log.Fatalf("❌ Failed to initialize database: %v", err)
 	}
 
+	// Start cron jobs (auto-expire products)
+	services.StartCronJobs()
+	log.Println("✅ Cron jobs started")
+
 	// Init database.DB (for admin module - uses backend/database package)
-	database.ConnectDB()
+	// TEMPORARY FIX: Disabled to prevent duplicate DB connection race condition
+	// Using services.InitDB() only - see analisis_masalah_refresh_produk.md
+	// database.ConnectDB()
 
 	// Init Xendit service
 	xenditService := services.NewXenditService()
@@ -72,11 +77,11 @@ func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
 
 	// Order routes
 	orderHandler := handlers.NewOrderHandler(xenditService)
-	app.Post("/orders", orderHandler.CreateOrder)
-	app.Get("/orders", orderHandler.GetOrders)
-	app.Get("/orders/:id", orderHandler.GetOrderDetail)
-	app.Patch("/orders/:id/status", orderHandler.UpdateOrderStatus)
-	app.Post("/orders/:id/validate-pickup", orderHandler.ValidatePickupCode)
+	app.Post("/api/orders", orderHandler.CreateOrder)
+	app.Get("/api/orders", orderHandler.GetOrders)
+	app.Get("/api/orders/:id", orderHandler.GetOrderDetail)
+	app.Patch("/api/orders/:id/status", orderHandler.UpdateOrderStatus)
+	app.Post("/api/orders/:id/validate-pickup", orderHandler.ValidatePickupCode)
 
 	// Payment routes
 	paymentHandler := handlers.NewPaymentHandler(xenditService)

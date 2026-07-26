@@ -54,9 +54,9 @@ function trustClass(status) {
 }
 
 function safetyIcon(levelKey) {
-  if (levelKey === "gawat") return <Flame size={13} aria-hidden="true" />;
-  if (levelKey === "warning") return <ShieldAlert size={13} aria-hidden="true" />;
-  return <ShieldCheck size={13} aria-hidden="true" />;
+  if (levelKey === "gawat") return <Flame size={13} color="#ef4444" aria-hidden="true" />;
+  if (levelKey === "warning") return <ShieldAlert size={13} color="#f59e0b" aria-hidden="true" />;
+  return <ShieldCheck size={13} color="#16a34a" aria-hidden="true" />;
 }
 
 // Timestamp Date.now() di-refresh tiap detik. Skor & sisa waktu dihitung dari
@@ -83,11 +83,12 @@ function BerandaNavbar({ count }) {
           <Link href="/marketplace" className="nav-active">Marketplace</Link>
           <a href="#mitra">Mitra</a>
           <a href="#tentang">Tentang</a>
+          <Link href="/akun">Impact</Link>
         </nav>
         <button className="beranda-location">
-          <MapPin size={14} />
+          <MapPin size={14} color="#6b7280" />
           <span>Masukkan Alamat Kamu</span>
-          <ChevronDown size={13} />
+          <ChevronDown size={13} color="#6b7280" />
         </button>
         <div className="beranda-actions">
           <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
@@ -113,7 +114,7 @@ function TimerDisplay({ seconds }) {
   const timeColor = rescueTimeColor(seconds);
   return (
     <div className={`savora-rescue-timer ${timeColor.className}`}>
-      <span><Clock3 size={14} aria-hidden="true" /> Smart Rescue Timer</span>
+      <span><Clock3 size={14} color="#e17100" aria-hidden="true" /> Smart Rescue Timer</span>
       <div><b>{time.hours}</b><small>jam</small><b>{time.minutes}</b><small>menit</small><b>{time.seconds}</b><small>detik</small></div>
     </div>
   );
@@ -152,6 +153,7 @@ export default function ProductDetailPage() {
   const [dataSource, setDataSource] = useState("fallback");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefetching, setIsRefetching] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   const loadProduct = useCallback(async () => {
     try {
@@ -167,6 +169,30 @@ export default function ProductDetailPage() {
   useEffect(() => {
     loadProduct();
   }, [loadProduct]);
+
+  // Fetch related products
+  useEffect(() => {
+    async function loadRelated() {
+      try {
+        const result = await fetchMarketplaceProducts();
+        const now = Date.now();
+        // Filter: exclude current product, exclude expired, take max 4
+        const filtered = result.products
+          .filter((p) => p.id !== id)
+          .filter((p) => {
+            const { score, remainingSeconds } = computeProductScore(p, now, 0);
+            return score > 0 && remainingSeconds > 0;
+          })
+          .slice(0, 4);
+        setRelatedProducts(filtered);
+      } catch {
+        setRelatedProducts([]);
+      }
+    }
+    if (product) {
+      loadRelated();
+    }
+  }, [product, id]);
 
   const handleRetry = () => {
     setIsRefetching(true);
@@ -228,7 +254,10 @@ export default function ProductDetailPage() {
         <BerandaNavbar count={count} />
         <main style={{ maxWidth: '600px', margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1d1d1d', marginBottom: '16px' }}>Rescue deal telah berakhir</h1>
-          <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.6' }}>Food Score untuk <strong style={{ color: '#1d1d1d' }}>{product.name}</strong> dari {product.vendor} telah mencapai 0.</p>
+          <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.6' }}>
+            Food Score untuk <strong style={{ color: '#1d1d1d' }}>{product.name}</strong>
+            {product.vendor && <span> dari {product.vendor}</span>} telah mencapai 0.
+          </p>
           <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>Deal ini sudah kedaluwarsa dan tidak lagi tersedia.</p>
           <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: '#16a34a', color: 'white', borderRadius: '24px', fontSize: '14px', fontWeight: '600', textDecoration: 'none' }}>
             <ArrowLeft size={16} /> Kembali ke Marketplace
@@ -239,7 +268,7 @@ export default function ProductDetailPage() {
   }
 
   const savings = product.original_price - product.rescue_price;
-  const reviewAverage = product.reviews?.length ? (product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length).toFixed(1) : "4.8";
+  const reviewAverage = product.reviews?.length ? (product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length).toFixed(1) : null;
 
   // Timer Rescue Cerdas menggunakan remainingSeconds dari Food Score (sumber yang sama dengan badge timer di list)
   const time = rescueTimeParts(remainingSeconds);
@@ -292,50 +321,48 @@ export default function ProductDetailPage() {
           <div style={{ width: '639px' }}>
             {/* Main image with badges and buttons */}
             <div style={{ position: 'relative', height: '479px', background: '#eaf8ec', borderRadius: '18px', overflow: 'hidden' }}>
-              <img src="/detail/main.png" alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              {/* Badge "59% OFF" top-left */}
-              <div style={{ position: 'absolute', top: '16px', left: '16px', background: '#0b7a3b', color: 'white', padding: '6px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700' }}>
-                {product.discountPercent > 0 ? `${product.discountPercent}% OFF` : '59% OFF'}
-              </div>
+              <img src={product.photo_url && product.photo_url.trim() ? product.photo_url : "/detail/main.png"} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {/* Badge diskon top-left - hanya tampil jika discountPercent > 0 */}
+              {product.discountPercent > 0 && (
+                <div style={{ position: 'absolute', top: '16px', left: '16px', background: '#0b7a3b', color: 'white', padding: '6px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700' }}>
+                  {product.discountPercent}% OFF
+                </div>
+              )}
               {/* Icon buttons top-right */}
               <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} aria-label="Wishlist">
-                  <Heart size={15} />
+                  <Heart size={15} color="#1d1d1d" />
                 </button>
                 <button style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} aria-label="Share">
-                  <Share2 size={15} />
+                  <Share2 size={15} color="#1d1d1d" />
                 </button>
               </div>
             </div>
-            {/* Thumbnails */}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <img src="/detail/thumb-1.png" alt="View 1" style={{ width: '152px', height: '114px', borderRadius: '12px', objectFit: 'cover' }} />
-              <img src="/detail/thumb-2.png" alt="View 2" style={{ width: '152px', height: '114px', borderRadius: '12px', objectFit: 'cover' }} />
-              <img src="/detail/thumb-3.png" alt="View 3" style={{ width: '152px', height: '114px', borderRadius: '12px', objectFit: 'cover' }} />
-              <img src="/detail/thumb-4.png" alt="View 4" style={{ width: '152px', height: '114px', borderRadius: '12px', objectFit: 'cover' }} />
-            </div>
+            {/* Thumbnails - hanya tampil jika produk punya lebih dari 1 foto (saat ini hanya photo_url) */}
           </div>
 
           {/* Right column - 408px */}
           <div style={{ width: '408px', display: 'flex', flexDirection: 'column', gap: '18px', paddingTop: '4px' }}>
             {/* Restaurant header */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eaf8ec', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ChefHat size={16} />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d' }}>{product.vendor}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#eaf8ec', padding: '2px 8px', borderRadius: '9999px' }}>
-                    <Check size={9} style={{ color: '#0b7a3b' }} />
-                    <span style={{ fontSize: '10px', fontWeight: '600', color: '#0b7a3b' }}>Terverifikasi</span>
+            {product.vendor && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eaf8ec', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ChefHat size={16} color="#0b7a3b" />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d' }}>{product.vendor}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#eaf8ec', padding: '2px 8px', borderRadius: '9999px' }}>
+                      <Check size={9} style={{ color: '#0b7a3b' }} />
+                      <span style={{ fontSize: '10px', fontWeight: '600', color: '#0b7a3b' }}>Terverifikasi</span>
+                    </div>
                   </div>
                 </div>
+                <div style={{ fontSize: '11px', color: '#999999', paddingLeft: '48px' }}>
+                  {product.pickup_address || ''}
+                </div>
               </div>
-              <div style={{ fontSize: '11px', color: '#999999', paddingLeft: '48px' }}>
-                Restoran · Jakarta Selatan
-              </div>
-            </div>
+            )}
 
             {/* Product title */}
             <h1 style={{ fontSize: '26px', fontWeight: '600', color: '#1d1d1d', margin: '0', lineHeight: '1.3' }}>
@@ -343,31 +370,41 @@ export default function ProductDetailPage() {
             </h1>
 
             {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={13} fill="#ffb900" stroke="#ffb900" />
-                ))}
+            {reviewAverage ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[...Array(5)].map((_, i) => {
+                    const rating = parseFloat(reviewAverage);
+                    const filled = i < Math.floor(rating);
+                    return <Star key={i} size={13} fill={filled ? "#ffb900" : "none"} stroke="#ffb900" />;
+                  })}
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d' }}>{reviewAverage}</span>
+                <span style={{ fontSize: '13px', color: '#999999' }}>
+                  ({product.reviews.length} ulasan)
+                </span>
               </div>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d' }}>4.8</span>
-              <span style={{ fontSize: '13px', color: '#999999' }}>(247 ulasan)</span>
-            </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: '#999999' }}>Belum ada ulasan</div>
+            )}
 
             {/* Meta info */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', color: '#666666' }}>
+              {product.distanceKm != null && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={14} color="#666666" />
+                  <span>{product.distanceKm.toFixed(1)} km dari sini</span>
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={14} />
-                <span>{product.distanceKm.toFixed(1)} km dari sini</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Clock size={14} />
-                <span>Ambil 12:00–14:00</span>
+                <Clock size={14} color="#666666" />
+                <span>Ambil sebelum {deadlineHour}:{deadlineMinute}</span>
               </div>
             </div>
 
             {/* Stock pill */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fffbeb', padding: '6px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '600', color: '#bb4d00', width: 'fit-content' }}>
-              <Flame size={14} />
+              <Flame size={14} color="#bb4d00" />
               <span>Hanya tersisa {product.stock} porsi</span>
             </div>
 
@@ -390,37 +427,39 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Timer Rescue Cerdas card */}
-            <div style={{ background: 'white', border: '1px solid #e8e8e8', borderRadius: '16px', padding: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#fef3c6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Clock size={14} />
+            {/* Timer Rescue Cerdas card - hanya tampil jika produk punya timestamp asli */}
+            {product.hasRealTimer && (
+              <div style={{ background: 'white', border: '1px solid #e8e8e8', borderRadius: '16px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#fef3c6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Clock size={14} color="#e17100" />
+                    </div>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: '#1d1d1d' }}>Timer Rescue Cerdas</span>
                   </div>
-                  <span style={{ fontSize: '15px', fontWeight: '600', color: '#1d1d1d' }}>Timer Rescue Cerdas</span>
+                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#e17100' }}>
+                    {countdownHours}:{countdownMinutes}:{countdownSeconds}
+                  </div>
                 </div>
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#e17100' }}>
-                  {countdownHours}:{countdownMinutes}:{countdownSeconds}
+                <div style={{ height: '6px', background: '#e8e8e8', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
+                  <div style={{ height: '100%', background: '#e17100', width: `${progressPercent}%`, transition: 'width 1s linear' }} />
+                </div>
+                <div style={{ fontSize: '11px', color: '#999999' }}>
+                  Jendela reservasi ditutup pukul {deadlineHour}:{deadlineMinute} hari ini
                 </div>
               </div>
-              <div style={{ height: '6px', background: '#e8e8e8', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
-                <div style={{ height: '100%', background: '#e17100', width: `${progressPercent}%`, transition: 'width 1s linear' }} />
-              </div>
-              <div style={{ fontSize: '11px', color: '#999999' }}>
-                Jendela reservasi ditutup pukul {deadlineHour}:{deadlineMinute} hari ini
-              </div>
-            </div>
+            )}
 
             {/* Quantity stepper */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '16px', fontWeight: '500', color: '#1d1d1d' }}>Jumlah</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid #e8e8e8', borderRadius: '12px', padding: '8px 16px' }}>
                 <button onClick={() => updateQuantity(-1)} disabled={quantity <= 1} style={{ width: '32px', height: '32px', borderRadius: '9px', border: 'none', background: quantity <= 1 ? '#f5f5f5' : '#fff', cursor: quantity <= 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Minus size={15} />
+                  <Minus size={15} color={quantity <= 1 ? '#999999' : '#1d1d1d'} />
                 </button>
                 <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1d', minWidth: '24px', textAlign: 'center' }}>{quantity}</span>
                 <button onClick={() => updateQuantity(1)} disabled={quantity >= product.stock} style={{ width: '32px', height: '32px', borderRadius: '9px', border: 'none', background: quantity >= product.stock ? '#f5f5f5' : '#fff', cursor: quantity >= product.stock ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Plus size={15} />
+                  <Plus size={15} color={quantity >= product.stock ? '#999999' : '#1d1d1d'} />
                 </button>
               </div>
             </div>
@@ -436,7 +475,7 @@ export default function ProductDetailPage() {
               disabled={!canAddMore || expired}
               style={{ width: '100%', height: '48px', background: (!canAddMore || expired) ? '#e8e8e8' : '#eaf8ec', color: (!canAddMore || expired) ? '#999999' : '#0b7a3b', border: 'none', borderRadius: '16px', fontSize: '13px', fontWeight: '600', cursor: (!canAddMore || expired) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
-              <ShoppingCart size={16} />
+              <ShoppingCart size={16} color={(!canAddMore || expired) ? '#999999' : '#0b7a3b'} />
               {!canAddMore ? `Stok di Keranjang (${qtyInCart}/${product.stock})` : 'Tambah ke Keranjang'}
             </button>
           </div>
@@ -447,20 +486,58 @@ export default function ProductDetailPage() {
           {/* Left column - Detail Produk */}
           <div style={{ width: '652px' }}>
             <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1d', margin: '0 0 24px 0' }}>Detail Produk</h2>
-            {[
-              { label: 'Deskripsi', text: 'Pilihan terbaik dari masakan chef hari ini — biasanya terdiri dari 2–3 menu utama, lauk musiman, dan pelengkap. Isi bervariasi sesuai ketersediaan bahan segar hari itu.' },
-              { label: 'Bahan-Bahan', text: 'Nasi sushi, sayuran musiman, protein pilihan (salmon / ayam / tahu, bervariasi setiap hari), bumbu Jepang, minyak wijen, bumbu alami.' },
-              { label: 'Alergen', text: 'Mengandung: Gluten, Kedelai, Wijen. Mungkin mengandung: Makanan Laut, Telur, Susu. Selalu konfirmasi ke merchant jika Anda memiliki alergi spesifik.' },
-              { label: 'Nutrisi (per porsi)', text: 'Sekitar 520–680 kkal · Protein 28–35g · Karbohidrat 60–75g · Lemak 14–20g · Serat 6–9g. Nilai estimasi dan dapat berbeda berdasarkan pilihan menu hari itu.' },
-              { label: 'Kemasan', text: 'Kotak bento kompos bersertifikat ramah lingkungan. Tanpa plastik sekali pakai. Kantong kertas kraft di luar. Dapat didaur ulang.' },
-              { label: 'Penyimpanan & Kedaluwarsa', text: 'Terbaik dikonsumsi dalam 3 jam setelah diambil. Jika langsung didinginkan, konsumsi dalam 12 jam. Jangan dibekukan.' },
-              { label: 'Instruksi Pengambilan', text: 'Tunjukkan konfirmasi pesanan Savora Anda di meja depan. Minta konter Rescue Order. Pesanan yang tidak diambil sebelum pukul tutup akan dibatalkan.' }
-            ].map((item, idx, arr) => (
-              <div key={idx} style={{ borderBottom: idx < arr.length - 1 ? '1px solid #eeeeee' : 'none', padding: '18px 0' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0b7a3b', margin: '0 0 8px 0' }}>{item.label}</h3>
-                <p style={{ fontSize: '14px', color: '#555555', margin: 0, lineHeight: '1.5' }}>{item.text}</p>
-              </div>
-            ))}
+            {(() => {
+              const details = [];
+
+              // Deskripsi
+              if (product.description) {
+                details.push({ label: 'Deskripsi', text: product.description });
+              }
+
+              // Kemasan
+              if (product.packaging || product.packaging_condition) {
+                details.push({
+                  label: 'Kemasan',
+                  text: product.packaging_condition ? `Kondisi kemasan: ${product.packaging_condition}` : product.packaging
+                });
+              }
+
+              // Penyimpanan & Kedaluwarsa
+              if (product.storage || product.expires_at) {
+                let storageText = '';
+                if (product.storage) storageText += product.storage;
+                if (product.expires_at) {
+                  const expiresDate = new Date(product.expires_at);
+                  const formattedExpires = expiresDate.toLocaleString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
+                  if (storageText) storageText += '. ';
+                  storageText += `Kedaluwarsa: ${formattedExpires}`;
+                }
+                if (storageText) {
+                  details.push({ label: 'Penyimpanan & Kedaluwarsa', text: storageText });
+                }
+              }
+
+              // Instruksi Pengambilan
+              if (product.pickup_address) {
+                details.push({
+                  label: 'Instruksi Pengambilan',
+                  text: `Tunjukkan konfirmasi pesanan Savora Anda. Lokasi pengambilan: ${product.pickup_address}`
+                });
+              }
+
+              return details.map((item, idx, arr) => (
+                <div key={idx} style={{ borderBottom: idx < arr.length - 1 ? '1px solid #eeeeee' : 'none', padding: '18px 0' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0b7a3b', margin: '0 0 8px 0' }}>{item.label}</h3>
+                  <p style={{ fontSize: '14px', color: '#555555', margin: 0, lineHeight: '1.5' }}>{item.text}</p>
+                </div>
+              ));
+            })()}
           </div>
 
           {/* Right column - Food Trust Score */}
@@ -470,104 +547,89 @@ export default function ProductDetailPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
                 <div>
                   <h3 style={{ fontSize: '16.5px', fontWeight: '600', color: '#1d1d1d', margin: '0 0 4px 0' }}>Food Trust Score</h3>
-                  <p style={{ fontSize: '14px', color: '#999999', margin: 0 }}>Diaudit secara independen</p>
+                  <p style={{ fontSize: '14px', color: '#999999', margin: 0 }}>Dihitung dari Food Trust Index</p>
                 </div>
                 <div style={{ position: 'relative', width: '52px', height: '52px' }}>
                   <svg width="52" height="52" style={{ transform: 'rotate(-90deg)' }}>
                     <circle cx="26" cy="26" r="22" fill="none" stroke="#e8e8e8" strokeWidth="4" />
-                    <circle cx="26" cy="26" r="22" fill="none" stroke="#0b7a3b" strokeWidth="4" strokeDasharray={`${2 * Math.PI * 22 * 0.92} ${2 * Math.PI * 22}`} strokeLinecap="round" />
+                    <circle cx="26" cy="26" r="22" fill="none" stroke="#0b7a3b" strokeWidth="4" strokeDasharray={`${2 * Math.PI * 22 * (score / 100)} ${2 * Math.PI * 22}`} strokeLinecap="round" />
                   </svg>
-                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '16.5px', fontWeight: '700', color: '#0b7a3b' }}>92</span>
+                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '16.5px', fontWeight: '700', color: '#0b7a3b' }}>{score}</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', paddingBottom: '25px', borderBottom: '1px solid #e8e8e8' }}>
-                {[
-                  { label: 'Status', value: 'Sangat Direkomendasikan' },
-                  { label: 'Produksi', value: 'Disiapkan hari yang sama' },
-                  { label: 'Kemasan', value: 'Bersertifikat Eco' }
-                ].map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', color: '#999999' }}>{item.label}</span>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#0b7a3b', textAlign: 'right' }}>{item.value}</span>
-                  </div>
-                ))}
-              </div>
-              <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1d1d1d', margin: '25px 0 15px 0' }}>Daftar Periksa Keamanan Makanan</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {['Baru dimasak hari ini', 'Penyimpanan suhu aman', 'Tidak ada bahan kedaluwarsa', 'Area persiapan bersih', 'Kemasan eco tersertifikasi', 'Terverifikasi Food Rescue'].map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#eaf8ec', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Check size={10} style={{ color: '#0b7a3b' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {(() => {
+                  const statusRows = [];
+
+                  // Status
+                  if (product.food_trust_status) {
+                    statusRows.push({ label: 'Status', value: product.food_trust_status });
+                  }
+
+                  // Produksi
+                  if (product.production_time || product.productionTime) {
+                    const prodTime = product.production_time || product.productionTime;
+                    statusRows.push({ label: 'Produksi', value: prodTime });
+                  }
+
+                  // Kemasan
+                  if (product.packaging_condition || product.packaging) {
+                    const packagingValue = product.packaging_condition || product.packaging;
+                    statusRows.push({ label: 'Kemasan', value: packagingValue });
+                  }
+
+                  return statusRows.map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '14px', color: '#999999' }}>{item.label}</span>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#0b7a3b', textAlign: 'right' }}>{item.value}</span>
                     </div>
-                    <span style={{ fontSize: '15px', color: '#555555' }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Verification Badge */}
-            <div style={{ background: '#eaf8ec', borderRadius: '20px', padding: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: '#0b7a3b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <ShieldCheck size={20} style={{ color: 'white' }} />
-              </div>
-              <div>
-                <h4 style={{ fontSize: '15px', fontWeight: '600', color: '#1d1d1d', margin: '0 0 4px 0' }}>Terverifikasi Food Rescue</h4>
-                <p style={{ fontSize: '14px', color: '#555555', margin: 0, lineHeight: '1.4' }}>Diaudit independen oleh tim keamanan pangan Savora pada Juli 2025</p>
+                  ));
+                })()}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Section 2: Restaurant Card */}
-        <div style={{ marginTop: '60px', background: '#ffffff', borderRadius: '18px', overflow: 'hidden' }}>
-          <img src="/detail/store-banner.png" alt="Restoran Bintang" style={{ width: '100%', height: '129px', objectFit: 'cover', display: 'block' }} />
-          <div style={{ padding: '28px', display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: '18px' }}>
-              <div style={{ width: '57px', height: '57px', background: '#ffffff', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0 }}>
-                <div style={{ width: '43px', height: '43px', background: '#eaf8ec', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Store size={28} style={{ color: '#0b7a3b' }} />
+        {/* Section 2: Restaurant Card - hanya tampil jika vendor ada */}
+        {product.vendor && (
+          <div style={{ marginTop: '60px', background: '#ffffff', borderRadius: '18px', overflow: 'hidden' }}>
+            <img src="/detail/store-banner.png" alt={product.vendor} style={{ width: '100%', height: '129px', objectFit: 'cover', display: 'block' }} />
+            <div style={{ padding: '28px', display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: '18px' }}>
+                <div style={{ width: '57px', height: '57px', background: '#ffffff', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0 }}>
+                  <div style={{ width: '43px', height: '43px', background: '#eaf8ec', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Store size={28} style={{ color: '#0b7a3b' }} />
+                  </div>
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1d', margin: 0 }}>{product.vendor}</h3>
+                    <div style={{ background: '#eaf8ec', padding: '2px 8px', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Check size={9} style={{ color: '#0b7a3b' }} />
+                      <span style={{ fontSize: '9px', fontWeight: '600', color: '#0b7a3b' }}>Restoran Terverifikasi</span>
+                    </div>
+                  </div>
+                  {product.pickup_address && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.7px', color: '#666666', marginBottom: '12px' }}>
+                      <MapPin size={10} color="#666666" />
+                      <span>{product.pickup_address}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1d', margin: 0 }}>Restoran Bintang</h3>
-                  <div style={{ background: '#eaf8ec', padding: '2px 8px', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Check size={9} style={{ color: '#0b7a3b' }} />
-                    <span style={{ fontSize: '9px', fontWeight: '600', color: '#0b7a3b' }}>Restoran Terverifikasi</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '10.7px', color: '#666666', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Star size={10} fill="#ffb900" stroke="#ffb900" />
-                    <span style={{ fontWeight: '600', color: '#1d1d1d' }}>4.8</span>
-                  </div>
-                  <span>842 rescue diselesaikan</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={10} />
-                    <span>Sen–Sab 10:00–21:00</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <MapPin size={10} />
-                    <span>Jl. Kemang Raya No. 45, Jakarta Selatan</span>
-                  </div>
-                </div>
-                <p style={{ fontSize: '14px', color: '#555555', margin: 0, lineHeight: '1.5', maxWidth: '600px' }}>
-                  Bistro farm-to-table yang berkomitmen pada masakan musiman dari bahan lokal. Kami bermitra dengan Savora untuk memastikan makanan surplus berkualitas tidak terbuang.
-                </p>
+              <div style={{ display: 'flex', gap: '9px', paddingTop: '4px' }}>
+                <button style={{ height: '36px', padding: '0 14px', borderRadius: '11px', border: '1px solid #e8e8e8', background: '#ffffff', color: '#1d1d1d', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MessageCircle size={17} color="#1d1d1d" />
+                  Chat Resto
+                </button>
+                <button style={{ height: '36px', padding: '0 14px', borderRadius: '11px', border: 'none', background: '#0b7a3b', color: 'white', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Store size={17} color="white" />
+                  Lihat
+                </button>
               </div>
-            </div>
-            <div style={{ display: 'flex', gap: '9px', paddingTop: '4px' }}>
-              <button style={{ height: '36px', padding: '0 14px', borderRadius: '11px', border: '1px solid #e8e8e8', background: '#ffffff', color: '#1d1d1d', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MessageCircle size={17} />
-                Chat Resto
-              </button>
-              <button style={{ height: '36px', padding: '0 14px', borderRadius: '11px', border: 'none', background: '#0b7a3b', color: 'white', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Store size={17} />
-                Lihat
-              </button>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Section 3: Reviews */}
         <div style={{ marginTop: '60px' }}>
@@ -576,114 +638,141 @@ export default function ProductDetailPage() {
               <p style={{ fontSize: '14px', fontWeight: '600', color: '#0b7a3b', margin: '0 0 8px 0' }}>Apa kata pelanggan</p>
               <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1d', margin: 0 }}>Ulasan Pelanggan</h2>
             </div>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#0b7a3b', fontSize: '11.6px', fontWeight: '500', cursor: 'pointer' }}>
-              Lihat semua 247 ulasan
-              <ChevronRight size={11} />
-            </button>
+            {product.reviews && product.reviews.length > 0 && (
+              <button style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#0b7a3b', fontSize: '11.6px', fontWeight: '500', cursor: 'pointer' }}>
+                Lihat semua {product.reviews.length} ulasan
+                <ChevronRight size={11} />
+              </button>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '28px' }}>
-            {/* Review Summary */}
-            <div style={{ width: '229px', background: '#ffffff', borderRadius: '18px', padding: '21px' }}>
-              <div style={{ fontSize: '43px', fontWeight: '700', color: '#1d1d1d', lineHeight: 1 }}>4.8</div>
-              <div style={{ display: 'flex', gap: '2px', margin: '8px 0' }}>
-                {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="#ffb900" stroke="#ffb900" />)}
+          {product.reviews && product.reviews.length > 0 ? (
+            <div style={{ display: 'flex', gap: '28px' }}>
+              {/* Review Summary */}
+              <div style={{ width: '229px', background: '#ffffff', borderRadius: '18px', padding: '21px' }}>
+                <div style={{ fontSize: '43px', fontWeight: '700', color: '#1d1d1d', lineHeight: 1 }}>{reviewAverage}</div>
+                <div style={{ display: 'flex', gap: '2px', margin: '8px 0' }}>
+                  {[...Array(5)].map((_, i) => {
+                    const rating = parseFloat(reviewAverage);
+                    const filled = i < Math.floor(rating);
+                    return <Star key={i} size={13} fill={filled ? "#ffb900" : "none"} stroke="#ffb900" />;
+                  })}
+                </div>
+                <p style={{ fontSize: '10px', color: '#999999', margin: '8px 0 18px 0' }}>{product.reviews.length} ulasan terverifikasi</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                  {(() => {
+                    const distribution = [5, 4, 3, 2, 1].map(stars => {
+                      const count = product.reviews.filter(r => r.rating === stars).length;
+                      const width = product.reviews.length > 0 ? Math.round((count / product.reviews.length) * 100) : 0;
+                      return { stars, count, width };
+                    });
+                    return distribution.map(item => (
+                      <div key={item.stars} style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ fontSize: '10px', color: '#999999', width: '8px' }}>{item.stars}</span>
+                        <Star size={9} fill="#ffb900" stroke="#ffb900" />
+                        <div style={{ flex: 1, height: '5px', background: '#e8e8e8', borderRadius: '9999px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', background: '#ffb900', width: `${item.width}%`, borderRadius: '9999px' }} />
+                        </div>
+                        <span style={{ fontSize: '10px', color: '#999999', width: '25px', textAlign: 'right' }}>{item.count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
               </div>
-              <p style={{ fontSize: '10px', color: '#999999', margin: '8px 0 18px 0' }}>247 ulasan terverifikasi</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                {[{ stars: 5, count: 198, width: 97 }, { stars: 4, count: 34, width: 17 }, { stars: 3, count: 10, width: 5 }, { stars: 2, count: 4, width: 2 }, { stars: 1, count: 1, width: 0 }].map(item => (
-                  <div key={item.stars} style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                    <span style={{ fontSize: '10px', color: '#999999', width: '8px' }}>{item.stars}</span>
-                    <Star size={9} fill="#ffb900" stroke="#ffb900" />
-                    <div style={{ flex: 1, height: '5px', background: '#e8e8e8', borderRadius: '9999px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', background: '#ffb900', width: `${item.width}%`, borderRadius: '9999px' }} />
+
+              {/* Review Cards */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {product.reviews.slice(0, 2).map((review, idx) => (
+                  <div key={idx} style={{ background: '#ffffff', borderRadius: '18px', padding: '21px' }}>
+                    <div style={{ display: 'flex', gap: '11px', marginBottom: '12px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#0b7a3b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10.7px', fontWeight: '600' }}>
+                        {(review.name || 'A').substring(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '11.6px', fontWeight: '600', color: '#1d1d1d' }}>{review.name || 'Anonim'}</div>
+                        <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={10} fill={i < review.rating ? "#ffb900" : "none"} stroke="#ffb900" />
+                          ))}
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '10px', color: '#999999' }}>Baru-baru ini</span>
                     </div>
-                    <span style={{ fontSize: '10px', color: '#999999', width: '25px', textAlign: 'right' }}>{item.count}</span>
+                    <p style={{ fontSize: '11.6px', color: '#555555', lineHeight: '1.5', margin: 0 }}>
+                      <ReviewComment comment={review.comment} />
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
+          ) : (
+            <div style={{ background: '#ffffff', borderRadius: '18px', padding: '40px', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', color: '#999999', margin: 0 }}>Belum ada ulasan untuk produk ini</p>
+            </div>
+          )}
+        </div>
 
-            {/* Review Cards */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {[
-                { name: 'Sarah M.', date: '2 hari lalu', text: 'Ini benar-benar win-win! Makanannya luar biasa enak, dan harganya sangat terjangkau. Senang bisa membantu mengurangi food waste sambil menikmati hidangan berkualitas.', photos: ['/detail/review-1a.png', '/detail/review-1b.png'] },
-                { name: 'David K.', date: '5 hari lalu', text: 'Luar biasa! Tidak ada bedanya dengan porsi reguler. Sangat segar dan lezat. Akan terus menyelamatkan makanan lewat Savora!', photos: ['/detail/review-2a.png', '/detail/review-2b.png'] }
-              ].map((review, idx) => (
-                <div key={idx} style={{ background: '#ffffff', borderRadius: '18px', padding: '21px' }}>
-                  <div style={{ display: 'flex', gap: '11px', marginBottom: '12px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#0b7a3b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10.7px', fontWeight: '600' }}>
-                      {review.name.substring(0, 2)}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '11.6px', fontWeight: '600', color: '#1d1d1d' }}>{review.name}</div>
-                      <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
-                        {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="#ffb900" stroke="#ffb900" />)}
+        {/* Section 4: Related Products - hanya tampil jika ada produk terkait */}
+        {relatedProducts.length > 0 && (
+          <div style={{ marginTop: '60px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: '600', color: '#0b7a3b', margin: '0 0 8px 0' }}>Rescue lainnya di sekitar</p>
+                <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1d', margin: 0 }}>Produk Terkait</h2>
+              </div>
+              <Link href="/marketplace" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#0b7a3b', fontSize: '11.6px', fontWeight: '500', textDecoration: 'none' }}>
+                Lihat semua
+                <ChevronRight size={11} />
+              </Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 234px)', gap: '20px' }}>
+              {relatedProducts.map((item) => {
+                const { score, remainingSeconds } = computeProductScore(item, now, 0);
+                const time = rescueTimeParts(remainingSeconds);
+                const timerDisplay = `${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}`;
+
+                return (
+                  <Link href={`/marketplace/${item.id}`} key={item.id} style={{ textDecoration: 'none' }}>
+                    <div style={{ background: '#ffffff', borderRadius: '18px', overflow: 'hidden' }}>
+                      <div style={{ position: 'relative', height: '174px', background: '#eaf8ec' }}>
+                        <img src={item.photo_url || "/detail/related-1.png"} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {item.hasRealTimer && (
+                          <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(225, 113, 0, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            ⏱ {timerDisplay}
+                          </div>
+                        )}
+                        {item.discountPercent > 0 && (
+                          <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(11, 122, 59, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700' }}>
+                            {item.discountPercent}% OFF
+                          </div>
+                        )}
+                        <button style={{ position: 'absolute', bottom: '12px', right: '12px', width: '25px', height: '25px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                          <Heart size={12} color="#1d1d1d" />
+                        </button>
+                      </div>
+                      <div style={{ padding: '14px' }}>
+                        <h3 style={{ fontSize: '11.6px', fontWeight: '600', color: '#1d1d1d', margin: '0 0 4px 0' }}>{item.name}</h3>
+                        {item.vendor && (
+                          <p style={{ fontSize: '9.9px', color: '#999999', margin: '0 0 8px 0' }}>{item.vendor}</p>
+                        )}
+                        {item.distanceKm != null && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontSize: '9.9px', color: '#999999' }}>
+                            <span>{item.distanceKm.toFixed(1)} km</span>
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                          <span style={{ fontSize: '11.6px', fontWeight: '700', color: '#0b7a3b' }}>{formatRupiah(item.rescue_price)}</span>
+                          {item.original_price > item.rescue_price && (
+                            <span style={{ fontSize: '9.9px', color: '#bbbbbb', textDecoration: 'line-through' }}>{formatRupiah(item.original_price)}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <span style={{ fontSize: '10px', color: '#999999' }}>{review.date}</span>
-                  </div>
-                  <p style={{ fontSize: '11.6px', color: '#555555', lineHeight: '1.5', margin: '0 0 12px 0' }}>{review.text}</p>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {review.photos.map((photo, pidx) => (
-                      <img key={pidx} src={photo} alt="Review" style={{ width: '50px', height: '50px', borderRadius: '7px', objectFit: 'cover' }} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </div>
-        </div>
-
-        {/* Section 4: Related Products */}
-        <div style={{ marginTop: '60px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
-            <div>
-              <p style={{ fontSize: '14px', fontWeight: '600', color: '#0b7a3b', margin: '0 0 8px 0' }}>Rescue lainnya di sekitar</p>
-              <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1d1d1d', margin: 0 }}>Produk Terkait</h2>
-            </div>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#0b7a3b', fontSize: '11.6px', fontWeight: '500', cursor: 'pointer' }}>
-              Lihat semua
-              <ChevronRight size={11} />
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 234px)', gap: '20px' }}>
-            {[
-              { name: 'Paket Roti Artisan', vendor: 'Maison Bakehouse', image: '/detail/related-1.png', price: 38000, original: 95000, discount: 60, timer: '01:22', rating: 4.7, distance: 0.8 },
-              { name: 'Sushi Platter Campuran', vendor: 'Sakura Kitchen', image: '/detail/related-2.png', price: 85000, original: 210000, discount: 59, timer: '02:48', rating: 4.9, distance: 1.2 },
-              { name: 'Pizza Surprise Box', vendor: 'Forno Napoli', image: '/detail/related-3.png', price: 52000, original: 135000, discount: 61, timer: '02:05', rating: 4.6, distance: 1.5 },
-              { name: 'Menu Spesial Chef Hari Ini', vendor: 'Bistro 28', image: '/detail/related-4.png', price: 68000, original: 175000, discount: 61, timer: '03:18', rating: 4.8, distance: 0.9 }
-            ].map((item, idx) => (
-              <div key={idx} style={{ background: '#ffffff', borderRadius: '18px', overflow: 'hidden' }}>
-                <div style={{ position: 'relative', height: '174px', background: '#eaf8ec' }}>
-                  <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(225, 113, 0, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    ⏱ {item.timer}
-                  </div>
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(11, 122, 59, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700' }}>
-                    {item.discount}% OFF
-                  </div>
-                  <button style={{ position: 'absolute', bottom: '12px', right: '12px', width: '25px', height: '25px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                    <Heart size={12} />
-                  </button>
-                </div>
-                <div style={{ padding: '14px' }}>
-                  <h3 style={{ fontSize: '11.6px', fontWeight: '600', color: '#1d1d1d', margin: '0 0 4px 0' }}>{item.name}</h3>
-                  <p style={{ fontSize: '9.9px', color: '#999999', margin: '0 0 8px 0' }}>{item.vendor}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontSize: '9.9px', color: '#999999' }}>
-                    <Star size={9} fill="#ffb900" stroke="#ffb900" />
-                    <span>{item.rating}</span>
-                    <span>·</span>
-                    <span>{item.distance} km</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                    <span style={{ fontSize: '11.6px', fontWeight: '700', color: '#0b7a3b' }}>{formatRupiah(item.price)}</span>
-                    <span style={{ fontSize: '9.9px', color: '#bbbbbb', textDecoration: 'line-through' }}>{formatRupiah(item.original)}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </main>
 
       {/* Footer from beranda */}

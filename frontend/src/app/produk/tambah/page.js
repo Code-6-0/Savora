@@ -538,9 +538,9 @@ function PhotoUpload({
   onChange,
 }) {
   const ref = useRef(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState(null);
 
-  async function handleFile(e) {
+  function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -556,75 +556,43 @@ function PhotoUpload({
       return;
     }
 
-    setIsUploading(true);
-
-    try {
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        const base64Data = ev.target?.result;
-
-        // Upload ke backend
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/upload/image`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ image: base64Data }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Upload gagal");
-        }
-
-        const result = await response.json();
-        console.log("✅ Gambar berhasil diupload:", result.url);
-        onChange(result.url); // Set URL public dari Supabase
-        setIsUploading(false);
-      };
-
-      reader.onerror = () => {
-        alert("Gagal membaca file");
-        setIsUploading(false);
-      };
-
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("❌ Error upload gambar:", error);
-      alert(`Gagal upload gambar: ${error.message}\n\nPastikan backend berjalan dan Supabase credentials sudah diisi.`);
-      setIsUploading(false);
-    }
+    // Buat preview lokal (tidak upload dulu)
+    const previewUrl = URL.createObjectURL(file);
+    setLocalPreview(previewUrl);
+    
+    // Simpan file object untuk upload nanti saat publikasi
+    onChange({ file, previewUrl });
   }
 
   return (
     <div
-      onClick={() => !isUploading && ref.current?.click()}
+      onClick={() => ref.current?.click()}
       className={`relative border-2 border-dashed rounded-xl cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${
-        isUploading ? "border-primary bg-primary/5 cursor-wait" : url ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
+        localPreview || url ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
       }`}
       style={{ minHeight: 140 }}
     >
-      <input ref={ref} type="file" className="hidden" accept="image/*" onChange={handleFile} disabled={isUploading} />
-      {isUploading ? (
+      <input ref={ref} type="file" className="hidden" accept="image/*" onChange={handleFile} />
+      {(localPreview || url) ? (
         <>
-          <div className="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-sm font-medium text-primary">Mengupload...</p>
-        </>
-      ) : url ? (
-        <>
-          <img src={url} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+          <img src={localPreview || url} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
           <button
-            onClick={(e) => { e.stopPropagation(); onChange(null); }}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              if (localPreview) {
+                URL.revokeObjectURL(localPreview);
+              }
+              setLocalPreview(null);
+              onChange(null); 
+            }}
             className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-red-50 z-10"
           >
-            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+            <X className="w-4 h-4 text-red-600" />
           </button>
         </>
       ) : (
         <>
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Camera className="w-5 h-5 text-primary" />
           </div>
           <div>
@@ -855,8 +823,8 @@ function ProductPreviewCard({
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
         {/* Image area */}
         <div className="relative bg-muted" style={{ height: 160 }}>
-          {form.photoUrl ? (
-            <img src={form.photoUrl} alt="product" className="w-full h-full object-cover" />
+          {(form.photoUrl?.previewUrl || form.photoUrl) ? (
+            <img src={form.photoUrl?.previewUrl || form.photoUrl} alt="product" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
@@ -2180,13 +2148,49 @@ export default function App() {
     setSubmitError(null);
 
     try {
+      let uploadedPhotoUrl = "";
+      
+      // Upload gambar jika ada file pending
+      if (form.photoUrl && form.photoUrl.file) {
+        const file = form.photoUrl.file;
+        
+        // Convert to base64
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target?.result);
+          reader.onerror = () => reject(new Error("Gagal membaca file"));
+          reader.readAsDataURL(file);
+        });
+
+        // Upload ke backend
+        const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const trimmedBase = rawBase.replace(/\/+$/, "");
+        const apiUrl = trimmedBase.endsWith("/api") ? trimmedBase : `${trimmedBase}/api`;
+        const uploadResponse = await fetch(`${apiUrl}/upload/image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image: base64Data }),
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || "Upload gambar gagal");
+        }
+
+        const uploadResult = await uploadResponse.json();
+        uploadedPhotoUrl = uploadResult.url;
+        console.log("✅ Gambar berhasil diupload:", uploadedPhotoUrl);
+      }
+      
       // Prepare payload sesuai model Product backend
       const payload = {
         umkm_id: 1, // TODO: Ganti dengan umkm_id dari session/auth
         name: form.name,
         category: form.category,
         description: form.description,
-        photo_url: form.photoUrl || "",
+        photo_url: uploadedPhotoUrl || form.photoUrl || "",
         original_price: parseFloat(form.normalPrice.replace(/\D/g, "")) || 0,
         rescue_price: parseFloat(form.rescuePrice.replace(/\D/g, "")) || 0,
         stock: form.quantity,
@@ -2194,13 +2198,21 @@ export default function App() {
         pickup_address: "Alamat UMKM", // TODO: Ambil dari profil UMKM
         packaging_condition: assessment.packaging || "Baik",
         storage_method: assessment.storage || "Sesuai",
-        production_time: form.productionTime ? new Date(`2026-01-01T${form.productionTime}:00Z`).toISOString() : null,
+        production_time: form.productionTime ? (() => {
+          const [h, m] = form.productionTime.split(":").map(Number);
+          const d = new Date();
+          d.setHours(h, m, 0, 0);
+          if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
+          return d.toISOString();
+        })() : null,
         expires_at: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
-        status: "Aktif",
+        status: "Active",
       };
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-      const response = await fetch(`${apiUrl}/api/products`, {
+      const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const trimmedBase = rawBase.replace(/\/+$/, "");
+      const apiUrl = trimmedBase.endsWith("/api") ? trimmedBase : `${trimmedBase}/api`;
+      const response = await fetch(`${apiUrl}/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -2219,7 +2231,7 @@ export default function App() {
     } catch (error) {
       console.error("❌ Error saat publish produk:", error);
       setSubmitError(error.message);
-      alert(`Gagal menyimpan produk: ${error.message}\n\nPastikan backend berjalan di port 3001`);
+      alert(`Gagal menyimpan produk: ${error.message}\n\nPastikan backend berjalan di port 8000`);
     } finally {
       setIsSubmitting(false);
     }

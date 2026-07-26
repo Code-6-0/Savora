@@ -143,7 +143,11 @@ export default function AdminSidebar({ onClose }) {
   ];
 
   const handleLogout = () => {
-    confirmLogout(); // F3c: dengan dialog konfirmasi
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('savora_token');
+      localStorage.removeItem('savora_user');
+      window.location.href = '/login';
+    }
   };
 
   return (

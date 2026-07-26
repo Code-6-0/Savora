@@ -32,40 +32,45 @@ func InitDB() error {
 	log.Println("✅ Database connection established")
 
 	// Auto-migrate semua model (Inti MVP + Perluasan)
-	err = DB.AutoMigrate(
-		// Core auth & profiles
-		&models.User{},
-		&models.CustomerProfile{},
-		&models.UMKMProfile{},
-		&models.MitraDonasiProfile{},
+	if os.Getenv("AUTO_MIGRATE") == "true" {
+		err = DB.AutoMigrate(
+			// Core auth & profiles
+			&models.User{},
+			&models.CustomerProfile{},
+			&models.UMKMProfile{},
+			&models.MitraDonasiProfile{},
 
-		// Core products & orders
-		&models.Product{},
-		&models.Order{},
-		&models.Payment{},
-		&models.PaymentLog{},
+			// Core products & orders
+			&models.Product{},
+			&models.Order{},
+			&models.Payment{},
+			&models.PaymentLog{},
 
-		// Reviews & keywords
-		&models.Review{},
-		&models.ReviewKeyword{},
-		&models.KeywordScore{},
+			// Reviews & keywords
+			&models.Review{},
+			&models.ReviewKeyword{},
+			&models.KeywordScore{},
 
-		// Platform revenue
-		&models.PlatformRevenue{},
+			// Platform revenue
+			&models.PlatformRevenue{},
 
-		// Perluasan: ads, help, waste, notifications
-		&models.Advertisement{},
-		&models.WasteLog{},
-		&models.HelpTicket{},
-		&models.Notification{},
-	)
+			// Perluasan: ads, help, waste, notifications
+			&models.Advertisement{},
+			&models.WasteLog{},
+			&models.HelpTicket{},
+			&models.Notification{},
+		)
 
-	if err != nil {
-		log.Fatalf("Failed to auto-migrate models: %v", err)
-		return err
+		if err != nil {
+			log.Fatalf("Failed to auto-migrate models: %v", err)
+			return err
+		}
+
+		log.Println("✅ Database migrations completed")
+	} else {
+		log.Println("⏩ Skipping Database migrations (AUTO_MIGRATE != true)")
 	}
 
-	log.Println("✅ Database migrations completed")
 	return nil
 }
 

@@ -4,17 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import {
-  ArrowLeft,
   Clock3,
   Leaf,
+  MapPin,
+  ChevronDown,
   Package,
   PiggyBank,
-  Search,
-  ShoppingBag,
-  Sun,
+  ShoppingCart,
   Weight,
 } from "lucide-react";
 import { computeImpactSummary } from "@/lib/impact";
+import { useCart } from "@/lib/CartContext";
 
 // ── Data demo lokal (fallback tanpa backend) ──────────────────────────────
 // 3-4 order contoh: campuran Completed & Paid, termasuk service fee 5%.
@@ -84,15 +84,36 @@ async function fetchOrders() {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
-    const response = await fetch(`${baseUrl}/api/orders`, {
-      credentials: "include",
-    });
+    const response = await fetch(`${baseUrl}/api/orders`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json"))
       throw new Error("API orders tidak tersedia");
     const data = await response.json();
+
+    if (data === null) {
+      return { orders: [], source: "api" };
+    }
+
     if (!Array.isArray(data)) throw new Error("Respons orders tidak valid");
-    return { orders: data, source: "api" };
+
+    // Normalisasi field dari backend ke format yang dipakai UI
+    const normalized = data.map(order => ({
+      id: order.id || "—",
+      product_name: order.product?.name || "—",
+      vendor: "—", // UMKM name belum di-preload dari backend, fallback dulu
+      umkm_name: "—",
+      quantity: order.quantity ?? "—",
+      original_price: order.product?.original_price || 0,
+      rescue_price: order.product?.rescue_price || 0,
+      subtotal: order.subtotal || 0,
+      service_fee: order.service_fee || 0,
+      total_price: order.total_price || 0,
+      status: order.status || "—",
+      created_at: order.created_at || null,
+      completed_at: order.completed_at || null,
+    }));
+
+    return { orders: normalized, source: "api" };
   } catch {
     return { orders: DEMO_ORDERS, source: "fallback" };
   }
@@ -135,88 +156,120 @@ function statusBadge(status) {
 
 // ── Komponen halaman ──────────────────────────────────────────────────────
 
-function AkunHeader() {
+function BerandaNavbar({ count }) {
   return (
-    <header className="savora-topbar">
-      <Link
-        className="savora-brand"
-        href="/marketplace"
-        aria-label="Savora marketplace"
-      >
-        <span className="savora-brand-mark">S</span>
-        <span>
-          {" "}
-          Savora <small>FOOD RESCUE</small>
-        </span>
-      </Link>
-      <nav className="savora-main-nav" aria-label="Navigasi marketplace">
-        <Link href="/marketplace">Marketplace</Link>
-        <Link href="/akun" aria-current="page">
-          Riwayat &amp; Impact
-        </Link>
-      </nav>
-      <button
-        className="savora-icon-button"
-        type="button"
-        aria-label="Tema terang demo"
-      >
-        <Sun size={18} />
-      </button>
-      <button className="savora-cart" type="button" aria-label="Keranjang demo">
-        <ShoppingBag size={19} /> <b>2</b>
-      </button>
-      <button className="savora-login" type="button">
-        Masuk
-      </button>
-      <button className="savora-signup" type="button">
-        Daftar
-      </button>
+    <header className="beranda-navbar">
+      <div className="beranda-navbar-container">
+        <div className="beranda-brand">
+          <img
+            src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png"
+            alt="Savora Logo"
+            className="beranda-logo-img"
+          />
+          <span className="beranda-brand-text">Savora</span>
+        </div>
+        <nav className="beranda-nav">
+          <Link href="/">Home</Link>
+          <Link href="/marketplace">Marketplace</Link>
+          <a href="#mitra">Mitra</a>
+          <a href="#tentang">Tentang</a>
+          <Link href="/akun" className="nav-active">Impact</Link>
+        </nav>
+        <button className="beranda-location">
+          <MapPin size={14} />
+          <span>Masukkan Alamat Kamu</span>
+          <ChevronDown size={13} />
+        </button>
+        <div className="beranda-actions">
+          <Link
+            href="/cart"
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: count > 0 ? "#eaf8ec" : "transparent",
+              transition: "background-color 0.2s",
+            }}
+          >
+            <ShoppingCart size={20} color={count > 0 ? "#16a34a" : "#6b7280"} />
+            {count > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "0",
+                  right: "0",
+                  backgroundColor: "#16a34a",
+                  color: "white",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  width: "18px",
+                  height: "18px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "2px solid white",
+                }}
+              >
+                {count}
+              </span>
+            )}
+          </Link>
+          <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: "#1d1d1d" }}>
+            Masuk
+          </Link>
+          <Link href="/marketplace" className="beranda-btn-primary">
+            Daftar Sekarang
+          </Link>
+        </div>
+      </div>
     </header>
   );
 }
 
 function ImpactCards({ impact }) {
   return (
-    <section
-      className="savora-akun-impact"
-      aria-labelledby="impact-title"
-    >
-      <div className="savora-akun-impact-head">
-        <Leaf size={16} aria-hidden="true" />
+    <section className="beranda-akun-impact" aria-labelledby="impact-title">
+      <div className="beranda-akun-impact-head">
+        <Leaf size={18} aria-hidden="true" color="#16a34a" />
         <h2 id="impact-title">Dampak Personal Kamu</h2>
       </div>
 
-      <div className="savora-akun-cards">
-        <div className="savora-akun-card">
-          <span className="savora-akun-card-icon savora-akun-green">
-            <Package size={22} aria-hidden="true" />
+      <div className="beranda-akun-cards">
+        <div className="beranda-akun-card">
+          <span className="beranda-akun-card-icon">
+            <Package size={24} aria-hidden="true" />
           </span>
-          <b className="savora-akun-card-value">{impact.totalPortions}</b>
-          <span className="savora-akun-card-label">Porsi Diselamatkan</span>
+          <b className="beranda-akun-card-value">{impact.totalPortions}</b>
+          <span className="beranda-akun-card-label">Porsi Diselamatkan</span>
         </div>
 
-        <div className="savora-akun-card">
-          <span className="savora-akun-card-icon savora-akun-lime">
-            <PiggyBank size={22} aria-hidden="true" />
+        <div className="beranda-akun-card">
+          <span className="beranda-akun-card-icon">
+            <PiggyBank size={24} aria-hidden="true" />
           </span>
-          <b className="savora-akun-card-value">
+          <b className="beranda-akun-card-value">
             {formatRupiah(impact.totalSaved)}
           </b>
-          <span className="savora-akun-card-label">Total Hemat</span>
+          <span className="beranda-akun-card-label">Total Hemat</span>
         </div>
 
-        <div className="savora-akun-card">
-          <span className="savora-akun-card-icon savora-akun-yellow">
-            <Weight size={22} aria-hidden="true" />
+        <div className="beranda-akun-card">
+          <span className="beranda-akun-card-icon">
+            <Weight size={24} aria-hidden="true" />
           </span>
-          <b className="savora-akun-card-value">{impact.estimatedKg} kg</b>
-          <span className="savora-akun-card-label">
+          <b className="beranda-akun-card-value">{impact.estimatedKg} kg</b>
+          <span className="beranda-akun-card-label">
             Makanan Terselamatkan
           </span>
         </div>
       </div>
 
-      <p className="savora-akun-disclaimer">
+      <p className="beranda-akun-disclaimer">
         Estimasi berbasis transaksi — bukan klaim resmi.
       </p>
     </section>
@@ -226,7 +279,7 @@ function ImpactCards({ impact }) {
 function OrderTable({ orders }) {
   if (orders.length === 0) {
     return (
-      <div className="savora-akun-empty">
+      <div className="beranda-akun-empty">
         <b>Belum ada riwayat order.</b>
         <span>Mulai selamatkan makanan dari marketplace!</span>
       </div>
@@ -234,8 +287,8 @@ function OrderTable({ orders }) {
   }
 
   return (
-    <div className="savora-akun-table-wrap">
-      <table className="savora-akun-table">
+    <div className="beranda-akun-table-wrap">
+      <table className="beranda-akun-table">
         <thead>
           <tr>
             <th>Order</th>
@@ -252,19 +305,19 @@ function OrderTable({ orders }) {
             const badge = statusBadge(order.status);
             return (
               <tr key={order.id}>
-                <td className="savora-akun-order-id">{order.id}</td>
+                <td className="beranda-akun-order-id">{order.id}</td>
                 <td>{order.product_name || "—"}</td>
                 <td>{order.vendor || order.umkm_name || "—"}</td>
                 <td>{order.quantity ?? "—"}</td>
-                <td className="savora-akun-price">
+                <td className="beranda-akun-price">
                   {formatRupiah(order.total_price || 0)}
                 </td>
                 <td>
-                  <span className={`savora-akun-status ${badge.className}`}>
+                  <span className={`beranda-akun-status ${badge.className}`}>
                     {badge.label}
                   </span>
                 </td>
-                <td className="savora-akun-date">
+                <td className="beranda-akun-date">
                   {formatDate(order.completed_at || order.created_at)}
                 </td>
               </tr>
@@ -280,6 +333,7 @@ function OrderTable({ orders }) {
 
 export default function AkunPage() {
   const { loading: authLoading } = useAuthGuard([]);
+  const { count } = useCart();
   const [orders, setOrders] = useState([]);
   const [dataSource, setDataSource] = useState("fallback");
   const [isLoading, setIsLoading] = useState(true);
@@ -299,56 +353,57 @@ export default function AkunPage() {
   const impact = computeImpactSummary(orders);
 
   return (
-    <div className="savora-marketplace">
-      <AkunHeader />
+    <div style={{ background: "#ffffff", fontFamily: '"Plus Jakarta Sans", sans-serif', minHeight: "100vh" }}>
+      <BerandaNavbar count={count} />
 
-      <main className="savora-akun-main">
-        <div className="savora-akun-back-row">
-          <Link href="/marketplace" className="savora-back">
-            <ArrowLeft size={15} aria-hidden="true" /> Kembali ke Marketplace
-          </Link>
-        </div>
-
-        <h1 className="savora-akun-title">Riwayat &amp; Impact</h1>
-        <p className="savora-akun-subtitle">
-          Pantau kontribusimu dalam menyelamatkan makanan surplus dari UMKM
-          lokal.
+      <main className="beranda-akun-main">
+        <h1 className="beranda-akun-title">Riwayat &amp; Impact</h1>
+        <p className="beranda-akun-subtitle">
+          Pantau kontribusimu dalam menyelamatkan makanan surplus dari UMKM lokal.
         </p>
 
         {!isLoading && <ImpactCards impact={impact} />}
 
         <section aria-labelledby="order-history-title">
-          <h2 id="order-history-title" className="savora-akun-section-title">
-            <Clock3 size={16} aria-hidden="true" /> Riwayat Order
+          <h2 id="order-history-title" className="beranda-akun-section-title">
+            <Clock3 size={18} aria-hidden="true" color="#16a34a" /> Riwayat Order
           </h2>
 
           {dataSource === "fallback" && !isLoading && (
-            <div className="savora-fallback-banner" role="status">
+            <div className="beranda-akun-fallback" role="status">
               <span>Menampilkan data demo — server tidak terjangkau</span>
             </div>
           )}
 
           {isLoading ? (
-            <div className="savora-akun-loading">Memuat riwayat…</div>
+            <div className="beranda-akun-loading">Memuat riwayat…</div>
           ) : (
             <OrderTable orders={orders} />
           )}
         </section>
       </main>
 
-      <footer className="savora-footer">
-        <div className="savora-brand">
-          <span className="savora-brand-mark">S</span>
-          <span>
-            Savora <small>FOOD RESCUE</small>
-          </span>
+      <footer className="beranda-footer">
+        <div className="beranda-footer-container">
+          <div className="beranda-footer-column-brand">
+            <div className="beranda-footer-wordmark">Savora</div>
+            <p className="beranda-footer-mission">
+              Misi kami sederhana: Tidak boleh ada makanan enak yang terbuang sia-sia.
+              Bergabunglah dengan ribuan penyelamat makanan lainnya di seluruh Indonesia.
+            </p>
+          </div>
+          <div className="beranda-footer-column">
+            <h4>Layanan Kami</h4>
+            <Link href="/marketplace">Daftar Marketplace</Link>
+          </div>
+          <div className="beranda-footer-column">
+            <h4>Informasi</h4>
+            <Link href="/marketplace">Tentang Kami</Link>
+          </div>
         </div>
-        <p>
-          Selamatkan makanan, hemat biaya, kurangi limbah.
-          <br />
-          Marketplace food rescue untuk UMKM kuliner lokal.
-        </p>
-        <span>© 2026 Savora. Karya CODE 6.0.</span>
+        <div className="beranda-footer-bottom">
+          <span>© 2026 Savora Platform. Proudly Made In Indonesia for the Earth.</span>
+        </div>
       </footer>
     </div>
   );

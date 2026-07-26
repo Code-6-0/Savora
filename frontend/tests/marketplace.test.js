@@ -33,7 +33,8 @@ test("filterMarketplaceProducts sorts nearby rescue deals first", () => {
 test("normalizeMarketplaceProduct keeps API data and supplies display-safe defaults", () => {
   const product = normalizeMarketplaceProduct({ id: 9, name: "Nasi Hemat", rescue_price: 10000, original_price: 20000, stock: 2 });
   assert.equal(product.food_trust_status, "Layak Dijual");
-  assert.equal(product.vendor, "UMKM Savora");
+  assert.equal(product.vendor, null);
+  assert.equal(product.distanceKm, null);
   assert.equal(product.discountPercent, 50);
 });
 
@@ -202,4 +203,64 @@ test("filterMarketplaceProducts sorts by lowest-price", () => {
   ];
   const result = filterMarketplaceProducts(testProducts, { sort: "lowest-price" });
   assert.deepEqual(result.map(p => p.id), [2, 3, 1]);
+});
+
+// Test countdown timer fix - produk tanpa expires_at harus punya _expiresMs deterministik
+test("normalizeMarketplaceProduct: produk tanpa expires_at tapi punya created_at menghasilkan _expiresMs deterministik", () => {
+  const createdAt = new Date("2026-07-25T10:00:00Z");
+  const product = normalizeMarketplaceProduct({
+    id: 999,
+    name: "Test Product",
+    created_at: createdAt.toISOString(),
+    expires_at: null, // NULL seperti data lama di database
+    timerMinutes: 120
+  });
+  
+  const expectedExpiresMs = createdAt.getTime() + 120 * 60 * 1000;
+  assert.strictEqual(product._expiresMs, expectedExpiresMs, "Should derive _expiresMs from created_at + timerMinutes");
+  assert.ok(Number.isFinite(product._expiresMs), "_expiresMs should be a valid timestamp");
+});
+
+test("normalizeMarketplaceProduct: multiple normalisasi menghasilkan _expiresMs yang sama (tidak bergantung waktu mount)", () => {
+  const rawProduct = {
+    id: 888,
+    name: "Test Product 2",
+    published_at: "2026-07-25T08:30:00Z",
+    expires_at: null,
+    timerMinutes: 180
+  };
+  
+  const normalized1 = normalizeMarketplaceProduct(rawProduct);
+  // Simulasi "refresh halaman" dengan normalisasi ulang
+  const normalized2 = normalizeMarketplaceProduct(rawProduct);
+  
+  assert.strictEqual(normalized1._expiresMs, normalized2._expiresMs, "Timer harus konsisten lintas refresh");
+});
+
+test("normalizeMarketplaceProduct: produk dengan expires_at eksplisit tidak terpengaruh fix", () => {
+  const expiresAt = new Date("2026-07-25T20:00:00Z");
+  const product = normalizeMarketplaceProduct({
+    id: 777,
+    name: "Test Product 3",
+    created_at: "2026-07-25T10:00:00Z",
+    expires_at: expiresAt.toISOString(),
+    timerMinutes: 600 // Ini akan diabaikan karena expires_at ada
+  });
+  
+  assert.strictEqual(product._expiresMs, expiresAt.getTime(), "Should use explicit expires_at");
+});
+test("normalizeMarketplaceProduct: produk API tanpa expires_at dan tanpa timerMinutes menggunakan default", () => {
+  const createdAt = new Date("2026-07-25T10:00:00Z");
+  const product = normalizeMarketplaceProduct({
+    id: 666,
+    name: "Real API Product",
+    created_at: createdAt.toISOString(),
+    expires_at: null,
+    // NO timerMinutes field - mimics real API response
+  });
+  
+  // Should use defaultMetadata.timerMinutes (120 minutes)
+  const expectedExpiresMs = createdAt.getTime() + 120 * 60 * 1000;
+  assert.strictEqual(product._expiresMs, expectedExpiresMs, "Should derive _expiresMs from created_at + default timerMinutes");
+  assert.ok(Number.isFinite(product._expiresMs), "_expiresMs should be a valid timestamp");
 });

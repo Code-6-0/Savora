@@ -14,6 +14,9 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/auth/register", handlers.RegisterHandler)
 	api.Post("/auth/login", handlers.LoginHandler)
 
+	// Mitra Donasi Register (public)
+	api.Post("/mitra-donasi/register", handlers.RegisterMitraDonasiHandler)
+
 	// Profile Routes (protected) - Added by Alia (admin module, BUG 2 fix)
 	api.Get("/me", middleware.AuthMiddleware, handlers.GetProfileHandler)
 	api.Patch("/me", middleware.AuthMiddleware, handlers.UpdateProfileHandler)

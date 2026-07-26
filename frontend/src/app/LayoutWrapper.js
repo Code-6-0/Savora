@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import DashboardLayout from '@/components/templates/DashboardLayout'
-import { isMarketplaceRoute } from '@/lib/routes'
+import { isCustomerRoute } from '@/lib/routes'
 import { getUser } from '@/lib/auth'
 
 /**
@@ -21,7 +21,7 @@ export default function LayoutWrapper({ children }) {
   const isAuthPage = pathname?.startsWith('/login') ||
                      pathname?.startsWith('/register')
   const isAdminPage = pathname?.startsWith('/admin')
-  const isStandalonePage = isMarketplaceRoute(pathname)
+  const isStandalonePage = isCustomerRoute(pathname)
 
   // SECURITY CHECK: DashboardLayout hanya untuk UMKM
   // Customer dan role lain (atau tidak login) tidak boleh dapat sidebar UMKM

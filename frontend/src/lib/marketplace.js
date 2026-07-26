@@ -400,18 +400,18 @@ export const fallbackMarketplaceProducts = [
 ];
 
 const defaultMetadata = {
-  vendor: "UMKM Savora",
-  distanceKm: 1,
+  vendor: null,
+  distanceKm: null,
   food_trust_status: "Layak Dijual",
   trustScore: 82,
   timerMinutes: 120,
   photo_url: FALLBACK_IMAGE,
-  description: "Rescue deal dari UMKM lokal. Periksa detail dan kondisi makanan saat pickup.",
-  pickup_address: "Lokasi pickup dikonfirmasi setelah order dibuat.",
-  productionTime: "Hari ini",
-  shelfLife: "Sesuai informasi UMKM",
-  storage: "Sesuai informasi UMKM",
-  packaging: "Kemasan aman",
+  description: null,
+  pickup_address: null,
+  productionTime: null,
+  shelfLife: null,
+  storage: null,
+  packaging: null,
   reviews: [],
 };
 
@@ -426,8 +426,16 @@ export function normalizeMarketplaceProduct(raw) {
   // timerMinutes lama dipakai di computeProductScore).
   const publishRaw = base.published_at || base.created_at;
   const expiresRaw = base.expires_at;
-  const publishMs = publishRaw ? new Date(publishRaw).getTime() : undefined;
-  const expiresMs = expiresRaw ? new Date(expiresRaw).getTime() : undefined;
+  let publishMs = publishRaw ? new Date(publishRaw).getTime() : undefined;
+  let expiresMs = expiresRaw ? new Date(expiresRaw).getTime() : undefined;
+
+  // FIX: Jika expires_at kosong tapi published_at ada, turunkan deadline absolut
+  // dari published_at + timerMinutes agar timer konsisten lintas refresh.
+  // Jalur "timerMinutes + elapsed" hanya untuk data demo murni tanpa timestamp.
+  if (!expiresMs && publishMs) {
+    const fallbackMinutes = Number(base.timerMinutes ?? defaultMetadata.timerMinutes);
+    expiresMs = publishMs + fallbackMinutes * 60 * 1000;
+  }
 
   // Skor awal dikunci dari status Food Trust Index (PRD 12.6).
   const baseScore = initialFoodScore(base.food_trust_status || defaultMetadata.food_trust_status);
@@ -441,8 +449,8 @@ export function normalizeMarketplaceProduct(raw) {
     original_price: originalPrice,
     rescue_price: rescuePrice,
     stock: Number.isFinite(Number(base.stock)) ? Number(base.stock) : 0,
-    vendor: base.vendor || base.umkm_name || defaultMetadata.vendor,
-    distanceKm: Number(base.distanceKm ?? defaultMetadata.distanceKm),
+    vendor: base.vendor || base.umkm_name || null,
+    distanceKm: base.distanceKm != null ? Number(base.distanceKm) : null,
     discountPercent: Number(base.discountPercent ?? fallbackDiscount),
     food_trust_status: base.food_trust_status || defaultMetadata.food_trust_status,
     trustScore: Number(base.trustScore ?? defaultMetadata.trustScore),
@@ -452,6 +460,8 @@ export function normalizeMarketplaceProduct(raw) {
     _publishMs: Number.isFinite(publishMs) ? publishMs : undefined,
     _expiresMs: Number.isFinite(expiresMs) ? expiresMs : undefined,
     _baseScore: baseScore,
+    // Flag produk dengan timestamp asli vs fallback — timer hanya tampil jika true.
+    hasRealTimer: Number.isFinite(expiresMs),
   };
 }
 
