@@ -120,7 +120,7 @@ export default function ProdukPage() {
       expires_at: expiresAtISO,
       packaging_condition: newProduct.packaging_condition || "Standar",
       storage_method: newProduct.storage_method || "Sesuai",
-      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
+      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Active",
     };
     
     try {

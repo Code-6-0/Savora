@@ -2200,7 +2200,7 @@ export default function App() {
           return d.toISOString();
         })() : null,
         expires_at: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
-        status: "Aktif",
+        status: "Active",
       };
 
       const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

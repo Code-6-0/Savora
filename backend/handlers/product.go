@@ -24,7 +24,7 @@ func GetProductsByUMKM(c *fiber.Ctx) error {
 func GetActiveMarketplaceProducts(c *fiber.Ctx) error {
 	var products []models.Product
 
-	if err := services.GetDB().Where("status = ?", "Aktif").Order("created_at desc").Find(&products).Error; err != nil {
+	if err := services.GetDB().Where("status = ?", "Active").Order("created_at desc").Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
