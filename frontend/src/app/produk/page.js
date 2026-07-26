@@ -222,11 +222,18 @@ export default function ProdukPage() {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory ? p.category === filterCategory : true;
     // Tab "Semua": Exclude Kedaluwarsa & Limbah (waste products only in "Kedaluwarsa" tab)
+    // Map Indonesian UI tab names to database status (supports both old Indonesian and new English)
+    const statusMap = {
+      "Aktif": ["Active", "Aktif"],
+      "Habis": ["Sold Out", "Habis"],
+      "Draft": ["Draft"]
+    };
+    
     const matchesTab = activeTab === "Semua" 
-      ? (p.status !== "Kedaluwarsa" && p.status !== "Limbah") 
+      ? (p.status !== "Kedaluwarsa" && p.status !== "Limbah" && p.status !== "Expired") 
       : (activeTab === "Mystery Box" 
         ? p.name.includes("Mystery Box") 
-        : p.status === activeTab);
+        : (statusMap[activeTab] ? statusMap[activeTab].includes(p.status) : p.status === activeTab));
     return matchesSearch && matchesCategory && matchesTab;
   }).sort((a, b) => {
     if (sortBy === "price_asc") return a.rescue_price - b.rescue_price;
@@ -238,6 +245,15 @@ export default function ProdukPage() {
   });
 
   const categories = [...new Set(products.map(p => p.category))];
+
+  // Calculate dynamic tab counts
+  const tabCounts = {
+    "Semua": products.filter(p => p.status !== "Kedaluwarsa" && p.status !== "Limbah" && p.status !== "Expired").length,
+    "Aktif": products.filter(p => p.status === "Active" || p.status === "Aktif").length,
+    "Habis": products.filter(p => p.status === "Sold Out" || p.status === "Habis").length,
+    "Draft": products.filter(p => p.status === "Draft").length,
+    "Mystery Box": products.filter(p => p.name.includes("Mystery Box")).length
+  };
 
   return (
     <>
@@ -348,7 +364,7 @@ export default function ProdukPage() {
               }}>
                 {tab} 
                 <span style={{ fontSize: '0.65rem', backgroundColor: activeTab === tab ? '#ECFDF5' : '#F3F4F6', color: activeTab === tab ? '#10B981' : '#6B7280', padding: '2px 6px', borderRadius: '10px' }}>
-                  {tab === 'Semua' ? 10 : (tab === 'Aktif' ? 5 : 1)}
+                  {tabCounts[tab] || 0}
                 </span>
               </div>
             ))}
@@ -449,7 +465,7 @@ export default function ProdukPage() {
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {products.filter(p => p && p.score < 50).slice(0, 3).map((p, idx) => (
+            {products.filter(p => p && (p.status === "Active" || p.status === "Aktif") && p.score > 0 && p.score < 40 && p.stock > 0).slice(0, 3).map((p, idx) => (
               <div key={idx} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #FEE2E2' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '30%' }}>
                   {p.photo_url && p.photo_url !== 'EMPTY' ? (
