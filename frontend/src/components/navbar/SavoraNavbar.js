@@ -39,9 +39,12 @@ export default function SavoraNavbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [address, setAddress] = useState("");
+  const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
 
   // Ref untuk dropdown (click outside detection)
   const dropdownRef = useRef(null);
+  const addressDropdownRef = useRef(null);
 
   // Mount: cek auth & get user (C5a)
   useEffect(() => {
@@ -53,6 +56,16 @@ export default function SavoraNavbar() {
       setUser(userData);
     }
   }, []);
+
+  // Load address dari localStorage setelah mounted
+  useEffect(() => {
+    if (mounted) {
+      const savedAddress = localStorage.getItem("savora_address");
+      if (savedAddress) {
+        setAddress(savedAddress);
+      }
+    }
+  }, [mounted]);
 
   // Close dropdown saat route change (C5b)
   useEffect(() => {
@@ -72,6 +85,20 @@ export default function SavoraNavbar() {
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [dropdownOpen]);
+
+  // Close address dropdown saat klik di luar
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (addressDropdownRef.current && !addressDropdownRef.current.contains(event.target)) {
+        setAddressDropdownOpen(false);
+      }
+    }
+
+    if (addressDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [addressDropdownOpen]);
 
   // Helper: Generate inisial user (C2 — defensif)
   function getInitials(user) {
@@ -107,6 +134,23 @@ export default function SavoraNavbar() {
     confirmLogout(); // otomatis redirect ke / jika OK
   }
 
+  // Handler: toggle dropdown alamat
+  function handleAddressClick() {
+    setAddressDropdownOpen((prev) => !prev);
+  }
+
+  // Handler: simpan alamat ke localStorage
+  function handleAddressSave(e) {
+    e.preventDefault();
+    const input = e.target.elements.addressInput;
+    if (input && input.value.trim()) {
+      const newAddress = input.value.trim();
+      localStorage.setItem("savora_address", newAddress);
+      setAddress(newAddress);
+      setAddressDropdownOpen(false);
+    }
+  }
+
   // Helper: cek link aktif
   function isActiveLink(path) {
     if (path === "/") return pathname === "/";
@@ -132,6 +176,7 @@ export default function SavoraNavbar() {
             <Link href="/marketplace">Marketplace</Link>
             <Link href="/mitra">Mitra</Link>
             <a href="#tentang">Tentang</a>
+            <Link href="/akun">Impact</Link>
           </nav>
           <button className="beranda-location">
             <MapPin size={14} />
@@ -186,24 +231,104 @@ export default function SavoraNavbar() {
             </Link>
             <Link href="/mitra">Mitra</Link>
             <a href="#tentang">Tentang</a>
+            <Link href="/akun" className={isActiveLink("/akun") ? "nav-active" : ""}>
+              Impact
+            </Link>
           </nav>
 
-          {/* Actions — State Logged-In: [Lokasi demo] [Keranjang] [Notifikasi] [Avatar] */}
+          {/* Actions — State Logged-In: [Lokasi] [Keranjang] [Notifikasi] [Avatar] */}
           <div className="beranda-actions" style={{ gap: "12px", alignItems: "center" }}>
-            {/* 1. Lokasi demo (opsional, SHOW_LOCATION = true/false) */}
+            {/* 1. Lokasi dengan dropdown */}
             {SHOW_LOCATION && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  fontSize: "13px",
-                  color: "#374151",
-                }}
-              >
-                <MapPin size={14} color="#374151" />
-                <span>Jl. Rawa Belong No. 78, Jakarta Barat</span>
-                <ChevronDown size={12} color="#374151" />
+              <div style={{ position: "relative" }} ref={addressDropdownRef}>
+                <button
+                  onClick={handleAddressClick}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontSize: "13px",
+                    color: "#374151",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f3f4f6";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <MapPin size={14} color="#374151" />
+                  <span style={{ maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {address || "Masukkan Alamat Kamu"}
+                  </span>
+                  <ChevronDown size={12} color="#374151" />
+                </button>
+
+                {/* Dropdown */}
+                {addressDropdownOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: "0",
+                      marginTop: "8px",
+                      minWidth: "320px",
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      zIndex: 1000,
+                      padding: "16px",
+                    }}
+                  >
+                    <form onSubmit={handleAddressSave}>
+                      <input
+                        type="text"
+                        name="addressInput"
+                        defaultValue={address}
+                        placeholder="Masukkan alamat Anda"
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          fontSize: "14px",
+                          border: "1px solid #d1d5db",
+                          borderRadius: "8px",
+                          marginBottom: "12px",
+                          outline: "none",
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = "#16a34a";
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = "#d1d5db";
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        style={{
+                          width: "100%",
+                          padding: "10px",
+                          backgroundColor: "#16a34a",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Simpan
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
             )}
 
@@ -431,14 +556,84 @@ export default function SavoraNavbar() {
           </Link>
           <Link href="/mitra">Mitra</Link>
           <a href="#tentang">Tentang</a>
+          <Link href="/akun" className={isActiveLink("/akun") ? "nav-active" : ""}>
+            Impact
+          </Link>
         </nav>
 
-        {/* Lokasi button (guest) */}
-        <button className="beranda-location">
-          <MapPin size={14} />
-          <span>Masukkan Alamat Kamu</span>
-          <ChevronDown size={13} />
-        </button>
+        {/* Lokasi dengan dropdown */}
+        <div style={{ position: "relative" }} ref={addressDropdownRef}>
+          <button
+            onClick={handleAddressClick}
+            className="beranda-location"
+          >
+            <MapPin size={14} />
+            <span style={{ maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {address || "Masukkan Alamat Kamu"}
+            </span>
+            <ChevronDown size={13} />
+          </button>
+
+          {/* Dropdown */}
+          {addressDropdownOpen && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: "0",
+                marginTop: "8px",
+                minWidth: "320px",
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                zIndex: 1000,
+                padding: "16px",
+              }}
+            >
+              <form onSubmit={handleAddressSave}>
+                <input
+                  type="text"
+                  name="addressInput"
+                  defaultValue={address}
+                  placeholder="Masukkan alamat Anda"
+                  autoFocus
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    fontSize: "14px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#16a34a";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#d1d5db";
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    backgroundColor: "#16a34a",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Simpan
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
 
         {/* Actions — State Guest: [Keranjang] [Masuk] [Daftar] */}
         <div className="beranda-actions">

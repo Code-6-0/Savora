@@ -135,42 +135,7 @@ export default function BerandaPage() {
   return (
     <div className="beranda-page">
       {/* 1. Navbar */}
-      <header className="beranda-navbar">
-        <div className="beranda-navbar-container">
-          <div className="beranda-brand">
-            <img src="/brand/savora-logo.png" alt="Savora" className="beranda-logo-img" />
-            <span className="beranda-brand-text">Savora</span>
-          </div>
-          <nav className="beranda-nav">
-            <Link href="/" className="nav-active">Home</Link>
-            <Link href="/marketplace">Marketplace</Link>
-            <a href="#mitra">Mitra</a>
-            <a href="#tentang">Tentang</a>
-            <Link href="/akun">Impact</Link>
-          </nav>
-          <button className="beranda-location">
-            <MapPin size={14} />
-            <span>Masukkan Alamat Kamu</span>
-            <ChevronDown size={13} />
-          </button>
-          <div className="beranda-actions">
-            <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
-              <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
-              {count > 0 && (
-                <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
-                  {count}
-                </span>
-              )}
-            </Link>
-            <Link href="/dashboard" className="beranda-btn-secondary">
-              Masuk
-            </Link>
-            <Link href="/marketplace" className="beranda-btn-primary">
-              Daftar Sekarang
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SavoraNavbar />
 
       {/* 2. Hero Hijau */}
       <section className="beranda-hero">

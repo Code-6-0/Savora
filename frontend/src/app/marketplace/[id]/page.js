@@ -42,6 +42,7 @@ import { foodScoreBand, rescueTimeColor, rescueTimeParts } from "@/lib/foodScore
 import { classifyReviewText, deriveRestaurantSafety } from "@/lib/reviews";
 import { computeCheckoutPricing } from "@/lib/pricing";
 import { useCart } from "@/lib/CartContext";
+import SavoraNavbar from "@/components/navbar/SavoraNavbar";
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
@@ -68,43 +69,6 @@ function useNow() {
     return () => window.clearInterval(interval);
   }, []);
   return now;
-}
-
-function BerandaNavbar({ count }) {
-  return (
-    <header className="beranda-navbar">
-      <div className="beranda-navbar-container">
-        <div className="beranda-brand">
-          <img src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png" alt="Savora Logo" className="beranda-logo-img" />
-          <span className="beranda-brand-text">Savora</span>
-        </div>
-        <nav className="beranda-nav">
-          <Link href="/">Home</Link>
-          <Link href="/marketplace" className="nav-active">Marketplace</Link>
-          <a href="#mitra">Mitra</a>
-          <a href="#tentang">Tentang</a>
-          <Link href="/akun">Impact</Link>
-        </nav>
-        <button className="beranda-location">
-          <MapPin size={14} color="#6b7280" />
-          <span>Masukkan Alamat Kamu</span>
-          <ChevronDown size={13} color="#6b7280" />
-        </button>
-        <div className="beranda-actions">
-          <Link href="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: count > 0 ? '#eaf8ec' : 'transparent', transition: 'background-color 0.2s' }}>
-            <ShoppingCart size={20} color={count > 0 ? '#16a34a' : '#6b7280'} />
-            {count > 0 && (
-              <span style={{ position: 'absolute', top: '0', right: '0', backgroundColor: '#16a34a', color: 'white', fontSize: '10px', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
-                {count}
-              </span>
-            )}
-          </Link>
-          <Link href="/login" className="beranda-btn-secondary" style={{ color: '#1d1d1d' }}>Masuk</Link>
-          <Link href="/register" className="beranda-btn-primary">Daftar Sekarang</Link>
-        </div>
-      </div>
-    </header>
-  );
 }
 
 function TimerDisplay({ seconds }) {
@@ -209,7 +173,7 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <div style={{ background: '#ffffff', minHeight: '100vh' }}>
-        <BerandaNavbar count={count} />
+        <SavoraNavbar />
         <main style={{ maxWidth: '1151px', margin: '0 auto', padding: '24px 32px' }}>
           <div className="savora-skeleton-line" style={{ width: "120px", height: "20px", marginBottom: "25px", background: '#e5e7eb' }} />
           <div style={{ display: 'flex', gap: '40px' }}>
@@ -230,7 +194,7 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-        <BerandaNavbar count={count} />
+        <SavoraNavbar />
         <main style={{ maxWidth: '600px', margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1d1d1d', marginBottom: '16px' }}>Produk tidak ditemukan</h1>
           <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>Rescue deal ini mungkin sudah habis atau tidak aktif.</p>
@@ -251,7 +215,7 @@ export default function ProductDetailPage() {
   if (expired) {
     return (
       <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-        <BerandaNavbar count={count} />
+        <SavoraNavbar />
         <main style={{ maxWidth: '600px', margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1d1d1d', marginBottom: '16px' }}>Rescue deal telah berakhir</h1>
           <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.6' }}>
