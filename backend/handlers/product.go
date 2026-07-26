@@ -24,8 +24,7 @@ func GetProductsByUMKM(c *fiber.Ctx) error {
 func GetActiveMarketplaceProducts(c *fiber.Ctx) error {
 	var products []models.Product
 
-	// Temporary: Accept both "Active" (new standard) and "Aktif" (old Indonesian) until migration
-	if err := services.GetDB().Where("status IN (?)", []string{"Active", "Aktif"}).Order("created_at desc").Find(&products).Error; err != nil {
+	if err := services.GetDB().Where("status = ?", "Active").Order("created_at desc").Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

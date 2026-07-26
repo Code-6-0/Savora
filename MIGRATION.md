@@ -1,59 +1,120 @@
-# Database Migration Guide
+# Database Migration - Status Standardization
 
-## Product Status Standardization
+**Tanggal**: 2026-07-26  
+**Tujuan**: Standardize product status values from Indonesian to English
 
-**Context**: Standardisasi nilai status produk di database dari "Aktif" ke "Active" untuk konsistensi lintas backend-frontend.
+---
 
-**Timeline**: Jalankan SETELAH deploy kode commit `fix(produk): standarkan status produk ke "Active"` ke production.
+## 🎯 Why This Migration is Needed
 
-### Migration SQL
+**Problem**: 
+- Backend queries for `status = "Active"` in marketplace
+- Database has old records with `status = "Aktif"` (Indonesian)
+- Result: Marketplace shows empty (no products found)
 
-Jalankan query berikut di Supabase SQL Editor:
+**Solution**:
+- Standardize all status values to English
+- Indonesian → English mapping
+
+---
+
+## 📋 SQL Migration Commands
+
+Execute these commands in your database (MySQL/PostgreSQL):
+
+### 1. Standardize Active Status
 
 ```sql
--- Update status produk dari "Aktif" ke "Active"
+-- Convert "Aktif" (Indonesian) → "Active" (English)
 UPDATE products 
 SET status = 'Active' 
 WHERE status = 'Aktif';
-
--- Verifikasi hasil
-SELECT status, COUNT(*) as count 
-FROM products 
-GROUP BY status;
 ```
 
-### Expected Results
-
-Sebelum migration:
-- status = "Aktif": X produk
-- status = "Active": Y produk
-
-Setelah migration:
-- status = "Aktif": 0 produk
-- status = "Active": X+Y produk
-
-### Rollback (jika diperlukan)
-
-Jika terjadi masalah, rollback dengan:
+### 2. Standardize Expired Status
 
 ```sql
+-- Convert "Kedaluwarsa" (Indonesian) → "Expired" (English)
 UPDATE products 
-SET status = 'Aktif' 
-WHERE status = 'Active';
+SET status = 'Expired' 
+WHERE status = 'Kedaluwarsa';
 ```
 
-**Note**: Rollback hanya diperlukan jika code rollback ke versi lama. Jangan rollback jika code baru sudah jalan.
+### 3. Standardize Sold Out Status
 
-### Post-Migration Verification
+```sql
+-- Convert "Habis" (Indonesian) → "Sold Out" (English)
+UPDATE products 
+SET status = 'Sold Out' 
+WHERE status = 'Habis';
+```
 
-1. Buka /marketplace - produk harus tampil normal
-2. Dashboard admin - hitungan "Active Products" harus benar
-3. Form tambah/edit produk - produk baru/update tersimpan dengan status "Active"
-4. Tab halaman Produk (Semua/Aktif/Habis) - filter harus bekerja
-5. Checkout - produk dengan status "Active" bisa dibeli
+### 4. Keep Other Status Values
 
-### Technical Notes
+The following status values should remain unchanged:
+- `Draft` - already in English
+- `Limbah` - Food Trust status (keep Indonesian for waste classification)
 
-- UI tetap menampilkan "Aktif" (handled by `normalizeProduct` di `frontend/src/lib/products.js`)
-- Status lain tidak berubah: "Habis", "Kedaluwarsa", "Limbah"
-- Seeder (`cmd/seed/main.go`) sudah menggunakan "Active" sejak awal
+---
+
+## ✅ Verification Queries
+
+### Check Status Distribution
+
+```sql
+-- See all status values and their counts
+SELECT status, COUNT(*) as count 
+FROM products 
+GROUP BY status
+ORDER BY count DESC;
+```
+
+**Expected Result After Migration**:
+```
+Active        | 5
+Expired       | 3
+Draft         | 1
+Limbah        | 2
+Sold Out      | 1
+```
+
+Should NOT see: `Aktif`, `Kedaluwarsa`, `Habis`
+
+---
+
+## 🔧 Migration Steps
+
+1. **Connect to your database**:
+   ```bash
+   # MySQL
+   mysql -u your_username -p your_database_name
+   
+   # PostgreSQL
+   psql -U your_username -d your_database_name
+   ```
+
+2. **Run verification query** (before):
+   ```sql
+   SELECT status, COUNT(*) as count FROM products GROUP BY status;
+   ```
+
+3. **Execute migration commands** (all 3 UPDATE statements above)
+
+4. **Run verification query** (after):
+   ```sql
+   SELECT status, COUNT(*) as count FROM products GROUP BY status;
+   ```
+
+5. **Restart backend**: `Ctrl+C` then `go run .`
+
+6. **Test marketplace**: http://localhost:3000/marketplace
+
+---
+
+## ⚠️ Rollback (If Needed)
+
+```sql
+UPDATE products SET status = 'Aktif' WHERE status = 'Active';
+UPDATE products SET status = 'Kedaluwarsa' WHERE status = 'Expired';
+UPDATE products SET status = 'Habis' WHERE status = 'Sold Out';
+```
