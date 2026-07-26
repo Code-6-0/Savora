@@ -189,7 +189,9 @@ export default function ProdukPage() {
   const handleDeleteProduct = async (id) => {
     if (confirm("Yakin ingin menghapus produk ini?")) {
       await deleteProduct(id);
-      setProducts(products.filter(p => p.id !== id));
+      // Refetch from API to ensure data consistency
+      const data = await fetchUMKMProducts(1, true);
+      setProducts(data);
     }
   };
 
@@ -215,7 +217,12 @@ export default function ProdukPage() {
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory ? p.category === filterCategory : true;
-    const matchesTab = activeTab === "Semua" ? true : (activeTab === "Mystery Box" ? p.name.includes("Mystery Box") : p.status === activeTab);
+    // Tab "Semua": Exclude Kedaluwarsa & Limbah (waste products only in "Kedaluwarsa" tab)
+    const matchesTab = activeTab === "Semua" 
+      ? (p.status !== "Kedaluwarsa" && p.status !== "Limbah") 
+      : (activeTab === "Mystery Box" 
+        ? p.name.includes("Mystery Box") 
+        : p.status === activeTab);
     return matchesSearch && matchesCategory && matchesTab;
   }).sort((a, b) => {
     if (sortBy === "price_asc") return a.rescue_price - b.rescue_price;
