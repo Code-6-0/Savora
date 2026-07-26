@@ -68,7 +68,10 @@ export default function MitraDashboardPage() {
       return;
     }
 
-    setUser(currentUser);
+    // Set user state after guards pass (async to avoid cascading)
+    Promise.resolve().then(() => {
+      setUser(currentUser);
+    });
     
     // Fetch mitra profile from API
     loadMitraProfile();
@@ -314,7 +317,7 @@ export default function MitraDashboardPage() {
                   <Clock size={28} className="mx-auto mb-2 text-slate-300" />
                   <p className="text-xs font-semibold text-slate-600">Belum ada penjemputan aktif</p>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Klik "Terima" pada kartu penawaran untuk menambahkan jadwal.
+                    Klik &quot;Terima&quot; pada kartu penawaran untuk menambahkan jadwal.
                   </p>
                 </div>
               ) : (
