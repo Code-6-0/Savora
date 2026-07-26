@@ -23,6 +23,10 @@ func main() {
 		log.Fatalf("❌ Failed to initialize database: %v", err)
 	}
 
+	// Start cron jobs (auto-expire products)
+	services.StartCronJobs()
+	log.Println("✅ Cron jobs started")
+
 	// Init database.DB (for admin module - uses backend/database package)
 	// TEMPORARY FIX: Disabled to prevent duplicate DB connection race condition
 	// Using services.InitDB() only - see analisis_masalah_refresh_produk.md

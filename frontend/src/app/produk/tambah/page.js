@@ -2189,7 +2189,7 @@ export default function App() {
           return d.toISOString();
         })() : null,
         expires_at: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
-        status: "Aktif",
+        status: "Active",
       };
 
       // Simpan produk ke backend - apiFetch otomatis inject prefix /api
