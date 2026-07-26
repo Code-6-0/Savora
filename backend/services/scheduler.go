@@ -21,11 +21,11 @@ func NewSchedulerService(db *gorm.DB) *SchedulerService {
 // Fallback bila webhook Xendit tidak sampai
 func (s *SchedulerService) ExpireStalePayments() {
 	now := time.Now()
-	
+
 	var payments []models.Payment
 	err := s.db.Where("payment_status = ? AND expired_at < ?", models.PaymentPending, now).
 		Find(&payments).Error
-	
+
 	if err != nil {
 		log.Printf("❌ Scheduler: failed to fetch stale payments: %v", err)
 		return
@@ -39,26 +39,37 @@ func (s *SchedulerService) ExpireStalePayments() {
 
 	for _, payment := range payments {
 		err := s.db.Transaction(func(tx *gorm.DB) error {
-			// Update payment
-			payment.PaymentStatus = models.PaymentExpired
-			if err := tx.Save(&payment).Error; err != nil {
-				return err
+			// Update payment dengan Updates untuk hindari menulis semua field
+			res := tx.Model(&models.Payment{}).
+				Where("id = ? AND payment_status = ?", payment.ID, models.PaymentPending).
+				Updates(map[string]interface{}{
+					"payment_status": models.PaymentExpired,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				// Payment sudah diproses jalur lain (webhook) — skip
+				return nil
 			}
 
-			// Update order
-			var order models.Order
-			if err := tx.First(&order, payment.OrderID).Error; err != nil {
-				return err
+			// Update order dengan guard state machine (hanya jika masih PAYMENT_PENDING)
+			res = tx.Model(&models.Order{}).
+				Where("order_id = ? AND status = ?", payment.OrderID, models.OrderPaymentPending).
+				Updates(map[string]interface{}{
+					"status":         models.OrderExpired,
+					"payment_status": models.PaymentExpired,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				// Order sudah expired dari webhook — JANGAN release stok lagi
+				return nil
 			}
 
-			order.Status = models.OrderExpired
-			order.PaymentStatus = models.PaymentExpired
-			if err := tx.Save(&order).Error; err != nil {
-				return err
-			}
-
-			// Release stok
-			return ReleaseReservedStock(tx, order.ID)
+			// Release stok hanya jika order update berhasil (tepat satu kali)
+			return ReleaseReservedStock(tx, payment.OrderID)
 		})
 
 		if err != nil {

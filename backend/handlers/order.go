@@ -102,7 +102,7 @@ func (h *OrderHandler) GetOrderDetail(c *fiber.Ctx) error {
 		TotalPrice     float64    `json:"total_price"`
 		PaymentMethod  string     `json:"payment_method"`
 		PaymentStatus  string     `json:"payment_status"`
-		PickupCode     string     `json:"pickup_code,omitempty"`
+		PickupCode     *string    `json:"pickup_code,omitempty"`
 		ReservedUntil  time.Time  `json:"reserved_until"`
 		PickupDeadline *time.Time `json:"pickup_deadline,omitempty"`
 		Status         string     `json:"status"`
@@ -175,11 +175,26 @@ func (h *OrderHandler) UpdateOrderStatus(c *fiber.Ctx) error {
 		}
 
 		order.Status = models.OrderReadyForPickup
-		if err := db.Save(&order).Error; err != nil {
+		res := db.Model(&models.Order{}).
+			Where("id = ? AND status = ?", order.ID, models.OrderPaid).
+			Updates(map[string]interface{}{
+				"status": models.OrderReadyForPickup,
+			})
+
+		if res.Error != nil {
 			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
+				"error": res.Error.Error(),
 			})
 		}
+
+		if res.RowsAffected == 0 {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Order sudah diproses atau status berubah",
+			})
+		}
+
+		// Refresh order untuk response
+		db.First(&order, id)
 
 		return c.JSON(fiber.Map{
 			"message": "Order siap diambil",
@@ -229,8 +244,8 @@ func (h *OrderHandler) ValidatePickupCode(c *fiber.Ctx) error {
 		})
 	}
 
-	// Validasi pickup code
-	if order.PickupCode != req.PickupCode {
+	// Validasi pickup code (handle pointer type)
+	if order.PickupCode == nil || *order.PickupCode != req.PickupCode {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Pickup code tidak valid",
 		})
@@ -243,16 +258,29 @@ func (h *OrderHandler) ValidatePickupCode(c *fiber.Ctx) error {
 		})
 	}
 
-	// Update ke Completed
-	order.Status = models.OrderCompleted
+	// Update ke Completed dengan Updates untuk hindari duplicate key issue
 	now := c.Context().Time()
-	order.CompletedAt = &now
+	res := db.Model(&models.Order{}).
+		Where("id = ? AND status = ?", order.ID, models.OrderReadyForPickup).
+		Updates(map[string]interface{}{
+			"status":       models.OrderCompleted,
+			"completed_at": now,
+		})
 
-	if err := db.Save(&order).Error; err != nil {
+	if res.Error != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
+			"error": res.Error.Error(),
 		})
 	}
+
+	if res.RowsAffected == 0 {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Order sudah diproses atau status berubah",
+		})
+	}
+
+	// Refresh order untuk response
+	db.First(&order, id)
 
 	return c.JSON(fiber.Map{
 		"message": "Pickup berhasil, order selesai",

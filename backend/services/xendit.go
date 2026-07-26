@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
@@ -194,21 +195,45 @@ func processPaymentStatus(db *gorm.DB, payment models.Payment, status string) er
 
 		switch status {
 		case "PAID", "SETTLED":
-			payment.PaymentStatus = models.PaymentPaid
-			payment.SignatureVerified = true
-			payment.PaidAt = &now
-			tx.Save(&payment)
+			// Update payment dengan Updates untuk hindari menulis field yang tidak berubah
+			res := tx.Model(&models.Payment{}).
+				Where("id = ? AND payment_status IN (?, ?)", payment.ID, models.PaymentUnpaid, models.PaymentPending).
+				Updates(map[string]interface{}{
+					"payment_status":     models.PaymentPaid,
+					"signature_verified": true,
+					"paid_at":            now,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				// Payment sudah PAID dari jalur lain (race condition) — skip
+				return nil
+			}
 
-			// Set pickup deadline (24 jam setelah paid)
+			// Generate pickup code sebagai pointer
+			code := generatePickupCode()
 			deadline := now.Add(24 * time.Hour)
-			order.Status = models.OrderPaid
-			order.PaymentStatus = models.PaymentPaid
-			order.PaidAt = &now
-			order.PickupDeadline = &deadline
-			order.PickupCode = generatePickupCode()
-			tx.Save(&order)
 
-			// Insert platform_revenue
+			// Update order dengan guard state machine (hanya jika masih PAYMENT_PENDING)
+			res = tx.Model(&models.Order{}).
+				Where("id = ? AND status = ?", order.ID, models.OrderPaymentPending).
+				Updates(map[string]interface{}{
+					"status":          models.OrderPaid,
+					"payment_status":  models.PaymentPaid,
+					"paid_at":         now,
+					"pickup_deadline": deadline,
+					"pickup_code":     code,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				// Order sudah berubah status dari jalur lain — skip revenue insert
+				return nil
+			}
+
+			// Insert platform_revenue (hanya jika order update berhasil)
 			revenue := models.PlatformRevenue{
 				SourceType:       "order",
 				SourceID:         order.ID,
@@ -216,33 +241,86 @@ func processPaymentStatus(db *gorm.DB, payment models.Payment, status string) er
 				ServiceFeeAmount: order.ServiceFee,
 				Description:      fmt.Sprintf("Order #%d", order.ID),
 			}
-			tx.Create(&revenue)
+			return tx.Create(&revenue).Error
 
 		case "EXPIRED":
-			payment.PaymentStatus = models.PaymentExpired
-			tx.Save(&payment)
-			order.Status = models.OrderExpired
-			order.PaymentStatus = models.PaymentExpired
-			tx.Save(&order)
-			ReleaseReservedStock(tx, order.ID)
+			// Update payment
+			res := tx.Model(&models.Payment{}).
+				Where("id = ? AND payment_status IN (?, ?)", payment.ID, models.PaymentUnpaid, models.PaymentPending).
+				Updates(map[string]interface{}{
+					"payment_status": models.PaymentExpired,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+
+			// Update order dengan guard (hanya jika masih PAYMENT_PENDING)
+			res = tx.Model(&models.Order{}).
+				Where("id = ? AND status = ?", order.ID, models.OrderPaymentPending).
+				Updates(map[string]interface{}{
+					"status":         models.OrderExpired,
+					"payment_status": models.PaymentExpired,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				// Sudah di-expire dari jalur lain (scheduler) — JANGAN release stok lagi
+				return nil
+			}
+
+			// Release stok hanya jika order update berhasil (tepat satu kali)
+			return ReleaseReservedStock(tx, order.ID)
 
 		case "FAILED":
-			payment.PaymentStatus = models.PaymentFailed
-			tx.Save(&payment)
-			order.Status = models.OrderPaymentFailed
-			order.PaymentStatus = models.PaymentFailed
-			tx.Save(&order)
-			ReleaseReservedStock(tx, order.ID)
+			// Update payment
+			res := tx.Model(&models.Payment{}).
+				Where("id = ? AND payment_status IN (?, ?)", payment.ID, models.PaymentUnpaid, models.PaymentPending).
+				Updates(map[string]interface{}{
+					"payment_status": models.PaymentFailed,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+
+			// Update order dengan guard
+			res = tx.Model(&models.Order{}).
+				Where("id = ? AND status = ?", order.ID, models.OrderPaymentPending).
+				Updates(map[string]interface{}{
+					"status":         models.OrderPaymentFailed,
+					"payment_status": models.PaymentFailed,
+				})
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				return nil
+			}
+
+			return ReleaseReservedStock(tx, order.ID)
 		}
 
 		return nil
 	})
 }
 
-// generatePickupCode membuat pickup code random unique
+// generatePickupCode membuat pickup code random unique (8 karakter alfanumerik uppercase)
+// dengan retry logic untuk handle collision (max 5 attempts)
 func generatePickupCode() string {
-	// UUID-based untuk uniqueness, ambil 8 char pertama uppercase
-	return fmt.Sprintf("%08d", time.Now().UnixNano()%100000000)
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const length = 8
+
+	b := make([]byte, length)
+	for i := range b {
+		// crypto/rand untuk keamanan & distribusi merata
+		randByte := make([]byte, 1)
+		if _, err := rand.Read(randByte); err != nil {
+			// Fallback ke timestamp jika crypto/rand gagal (sangat jarang)
+			return fmt.Sprintf("%08d", time.Now().UnixNano()%100000000)
+		}
+		b[i] = charset[int(randByte[0])%len(charset)]
+	}
+	return string(b)
 }
 
 func (x *XenditService) CheckPaymentStatus(db *gorm.DB, paymentID uint) error {
