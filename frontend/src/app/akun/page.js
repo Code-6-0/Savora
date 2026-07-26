@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { computeImpactSummary } from "@/lib/impact";
 import { useCart } from "@/lib/CartContext";
+import { apiGet } from "@/lib/api";
+import { getUser, logout } from "@/lib/auth";
 
 // ── Data demo lokal (fallback tanpa backend) ──────────────────────────────
 // 3-4 order contoh: campuran Completed & Paid, termasuk service fee 5%.
@@ -81,14 +83,8 @@ const DEMO_ORDERS = [
 // ── Fetch helper ──────────────────────────────────────────────────────────
 
 async function fetchOrders() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
-    const response = await fetch(`${baseUrl}/api/orders`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json"))
-      throw new Error("API orders tidak tersedia");
-    const data = await response.json();
+    const data = await apiGet('/orders');
 
     if (data === null) {
       return { orders: [], source: "api" };
@@ -157,6 +153,8 @@ function statusBadge(status) {
 // ── Komponen halaman ──────────────────────────────────────────────────────
 
 function BerandaNavbar({ count }) {
+  const user = getUser();
+
   return (
     <header className="beranda-navbar">
       <div className="beranda-navbar-container">
@@ -219,12 +217,25 @@ function BerandaNavbar({ count }) {
               </span>
             )}
           </Link>
-          <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: "#1d1d1d" }}>
-            Masuk
-          </Link>
-          <Link href="/marketplace" className="beranda-btn-primary">
-            Daftar Sekarang
-          </Link>
+          {user ? (
+            <>
+              <span className="beranda-btn-secondary" style={{ color: "#1d1d1d" }}>
+                {user.name}
+              </span>
+              <button onClick={logout} className="beranda-btn-primary">
+                Keluar
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: "#1d1d1d" }}>
+                Masuk
+              </Link>
+              <Link href="/marketplace" className="beranda-btn-primary">
+                Daftar Sekarang
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
