@@ -154,13 +154,14 @@ export default function SavoraNavbar() {
     const initials = getInitials(user);
 
     // F4: Dashboard role-aware (CUSTOMER → /akun Riwayat & Impact, role lain → getRedirectAfterLogin)
-    const normalizedRole = String(user.role || '').toUpperCase();
-    const dashboardUrl = normalizedRole === 'CUSTOMER'
+    // Normalisasi case defensif: lowercase untuk role (konsisten dengan useAuthGuard & getRedirectAfterLogin)
+    const normalizedRole = String(user.role || '').toLowerCase();
+    const dashboardUrl = normalizedRole === 'customer'
       ? '/akun'
       : getRedirectAfterLogin(user.role, user.verification_status);
 
     // F4: Profil role-aware (UMKM → /profil existing, selain itu → /profil-saya)
-    const profilUrl = normalizedRole === 'UMKM' ? '/profil' : '/profil-saya';
+    const profilUrl = normalizedRole === 'umkm' ? '/profil' : '/profil-saya';
 
     return (
       <header className="beranda-navbar">

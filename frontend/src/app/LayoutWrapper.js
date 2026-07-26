@@ -25,7 +25,9 @@ export default function LayoutWrapper({ children }) {
 
   // SECURITY CHECK: DashboardLayout hanya untuk UMKM
   // Customer dan role lain (atau tidak login) tidak boleh dapat sidebar UMKM
-  const shouldUseDashboardLayout = user?.role === 'UMKM'
+  // Normalisasi case defensif: lowercase untuk role
+  const normalizedRole = String(user?.role || '').toLowerCase();
+  const shouldUseDashboardLayout = normalizedRole === 'umkm'
 
   // Render children langsung untuk:
   // 1. Auth pages (login/register)
