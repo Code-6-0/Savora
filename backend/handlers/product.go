@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -8,12 +9,19 @@ import (
 	"github.com/savora/backend/models"
 )
 
-// GetProductsByUMKM
+// GetProductsByUMKM returns all products for a UMKM excluding Expired/Limbah status
+// (for active product management - expired products are archived automatically)
 func GetProductsByUMKM(c *fiber.Ctx) error {
 	umkmID := c.Params("umkm_id")
 	var products []models.Product
 
-	if err := services.GetDB().Where("umkm_id = ?", umkmID).Order("created_at desc").Find(&products).Error; err != nil {
+	// Exclude Kadaluwarsa (expired) and Limbah (waste) products from main product list
+	// These products are archived and should only appear in history/waste logs
+	// Using Indonesian status values to match database data
+	if err := services.GetDB().
+		Where("umkm_id = ? AND status NOT IN (?)", umkmID, []string{"Kadaluwarsa", "Limbah"}).
+		Order("created_at desc").
+		Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -24,7 +32,8 @@ func GetProductsByUMKM(c *fiber.Ctx) error {
 func GetActiveMarketplaceProducts(c *fiber.Ctx) error {
 	var products []models.Product
 
-	if err := services.GetDB().Where("status = ?", "Active").Order("created_at desc").Find(&products).Error; err != nil {
+	// Using Indonesian status value to match database data
+	if err := services.GetDB().Where("status = ?", "Aktif").Order("created_at desc").Find(&products).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -128,7 +137,16 @@ func DeleteProduct(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Product not found"})
 	}
 
-	services.GetDB().Delete(&product)
+	// Delete product - may fail if referenced by orders (foreign key constraint)
+	if err := services.GetDB().Delete(&product).Error; err != nil {
+		// Check if it's a foreign key constraint violation
+		if strings.Contains(err.Error(), "foreign key constraint") || strings.Contains(err.Error(), "violates foreign key") {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error": "Produk tidak dapat dihapus karena sudah memiliki order. Silakan ubah status menjadi 'Habis' atau 'Draft' sebagai gantinya.",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	return c.JSON(fiber.Map{"message": "Product successfully deleted"})
 }
