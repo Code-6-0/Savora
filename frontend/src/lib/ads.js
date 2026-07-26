@@ -7,6 +7,8 @@
 // menjual slot. Di sisi customer kita hanya merender slot yang aktif, dengan
 // fallback demo lokal mengikuti pola src/lib/marketplace.js.
 
+import { baseUrl } from './apiBase.js';
+
 const AD_FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=85";
 
@@ -77,9 +79,8 @@ export function normalizeAd(raw) {
  * @param {number} [limit] jumlah maksimal iklan yang dikembalikan.
  */
 export async function fetchAds(limit = 3) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
-    const response = await fetch(`${baseUrl}/api/ads/active`);
+    const response = await fetch(`${baseUrl()}/api/ads/active`);
     const contentType = response.headers.get("content-type") || "";
 
     if (!response.ok || !contentType.includes("application/json")) {

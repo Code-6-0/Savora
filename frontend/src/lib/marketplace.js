@@ -3,6 +3,7 @@ import {
   computeFoodScoreFromDates,
   initialFoodScore,
 } from "./foodScore.js";
+import { baseUrl } from './apiBase.js';
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=85";
 
@@ -564,7 +565,6 @@ export function filterMarketplaceProducts(products, { search = "", category = "S
  * langsung memanggil `result.map(...)` tetap berfungsi.
  */
 export async function fetchMarketplaceProducts() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   const makeResult = (products, source) => {
     const result = [...products];
     result.products = products;
@@ -572,7 +572,7 @@ export async function fetchMarketplaceProducts() {
     return result;
   };
   try {
-    const response = await fetch(`${baseUrl}/api/products/marketplace`, {
+    const response = await fetch(`${baseUrl()}/api/products/marketplace`, {
       signal: AbortSignal.timeout(3000),
     });
     const contentType = response.headers.get("content-type") || "";

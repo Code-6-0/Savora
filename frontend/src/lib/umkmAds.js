@@ -5,6 +5,8 @@
 // membuat iklan, mengaktifkan, dan menampilkan daftar iklan milik UMKM.
 // Pola fetch + fallback demo mengikuti src/lib/marketplace.js.
 
+import { baseUrl } from './apiBase.js';
+
 const DEFAULT_UMKM_ID = 1;
 
 // Status iklan harus konsisten dengan services/ads.go backend.
@@ -59,10 +61,6 @@ export function normalizeUmkmAd(raw) {
     start_at: base.start_at ?? null,
     end_at: base.end_at ?? null,
   };
-}
-
-function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 }
 
 /**

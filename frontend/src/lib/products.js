@@ -3,6 +3,7 @@
 // Membaca data produk dari backend Go (services/product.go) dengan pola
 // fetch + fallback demo lokal agar UI tetap jalan saat backend belum tersedia (aturan AGENTS.md).
 
+import { baseUrl } from './apiBase.js';
 import { computeFoodScoreFromDates, initialFoodScore } from './foodScore.js';
 
 const DEFAULT_UMKM_ID = 1;
