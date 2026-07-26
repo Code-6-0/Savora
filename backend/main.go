@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/savora/backend/database"
 	"github.com/savora/backend/handlers"
 	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
@@ -22,6 +23,9 @@ func main() {
 	if err := services.InitDB(); err != nil {
 		log.Fatalf("❌ Failed to initialize database: %v", err)
 	}
+
+	// Share connection: auth/admin handlers use database.DB, avoid duplicate connection
+	database.DB = services.GetDB()
 
 	// Start cron jobs (auto-expire products)
 	services.StartCronJobs()

@@ -7,7 +7,7 @@ import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import { getToken, isAdmin } from "@/lib/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function KelolaMitraDonasiPage() {
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function KelolaMitraDonasiPage() {
       const params = new URLSearchParams();
       if (filterStatus) params.append("status", filterStatus);
 
-      const response = await fetch(`${API_BASE}/admin/mitra-donasi?${params}`, {
+      const response = await fetch(`${API_BASE}/api/admin/mitra-donasi?${params}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();

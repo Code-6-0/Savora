@@ -24,7 +24,7 @@ export default function DashboardOrdersPage() {
 
   const fetchOrders = async () => {
     setIsLoading(true);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
       const response = await fetch(`${baseUrl}/api/orders`);
       if (!response.ok) throw new Error("Gagal mengambil data pesanan");
@@ -42,7 +42,7 @@ export default function DashboardOrdersPage() {
 
   const updateOrderStatus = async (id, status) => {
     setProcessingId(id);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
       const response = await fetch(`${baseUrl}/api/orders/${id}/status`, {
         method: "PATCH",
@@ -68,7 +68,7 @@ export default function DashboardOrdersPage() {
       return;
     }
     setProcessingId(id);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
       const response = await fetch(`${baseUrl}/api/orders/${id}/validate-pickup`, {
         method: "POST",

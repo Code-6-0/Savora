@@ -67,7 +67,7 @@ export function normalizeInsight(raw) {
 }
 
 function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 }
 
 async function fetchJson(path) {

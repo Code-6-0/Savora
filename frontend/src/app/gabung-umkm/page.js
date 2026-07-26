@@ -67,8 +67,9 @@ export default function GabungUMKMPage() {
         return;
       }
 
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/umkm/register`,
+        `${baseUrl}/api/umkm/register`,
         {
           method: "POST",
           headers: {
