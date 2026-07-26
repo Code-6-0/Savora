@@ -208,9 +208,9 @@ func LoginHandler(c *fiber.Ctx) error {
 		"token": token,
 	}
 
-	// Jika role UMKM, sertakan verification_status dari UmkmProfile untuk redirect logic
+	// Jika role UMKM, sertakan verification_status dari UMKMProfile untuk redirect logic
 	if user.Role == models.RoleUmkm {
-		var umkmProfile models.UmkmProfile
+		var umkmProfile models.UMKMProfile
 		if err := database.DB.Where("user_id = ?", user.ID).First(&umkmProfile).Error; err == nil {
 			responseData["verification_status"] = umkmProfile.VerificationStatus
 		}
@@ -257,7 +257,7 @@ func GetProfileHandler(c *fiber.Ctx) error {
 
 	// Ambil profile berdasarkan role
 	var customerProfile *models.CustomerProfile
-	var umkmProfile *models.UmkmProfile
+	var umkmProfile *models.UMKMProfile
 	var mitraProfileResponse interface{}
 
 	if user.Role == models.RoleCustomer {
@@ -266,7 +266,7 @@ func GetProfileHandler(c *fiber.Ctx) error {
 			customerProfile = &cp
 		}
 	} else if user.Role == models.RoleUmkm {
-		var up models.UmkmProfile
+		var up models.UMKMProfile
 		if err := database.DB.Where("user_id = ?", user.ID).First(&up).Error; err == nil {
 			umkmProfile = &up
 		}

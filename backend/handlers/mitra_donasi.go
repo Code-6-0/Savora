@@ -18,7 +18,22 @@ type RegisterMitraDonasiRequest struct {
 	Phone       string `json:"phone"`        // Telepon organisasi
 	Address     string `json:"address"`      // Alamat organisasi
 	Description string `json:"description"`  // Deskripsi singkat
-	DocumentURL string `json:"document_url"` // URL dokumen legalitas (upload handled by frontend)
+	DocumentURL string `json:"document_url"` // URL dokumen legalitas (deprecated, backward compat)
+
+	// Dokumen Legalitas Yayasan (wajib)
+	NomorAktaPendirian    string `json:"nomor_akta_pendirian"`     // Nomor akta pendirian yayasan (wajib)
+	AktaPendirianURL      string `json:"akta_pendirian_url"`       // URL dokumen akta pendirian (wajib)
+	NomorSKKemenkumham    string `json:"nomor_sk_kemenkumham"`     // Nomor SK pengesahan badan hukum (wajib)
+	SKKemenkumhamURL      string `json:"sk_kemenkumham_url"`       // URL dokumen SK Kemenkumham (wajib)
+	NPWPYayasan           string `json:"npwp_yayasan"`             // Nomor NPWP atas nama yayasan (wajib)
+	NPWPYayasanURL        string `json:"npwp_yayasan_url"`         // URL foto/scan NPWP yayasan (wajib)
+	KTPPenanggungJawabURL string `json:"ktp_penanggung_jawab_url"` // URL foto KTP penanggung jawab (wajib)
+	SelfieKTPURL          string `json:"selfie_ktp_url"`           // URL foto selfie dengan KTP (wajib)
+
+	// Dokumen Tambahan (opsional)
+	FotoFasilitasURL  string `json:"foto_fasilitas_url"`   // URL foto kegiatan/fasilitas yayasan (opsional)
+	NIBUrl            string `json:"nib_url"`              // URL NIB (opsional)
+	TandaDaftarLKSURL string `json:"tanda_daftar_lks_url"` // URL Tanda Daftar LKS (opsional)
 }
 
 // VerifyMitraDonasiRequest body
@@ -74,6 +89,64 @@ func RegisterMitraDonasiHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	// Validasi dokumen legalitas wajib (8 field)
+	if req.NomorAktaPendirian == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Nomor akta pendirian yayasan wajib diisi"},
+		})
+	}
+	if req.AktaPendirianURL == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Dokumen akta pendirian wajib diupload"},
+		})
+	}
+	if req.NomorSKKemenkumham == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Nomor SK Kemenkumham wajib diisi"},
+		})
+	}
+	if req.SKKemenkumhamURL == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Dokumen SK Kemenkumham wajib diupload"},
+		})
+	}
+	if req.NPWPYayasan == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Nomor NPWP yayasan wajib diisi"},
+		})
+	}
+	if req.NPWPYayasanURL == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Foto/scan NPWP yayasan wajib diupload"},
+		})
+	}
+	if req.KTPPenanggungJawabURL == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Foto KTP penanggung jawab wajib diupload"},
+		})
+	}
+	if req.SelfieKTPURL == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(APIResponse{
+			Success: false,
+			Data:    nil,
+			Error:   &ErrorInfo{Code: "VALIDATION_ERROR", Message: "Foto selfie dengan KTP wajib diupload"},
+		})
+	}
+
 	// Cek email sudah terdaftar
 	var existingUser models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
@@ -111,13 +184,24 @@ func RegisterMitraDonasiHandler(c *fiber.Ctx) error {
 
 	// Buat profile mitra donasi
 	profile := models.MitraDonasiProfile{
-		UserID:             user.ID,
-		OrgName:            req.OrgName,
-		Phone:              req.Phone,
-		Address:            req.Address,
-		Description:        req.Description,
-		DocumentURL:        req.DocumentURL,
-		VerificationStatus: models.VerificationPending,
+		UserID:                 user.ID,
+		OrgName:                req.OrgName,
+		Phone:                  req.Phone,
+		Address:                req.Address,
+		Description:            req.Description,
+		DocumentURL:            req.DocumentURL, // Backward compatibility
+		NomorAktaPendirian:     req.NomorAktaPendirian,
+		AktaPendirianURL:       req.AktaPendirianURL,
+		NomorSKKemenkumham:     req.NomorSKKemenkumham,
+		SKKemenkumhamURL:       req.SKKemenkumhamURL,
+		NPWPYayasan:            req.NPWPYayasan,
+		NPWPYayasanURL:         req.NPWPYayasanURL,
+		KTPPenanggungJawabURL:  req.KTPPenanggungJawabURL,
+		SelfieKTPURL:           req.SelfieKTPURL,
+		FotoFasilitasURL:       req.FotoFasilitasURL,
+		NIBUrl:                 req.NIBUrl,
+		TandaDaftarLKSURL:      req.TandaDaftarLKSURL,
+		VerificationStatus:     models.VerificationPending,
 	}
 
 	if err := database.DB.Create(&profile).Error; err != nil {

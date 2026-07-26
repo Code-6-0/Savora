@@ -36,7 +36,7 @@ func InitDB() error {
 		// Core auth & profiles
 		&models.User{},
 		&models.CustomerProfile{},
-		&models.UmkmProfile{},
+		&models.UMKMProfile{},
 		&models.MitraDonasiProfile{},
 
 		// Core products & orders

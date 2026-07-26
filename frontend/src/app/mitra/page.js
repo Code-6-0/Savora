@@ -130,7 +130,9 @@ export default function MitraPage() {
                   <span className="mitra-check-icon">✓</span> Dashboard Monitoring Real-time
                 </li>
               </ul>
-              <button className="mitra-role-button">Daftar Sekarang</button>
+              <Link href="/gabung-umkm">
+                <button className="mitra-role-button">Daftar Sekarang</button>
+              </Link>
             </div>
           </div>
 
@@ -152,7 +154,9 @@ export default function MitraPage() {
                   <span className="mitra-check-icon">✓</span> Verifikasi Badge "Mitra Berdampak"
                 </li>
               </ul>
-              <button className="mitra-role-button">Gabung Ekosistem</button>
+              <Link href="/gabung-mitra-pengolah">
+                <button className="mitra-role-button">Gabung Ekosistem</button>
+              </Link>
             </div>
             <div className="mitra-role-image">
               <img src="/images/karakter-mitra2.png" alt="Mitra Pengolah" />

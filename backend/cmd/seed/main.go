@@ -94,12 +94,14 @@ func main() {
 	database.DB.Create(&umkmUser)
 
 	umkmProfile := models.UMKMProfile{
-		UserID:             umkmUser.ID,
-		BusinessName:       "Warung Bu Lestari",
-		Address:            "Jl. Mangga Dua No. 45, Jakarta Utara",
-		GeoLocation:        "-6.1354, 106.8360",
-		VerificationStatus: "APPROVED",
-		Rating:             4.5,
+		UserID:               umkmUser.ID,
+		NamaBisnis:           "Warung Bu Lestari",
+		JenisBisnis:          "restoran",
+		AlamatOperasional:    "Jl. Mangga Dua No. 45, Jakarta Utara",
+		KontakTelepon:        "081234567892",
+		EstimasiVolumeSampah: "40 kg/hari",
+		JamOperasional:       "08:00-20:00",
+		VerificationStatus:   "APPROVED",
 	}
 	database.DB.Create(&umkmProfile)
 	log.Printf("✓ UMKM created (ID: %d, email: %s, password: umkm123)", umkmUser.ID, umkmUser.Email)

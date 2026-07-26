@@ -46,8 +46,8 @@ func (h *ReviewHandler) CreateReview(c *fiber.Ctx) error {
 func (h *ReviewHandler) GetKeywordSafety(c *fiber.Ctx) error {
 	db := services.GetDB()
 	umkmID := c.Params("umkm_id")
-	
-	var umkm models.UmkmProfile
+
+	var umkm models.UMKMProfile
 	if err := db.First(&umkm, umkmID).Error; err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": "UMKM tidak ditemukan",
