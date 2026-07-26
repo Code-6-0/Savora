@@ -185,8 +185,8 @@ function MarketplaceContent() {
   // Pilih produk rekomendasi dengan logika adaptif untuk katalog kecil
   const now = Date.now();
   const recommendedBase = selectRecommendedProducts(products, { now, elapsedSeconds: elapsed });
-  // Inject ads hanya jika: mode fallback ATAU (mode api DAN ada iklan)
-  const shouldShowAds = adsSource === 'fallback' || (adsSource === 'api' && ads.length > 0);
+  // Inject ads hanya jika: mode api DAN ada iklan (fallback tidak pernah dirender)
+  const shouldShowAds = adsSource === 'api' && ads.length > 0;
   const recommendedProducts = shouldShowAds
     ? [...ads.slice(0, 2), ...recommendedBase].slice(0, 6)
     : recommendedBase;
@@ -561,22 +561,34 @@ function MarketplaceContent() {
                   <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                     <div className="beranda-product-image">
                       <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                        {safetyData && (
+                      {product.hasRealTimer && (
+                        <div className="beranda-product-badges">
                           <span
                             className="beranda-badge-timer"
-                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
+                          </span>
+                          {safetyData && (
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            >
+                              {safetyData.level.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {!product.hasRealTimer && safetyData && (
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff" }}
                           >
                             {safetyData.level.label}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
@@ -738,22 +750,34 @@ function MarketplaceContent() {
                   <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                     <div className="beranda-product-image">
                       <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                        {safetyData && (
+                      {product.hasRealTimer && (
+                        <div className="beranda-product-badges">
                           <span
                             className="beranda-badge-timer"
-                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
+                          </span>
+                          {safetyData && (
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            >
+                              {safetyData.level.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {!product.hasRealTimer && safetyData && (
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff" }}
                           >
                             {safetyData.level.label}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
@@ -988,10 +1012,30 @@ function MarketplaceContent() {
   );
 }
 
-// Wrapper with Suspense boundary for useSearchParams
 export default function MarketplacePage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#16a34a',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Memuat marketplace...</p>
+        </div>
+      </div>
+    }>
       <MarketplaceContent />
     </Suspense>
   );

@@ -427,26 +427,28 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Timer Rescue Cerdas card */}
-            <div style={{ background: 'white', border: '1px solid #e8e8e8', borderRadius: '16px', padding: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#fef3c6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Clock size={14} color="#e17100" />
+            {/* Timer Rescue Cerdas card - hanya tampil jika produk punya timestamp asli */}
+            {product.hasRealTimer && (
+              <div style={{ background: 'white', border: '1px solid #e8e8e8', borderRadius: '16px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#fef3c6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Clock size={14} color="#e17100" />
+                    </div>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: '#1d1d1d' }}>Timer Rescue Cerdas</span>
                   </div>
-                  <span style={{ fontSize: '15px', fontWeight: '600', color: '#1d1d1d' }}>Timer Rescue Cerdas</span>
+                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#e17100' }}>
+                    {countdownHours}:{countdownMinutes}:{countdownSeconds}
+                  </div>
                 </div>
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#e17100' }}>
-                  {countdownHours}:{countdownMinutes}:{countdownSeconds}
+                <div style={{ height: '6px', background: '#e8e8e8', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
+                  <div style={{ height: '100%', background: '#e17100', width: `${progressPercent}%`, transition: 'width 1s linear' }} />
+                </div>
+                <div style={{ fontSize: '11px', color: '#999999' }}>
+                  Jendela reservasi ditutup pukul {deadlineHour}:{deadlineMinute} hari ini
                 </div>
               </div>
-              <div style={{ height: '6px', background: '#e8e8e8', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
-                <div style={{ height: '100%', background: '#e17100', width: `${progressPercent}%`, transition: 'width 1s linear' }} />
-              </div>
-              <div style={{ fontSize: '11px', color: '#999999' }}>
-                Jendela reservasi ditutup pukul {deadlineHour}:{deadlineMinute} hari ini
-              </div>
-            </div>
+            )}
 
             {/* Quantity stepper */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -733,9 +735,11 @@ export default function ProductDetailPage() {
                     <div style={{ background: '#ffffff', borderRadius: '18px', overflow: 'hidden' }}>
                       <div style={{ position: 'relative', height: '174px', background: '#eaf8ec' }}>
                         <img src={item.photo_url || "/detail/related-1.png"} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(225, 113, 0, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          ⏱ {timerDisplay}
-                        </div>
+                        {item.hasRealTimer && (
+                          <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(225, 113, 0, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            ⏱ {timerDisplay}
+                          </div>
+                        )}
                         {item.discountPercent > 0 && (
                           <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(11, 122, 59, 0.9)', color: 'white', padding: '4px 7px', borderRadius: '9999px', fontSize: '9px', fontWeight: '700' }}>
                             {item.discountPercent}% OFF
