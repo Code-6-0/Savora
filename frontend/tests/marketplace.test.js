@@ -249,3 +249,18 @@ test("normalizeMarketplaceProduct: produk dengan expires_at eksplisit tidak terp
   
   assert.strictEqual(product._expiresMs, expiresAt.getTime(), "Should use explicit expires_at");
 });
+test("normalizeMarketplaceProduct: produk API tanpa expires_at dan tanpa timerMinutes menggunakan default", () => {
+  const createdAt = new Date("2026-07-25T10:00:00Z");
+  const product = normalizeMarketplaceProduct({
+    id: 666,
+    name: "Real API Product",
+    created_at: createdAt.toISOString(),
+    expires_at: null,
+    // NO timerMinutes field - mimics real API response
+  });
+  
+  // Should use defaultMetadata.timerMinutes (120 minutes)
+  const expectedExpiresMs = createdAt.getTime() + 120 * 60 * 1000;
+  assert.strictEqual(product._expiresMs, expectedExpiresMs, "Should derive _expiresMs from created_at + default timerMinutes");
+  assert.ok(Number.isFinite(product._expiresMs), "_expiresMs should be a valid timestamp");
+});

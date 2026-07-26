@@ -432,8 +432,9 @@ export function normalizeMarketplaceProduct(raw) {
   // FIX: Jika expires_at kosong tapi published_at ada, turunkan deadline absolut
   // dari published_at + timerMinutes agar timer konsisten lintas refresh.
   // Jalur "timerMinutes + elapsed" hanya untuk data demo murni tanpa timestamp.
-  if (!expiresMs && publishMs && base.timerMinutes) {
-    expiresMs = publishMs + Number(base.timerMinutes) * 60 * 1000;
+  if (!expiresMs && publishMs) {
+    const fallbackMinutes = Number(base.timerMinutes ?? defaultMetadata.timerMinutes);
+    expiresMs = publishMs + fallbackMinutes * 60 * 1000;
   }
 
   // Skor awal dikunci dari status Food Trust Index (PRD 12.6).
