@@ -1,0 +1,1347 @@
+/* ============================================
+   MITRA (LANDING PAGE PARTNERSHIP)
+   ============================================ */
+
+.mitra-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ============================================
+   HERO SECTION — Kutipan inspiratif
+   ============================================ */
+
+.mitra-hero {
+  position: relative;
+  width: 100%;
+  background-color: #fff47d;
+  background-image: url('/images/mitra-hero-bg.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 80px 40px;
+  overflow: hidden;
+}
+
+.mitra-hero-container {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mitra-hero-quote {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.mitra-quote-dark {
+  color: rgba(21, 28, 39, 0.7);
+}
+
+.mitra-quote-green {
+  color: #16a34a;
+}
+
+/* ============================================
+   STATS BAR — Statistik mitra
+   ============================================ */
+
+.mitra-stats {
+  width: 100%;
+  background-color: #0b7a3b;
+  padding: 40px 40px;
+}
+
+.mitra-stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+
+.mitra-stat-item {
+  text-align: center;
+  color: white;
+}
+
+.mitra-stat-number {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 8px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.mitra-stat-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* ============================================
+   ROLES SECTION — Pilih peran Anda
+   ============================================ */
+
+.mitra-roles {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 80px 40px;
+}
+
+.mitra-roles-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mitra-roles-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #141b2b;
+  text-align: center;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-roles-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #3e4a3d;
+  text-align: center;
+  margin: 0 0 60px 0;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Role cards */
+.mitra-role-card {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 32px;
+  min-height: 400px;
+}
+
+.mitra-role-card:last-child {
+  margin-bottom: 0;
+}
+
+/* UMKM card — yellow background, image left */
+.mitra-role-umkm {
+  background-color: #fff47d;
+}
+
+/* Pengolah card — salmon background, reversed layout (text left, image right) */
+.mitra-role-pengolah {
+  background-color: #df6060;
+  flex-direction: row-reverse;
+}
+
+/* Image wrapper */
+.mitra-role-image {
+  flex: 0 0 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Image for left card (UMKM) - rounded corners on left side */
+.mitra-role-umkm .mitra-role-image {
+  border-radius: 24px 0 0 24px;
+}
+
+/* Image for right card (Pengolah) - rounded corners on right side */
+.mitra-role-pengolah .mitra-role-image {
+  border-radius: 0 24px 24px 0;
+}
+
+.mitra-role-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Content wrapper */
+.mitra-role-content {
+  flex: 1;
+  min-width: 0;
+  padding: 60px;
+}
+
+.mitra-role-card-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #151c27;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-role-card-desc {
+  font-size: 16px;
+  font-weight: 400;
+  color: #3e4a3d;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+/* Features list */
+.mitra-role-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+}
+
+.mitra-role-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #151c27;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.mitra-role-features li:last-child {
+  margin-bottom: 0;
+}
+
+.mitra-check-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #16a34a;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Button */
+.mitra-role-button {
+  background-color: white;
+  color: #151c27;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mitra-role-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.mitra-role-button:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   STEPS SECTION — Bagaimana Cara Bergabung?
+   ============================================ */
+
+.mitra-steps {
+  width: 100%;
+  background-color: #f9fafb;
+  padding: 80px 40px;
+}
+
+.mitra-steps-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mitra-steps-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #141b2b;
+  text-align: center;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-steps-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #3e4a3d;
+  text-align: center;
+  margin: 0 0 60px 0;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Steps grid */
+.mitra-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 32px;
+}
+
+.mitra-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Circle number */
+.mitra-step-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #d8f4e1;
+  color: #0b7a3b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Active/first step — solid green background, white text */
+.mitra-step-circle.mitra-step-active {
+  background-color: #0b7a3b;
+  color: white;
+}
+
+/* Step title */
+.mitra-step-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #151c27;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+/* Step description */
+.mitra-step-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #3e4a3d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   REQUIREMENTS SECTION — Persyaratan Menjadi Mitra
+   ============================================ */
+
+.mitra-requirements {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 80px 40px;
+}
+
+.mitra-requirements-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mitra-requirements-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #141b2b;
+  text-align: center;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-requirements-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #3e4a3d;
+  text-align: center;
+  margin: 0 0 60px 0;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Requirements grid */
+.mitra-requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+/* Requirement cards */
+.mitra-requirement-card {
+  border-radius: 24px;
+  padding: 40px;
+}
+
+/* UMKM card — salmon background */
+.mitra-requirement-umkm {
+  background-color: #df6060;
+}
+
+/* Pengolah card — yellow background */
+.mitra-requirement-pengolah {
+  background-color: #fff47d;
+}
+
+/* Card header with badge and title */
+.mitra-requirement-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Badge icon */
+.mitra-requirement-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* Green badge for Pengolah card */
+.mitra-requirement-badge-green {
+  background-color: #0b7a3b;
+}
+
+/* Card title */
+.mitra-requirement-card-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #151c27;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Requirements list */
+.mitra-requirement-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mitra-requirement-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #3e4a3d;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.mitra-requirement-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Reuse check icon from Section 2 */
+.mitra-requirement-list .mitra-check-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ============================================
+   CATEGORIES SECTION — Kategori Mitra Pengolah
+   ============================================ */
+
+.mitra-categories {
+  width: 100%;
+  background-color: #f9fafb;
+  padding: 80px 40px;
+}
+
+.mitra-categories-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mitra-categories-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #141b2b;
+  text-align: center;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-categories-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #3e4a3d;
+  text-align: center;
+  margin: 0 0 60px 0;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Categories grid */
+.mitra-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+/* Category cards */
+.mitra-category-card {
+  background-color: white;
+  border: 1px solid rgba(189, 202, 186, 0.3);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.mitra-category-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+}
+
+/* Category badge icon */
+.mitra-category-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* Badge color variants - ESTIMASI dari PRD, bisa dikoreksi nanti */
+.mitra-category-badge-red {
+  background-color: #df6060;
+}
+
+.mitra-category-badge-blue {
+  background-color: #3b82f6;
+}
+
+.mitra-category-badge-gold {
+  background-color: #d4a017;
+}
+
+.mitra-category-badge-green {
+  background-color: #16a34a;
+}
+
+.mitra-category-badge-orange {
+  background-color: #f97316;
+}
+
+.mitra-category-badge-dark {
+  background-color: #151c27;
+}
+
+/* Category title */
+.mitra-category-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #151c27;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+/* Category description */
+.mitra-category-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #3e4a3d;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ============================================
+   VERIFICATION SECTION — Proses Verifikasi Mitra
+   ============================================ */
+
+.mitra-verification {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 80px 40px;
+}
+
+.mitra-verification-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mitra-verification-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #141b2b;
+  text-align: center;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-verification-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #3e4a3d;
+  text-align: center;
+  margin: 0 0 60px 0;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Verification grid */
+.mitra-verification-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.mitra-verification-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Icon wrapper — lingkaran hijau pastel */
+.mitra-verification-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(22, 163, 74, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.mitra-verification-step:hover .mitra-verification-icon {
+  background-color: rgba(22, 163, 74, 0.15);
+  transform: scale(1.05);
+}
+
+/* Step title */
+.mitra-verification-step-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #151c27;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+/* Step description */
+.mitra-verification-step-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #3e4a3d;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ============================================
+   FAQ SECTION — Pertanyaan Populer
+   ============================================ */
+
+.mitra-faq {
+  width: 100%;
+  background-color: #f9fafb;
+  padding: 80px 40px;
+}
+
+.mitra-faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.mitra-faq-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #141b2b;
+  text-align: center;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.mitra-faq-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #3e4a3d;
+  text-align: center;
+  margin: 0 0 60px 0;
+  line-height: 1.6;
+}
+
+/* FAQ list */
+.mitra-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* FAQ item */
+.mitra-faq-item {
+  background-color: #ffffff;
+  border: 2px solid rgba(189, 202, 186, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mitra-faq-item-active {
+  border-color: #16a34a;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+}
+
+/* FAQ question button */
+.mitra-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 28px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  color: #151c27;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+.mitra-faq-item-active .mitra-faq-question {
+  color: #16a34a;
+}
+
+.mitra-faq-question:hover {
+  color: #16a34a;
+}
+
+/* Chevron icon */
+.mitra-faq-chevron {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.mitra-faq-item-active .mitra-faq-chevron {
+  color: #16a34a;
+}
+
+.mitra-faq-chevron-open {
+  transform: rotate(180deg);
+}
+
+/* FAQ answer */
+.mitra-faq-answer {
+  padding: 0 28px 24px 28px;
+  animation: fadeIn 0.3s ease;
+}
+
+.mitra-faq-answer p {
+  font-size: 16px;
+  font-weight: 400;
+  color: #3e4a3d;
+  line-height: 1.7;
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   RESPONSIVE — Mobile & Tablet
+   ============================================ */
+
+/* Tablet (max-width: 900px) */
+@media (max-width: 900px) {
+  .mitra-hero {
+    padding: 60px 32px;
+  }
+
+  .mitra-hero-quote {
+    font-size: clamp(24px, 3.5vw, 32px);
+  }
+
+  /* Stats grid 2 kolom di tablet */
+  .mitra-stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .mitra-stat-number {
+    font-size: 32px;
+  }
+
+  .mitra-stat-label {
+    font-size: 13px;
+  }
+
+  /* Roles section responsive — tablet */
+  .mitra-roles {
+    padding: 60px 32px;
+  }
+
+  .mitra-roles-title {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  .mitra-roles-subtitle {
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mitra-role-card {
+    margin-bottom: 24px;
+    min-height: 360px;
+  }
+
+  .mitra-role-image {
+    flex: 0 0 50%;
+  }
+
+  .mitra-role-content {
+    padding: 40px;
+  }
+
+  .mitra-role-card-title {
+    font-size: 28px;
+  }
+
+  .mitra-role-card-desc {
+    font-size: 15px;
+  }
+
+  .mitra-role-features li {
+    font-size: 15px;
+  }
+
+  .mitra-role-button {
+    font-size: 15px;
+    padding: 12px 28px;
+  }
+
+  /* Steps section responsive — tablet */
+  .mitra-steps {
+    padding: 60px 32px;
+  }
+
+  .mitra-steps-title {
+    font-size: 32px;
+  }
+
+  .mitra-steps-subtitle {
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mitra-steps-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+
+  .mitra-step-circle {
+    width: 70px;
+    height: 70px;
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .mitra-step-title {
+    font-size: 16px;
+  }
+
+  .mitra-step-desc {
+    font-size: 13px;
+  }
+
+  /* Requirements section responsive — tablet */
+  .mitra-requirements {
+    padding: 60px 32px;
+  }
+
+  .mitra-requirements-title {
+    font-size: 32px;
+  }
+
+  .mitra-requirements-subtitle {
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mitra-requirements-grid {
+    gap: 24px;
+  }
+
+  .mitra-requirement-card {
+    padding: 32px;
+  }
+
+  .mitra-requirement-badge {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .mitra-requirement-card-title {
+    font-size: 20px;
+  }
+
+  .mitra-requirement-list li {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  /* Categories section responsive — tablet */
+  .mitra-categories {
+    padding: 60px 32px;
+  }
+
+  .mitra-categories-title {
+    font-size: 32px;
+  }
+
+  .mitra-categories-subtitle {
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mitra-categories-grid {
+    gap: 24px;
+  }
+
+  .mitra-category-card {
+    padding: 28px 20px;
+  }
+
+  .mitra-category-badge {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .mitra-category-title {
+    font-size: 18px;
+  }
+
+  .mitra-category-desc {
+    font-size: 13px;
+  }
+
+  /* Categories grid 2 kolom di tablet */
+  .mitra-categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Verification section responsive — tablet */
+  .mitra-verification {
+    padding: 60px 32px;
+  }
+
+  .mitra-verification-title {
+    font-size: 32px;
+  }
+
+  .mitra-verification-subtitle {
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mitra-verification-grid {
+    gap: 24px;
+  }
+
+  .mitra-verification-icon {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 16px;
+  }
+
+  .mitra-verification-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mitra-verification-step-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .mitra-verification-step-desc {
+    font-size: 13px;
+  }
+
+  /* FAQ section responsive — tablet */
+  .mitra-faq {
+    padding: 60px 32px;
+  }
+
+  .mitra-faq-title {
+    font-size: 32px;
+  }
+
+  .mitra-faq-subtitle {
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mitra-faq-question {
+    padding: 20px 24px;
+    font-size: 16px;
+  }
+
+  .mitra-faq-answer {
+    padding: 0 24px 20px 24px;
+  }
+
+  .mitra-faq-answer p {
+    font-size: 15px;
+  }
+
+}
+
+/* Mobile (max-width: 570px) */
+@media (max-width: 570px) {
+  .mitra-hero {
+    padding: 50px 20px;
+  }
+
+  .mitra-hero-quote {
+    font-size: 22px;
+    line-height: 1.4;
+  }
+
+  /* Stats padding lebih compact */
+  .mitra-stats {
+    padding: 32px 20px;
+  }
+
+  /* Stats grid 1 kolom di mobile (stack vertikal) */
+  .mitra-stats-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .mitra-stat-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .mitra-stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .mitra-stat-number {
+    font-size: 28px;
+  }
+
+  .mitra-stat-label {
+    font-size: 12px;
+  }
+
+  /* Roles section responsive — mobile */
+  .mitra-roles {
+    padding: 40px 20px;
+  }
+
+  .mitra-roles-title {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .mitra-roles-subtitle {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  .mitra-role-card {
+    flex-direction: column;
+    margin-bottom: 20px;
+    min-height: auto;
+  }
+
+  /* Override row-reverse untuk mobile — kedua card stack vertikal sama */
+  .mitra-role-pengolah {
+    flex-direction: column;
+  }
+
+  .mitra-role-image {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 280px;
+    margin: 0;
+  }
+
+  /* Image border-radius untuk mobile — rounded di atas saja */
+  .mitra-role-umkm .mitra-role-image,
+  .mitra-role-pengolah .mitra-role-image {
+    border-radius: 24px 24px 0 0;
+  }
+
+  .mitra-role-content {
+    text-align: center;
+    padding: 32px 24px;
+  }
+
+  .mitra-role-card-title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .mitra-role-card-desc {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .mitra-role-features {
+    text-align: left;
+    margin-bottom: 24px;
+  }
+
+  .mitra-role-features li {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .mitra-role-button {
+    font-size: 14px;
+    padding: 12px 24px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  /* Steps section responsive — mobile */
+  .mitra-steps {
+    padding: 40px 20px;
+  }
+
+  .mitra-steps-title {
+    font-size: 28px;
+  }
+
+  .mitra-steps-subtitle {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  .mitra-steps-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .mitra-step-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .mitra-step-title {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .mitra-step-desc {
+    font-size: 13px;
+  }
+
+  /* Requirements section responsive — mobile */
+  .mitra-requirements {
+    padding: 40px 20px;
+  }
+
+  .mitra-requirements-title {
+    font-size: 28px;
+  }
+
+  .mitra-requirements-subtitle {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  .mitra-requirements-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .mitra-requirement-card {
+    padding: 28px 24px;
+  }
+
+  .mitra-requirement-badge {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .mitra-requirement-card-title {
+    font-size: 20px;
+  }
+
+  .mitra-requirement-list li {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  /* Categories grid 1 kolom di mobile */
+  .mitra-categories-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .mitra-category-card {
+    padding: 24px 20px;
+  }
+
+  .mitra-category-badge {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+
+  .mitra-category-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .mitra-category-desc {
+    font-size: 13px;
+  }
+
+  /* Verification section responsive — mobile */
+  .mitra-verification {
+    padding: 40px 20px;
+  }
+
+  .mitra-verification-title {
+    font-size: 28px;
+  }
+
+  .mitra-verification-subtitle {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  /* Verification grid 1 kolom di mobile (stack vertikal) */
+  .mitra-verification-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .mitra-verification-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 14px;
+  }
+
+  .mitra-verification-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mitra-verification-step-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .mitra-verification-step-desc {
+    font-size: 13px;
+  }
+
+  /* FAQ section responsive — mobile */
+  .mitra-faq {
+    padding: 40px 20px;
+  }
+
+  .mitra-faq-title {
+    font-size: 28px;
+  }
+
+  .mitra-faq-subtitle {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  .mitra-faq-list {
+    gap: 12px;
+  }
+
+  .mitra-faq-question {
+    padding: 18px 20px;
+    font-size: 15px;
+    gap: 16px;
+  }
+
+  .mitra-faq-chevron {
+    width: 18px;
+    height: 18px;
+  }
+
+  .mitra-faq-answer {
+    padding: 0 20px 18px 20px;
+  }
+
+  .mitra-faq-answer p {
+    font-size: 14px;
+  }
+
+}
+
+/* Ultra-wide screens (>1400px) — batasi lebar quote */
+@media (min-width: 1400px) {
+  .mitra-hero-container {
+    max-width: 1000px;
+  }
+}

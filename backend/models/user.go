@@ -26,7 +26,7 @@ type User struct {
 
 	// Profile relations (dari main - existing code anggota lain)
 	CustomerProfile    *CustomerProfile    `json:"customer_profile,omitempty" gorm:"foreignKey:UserID"`
-	UmkmProfile        *UmkmProfile        `json:"umkm_profile,omitempty" gorm:"foreignKey:UserID"`
+	UMKMProfile        *UMKMProfile        `json:"umkm_profile,omitempty" gorm:"foreignKey:UserID"`
 	MitraDonasiProfile *MitraDonasiProfile `json:"mitra_donasi_profile,omitempty" gorm:"foreignKey:UserID"`
 }
 
@@ -38,22 +38,6 @@ type CustomerProfile struct {
 	Avatar    string    `gorm:"size:255" json:"avatar,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-
-	// Relations
-	User User `json:"user,omitempty" gorm:"foreignKey:UserID"`
-}
-
-type UmkmProfile struct {
-	ID                 uint      `gorm:"primaryKey" json:"id"`
-	UserID             uint      `gorm:"uniqueIndex;not null" json:"user_id"`
-	BusinessName       string    `gorm:"size:255;not null" json:"business_name"`
-	Address            string    `gorm:"type:text" json:"address"`
-	GeoLocation        string    `gorm:"size:255" json:"geo_location,omitempty"`
-	VerificationStatus string    `gorm:"size:50;default:PENDING" json:"verification_status"` // PENDING, APPROVED, REJECTED
-	Rating             float64   `gorm:"default:0" json:"rating"`                           // average rating 1-5
-	KeywordSafetyLevel string    `gorm:"size:50;default:AMAN" json:"keyword_safety_level"`  // AMAN, WARNING, GAWAT
-	CreatedAt          time.Time `json:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at"`
 
 	// Relations
 	User User `json:"user,omitempty" gorm:"foreignKey:UserID"`
@@ -92,9 +76,4 @@ func (User) TableName() string {
 // TableName specifies custom table name for CustomerProfile (dari Alia - auth module)
 func (CustomerProfile) TableName() string {
 	return "customer_profiles"
-}
-
-// TableName specifies custom table name for UmkmProfile (untuk konsistensi)
-func (UmkmProfile) TableName() string {
-	return "umkm_profiles"
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import { Megaphone, Plus, CheckCircle2, Clock, Zap, TrendingUp } from "lucide-react";
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
@@ -27,6 +28,7 @@ const statusBadgeType = (status) => {
 
 
 export default function PromosiPage() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [packages, setPackages] = useState([]);
   const [ads, setAds] = useState([]);
   const [products, setProducts] = useState([]);
@@ -70,6 +72,10 @@ export default function PromosiPage() {
       active = false;
     };
   }, []);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const selectedPackage = packages.find((p) => p.id === packageId);
 

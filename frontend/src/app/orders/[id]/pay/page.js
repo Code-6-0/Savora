@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -265,7 +266,7 @@ function PaymentFailedState({ order, status }) {
 export default function PaymentPage() {
   const params = useParams();
   const router = useRouter();
-
+  const { loading: authLoading } = useAuthGuard([]);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -342,6 +343,10 @@ export default function PaymentPage() {
       setPolling(false);
     };
   }, [order?.paymentStatus, loading]);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   // Manual refresh
   const handleRefresh = async () => {

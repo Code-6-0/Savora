@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import {
   Clock3,
   Leaf,
@@ -331,6 +332,7 @@ function OrderTable({ orders }) {
 // ── Default export ────────────────────────────────────────────────────────
 
 export default function AkunPage() {
+  const { loading: authLoading } = useAuthGuard([]);
   const { count } = useCart();
   const [orders, setOrders] = useState([]);
   const [dataSource, setDataSource] = useState("fallback");
@@ -343,6 +345,10 @@ export default function AkunPage() {
       setIsLoading(false);
     });
   }, []);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const impact = computeImpactSummary(orders);
 
