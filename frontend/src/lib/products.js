@@ -68,9 +68,12 @@ export function normalizeProduct(raw) {
     score: rescueScore,
     timer: rescueTimer,
     status: normalizedStatus,
+    production_time: base.production_time || null,
     expires_at: base.expires_at || null,
     published_at: base.published_at || base.created_at || null,
     photo_url: base.photo_url || null,
+    packaging_condition: base.packaging_condition || "Standar",
+    storage_method: base.storage_method || "Sesuai",
   };
 }
 
