@@ -1,13 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Badge from '../../../components/atoms/Badge';
 import { apiGet, apiPatch } from '@/lib/api';
+import { isAdmin } from '@/lib/auth';
 
 export default function VerifikasiPage() {
+  const router = useRouter();
   // State
   const [activeTab, setActiveTab] = useState('umkm'); // 'umkm' | 'mitra'
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
   const [umkmList, setUmkmList] = useState([]);
   const [mitraList, setMitraList] = useState([]);
   const [loading, setLoading] = useState(true);

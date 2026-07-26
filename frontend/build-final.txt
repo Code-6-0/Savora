@@ -1,0 +1,64 @@
+
+> frontend@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.2.10 (webpack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.6s
+  Running TypeScript ...
+  Finished TypeScript in 119ms ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/37) ...
+  Generating static pages using 11 workers (9/37) 
+  Generating static pages using 11 workers (18/37) 
+  Generating static pages using 11 workers (27/37) 
+✓ Generating static pages using 11 workers (37/37) in 3.1s
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin/customers
+├ ○ /admin/dashboard
+├ ○ /admin/help-center
+├ ○ /admin/iklan
+├ ○ /admin/keuangan
+├ ○ /admin/listings
+├ ○ /admin/mitra-donasi
+├ ○ /admin/moderasi
+├ ○ /admin/moderasi-listing
+├ ○ /admin/pengaturan
+├ ○ /admin/umkm
+├ ○ /admin/verifikasi
+├ ○ /admin/verifikasi-umkm
+├ ○ /akun
+├ ○ /analitik
+├ ○ /cart
+├ ○ /dashboard
+├ ○ /dashboard/orders
+├ ○ /help-center
+├ ○ /iklan
+├ ○ /insight
+├ ○ /login
+├ ○ /marketplace
+├ ƒ /marketplace/[id]
+├ ○ /mitra-donasi/dashboard
+├ ○ /mitra-donasi/register
+├ ƒ /orders/[id]/pay
+├ ○ /pesanan
+├ ○ /produk
+├ ○ /produk/tambah
+├ ○ /profil
+├ ○ /profil-saya
+├ ○ /promosi
+├ ○ /register
+└ ○ /verifikasi-umkm
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+EXIT: 1

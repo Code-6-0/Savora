@@ -653,7 +653,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 			First(&categoryProduct)
 
 		summary.TopUMKM = append(summary.TopUMKM, TopUMKMData{
-			UMKMName:        umkmProfile.BusinessName,
+			UMKMName:        umkmProfile.NamaBisnis,
 			Category:        categoryProduct.Category,
 			OrdersCompleted: raw.OrdersCompleted,
 			RevenueKotor:    raw.RevenueKotor,

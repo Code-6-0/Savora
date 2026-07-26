@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import { Search, Filter, Calendar, MapPin, Phone, MessageSquare, AlertTriangle, CheckCircle2, ChevronRight, Download, Package } from "lucide-react";
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
 import { fetchUMKMOrders, updateOrderStatus, canTransition } from "@/lib/orders";
 
 export default function PesananPage() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     loadOrders();
   }, []);
@@ -53,6 +55,19 @@ export default function PesananPage() {
     };
     return statusMap[backendStatus] || backendStatus;
   };
+  useEffect(() => {
+    async function loadOrders() {
+      setLoading(true);
+      const data = await fetchUMKMOrders(1);
+      setOrders(data);
+      setLoading(false);
+    }
+    loadOrders();
+  }, []);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {

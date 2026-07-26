@@ -99,8 +99,8 @@ function BerandaNavbar({ count }) {
               </span>
             )}
           </Link>
-          <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: '#1d1d1d' }}>Masuk</Link>
-          <Link href="/marketplace" className="beranda-btn-primary">Daftar Sekarang</Link>
+          <Link href="/login" className="beranda-btn-secondary" style={{ color: '#1d1d1d' }}>Masuk</Link>
+          <Link href="/register" className="beranda-btn-primary">Daftar Sekarang</Link>
         </div>
       </div>
     </header>

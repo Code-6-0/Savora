@@ -73,6 +73,12 @@ func SetupRoutes(app *fiber.App) {
 	// Upload Image
 	api.Post("/upload/image", handlers.UploadImage)
 
+	// Mitra Pengolah Routes (protected - wajib login) - Added by Alia (mitra pengolah module)
+	api.Post("/mitra-pengolah/apply", middleware.AuthMiddleware, handlers.ApplyMitraPengolahHandler)
+
+	// UMKM Registration Routes (protected - wajib login)
+	api.Post("/umkm/register", middleware.AuthMiddleware, handlers.ApplyUMKMHandler)
+
 	// Admin Routes (protected with JWT + RBAC) - Added by Alia (admin module)
 	admin := api.Group("/admin", middleware.AuthMiddleware, middleware.RequireRole(models.RoleAdmin))
 	admin.Get("/reports/summary", handlers.GetAdminSummaryHandler)
@@ -89,6 +95,9 @@ func SetupRoutes(app *fiber.App) {
 	admin.Patch("/products/:id/status", handlers.ModerateProductHandler)
 	admin.Get("/mitra-donasi", handlers.GetMitraDonasiListHandler)
 	admin.Patch("/mitra-donasi/:id/verify", handlers.VerifyMitraDonasiHandler)
+	admin.Get("/mitra-pengolah", handlers.GetMitraPengolahListHandler)
+	admin.Get("/mitra-pengolah/:id", handlers.GetMitraPengolahDetailHandler)
+	admin.Patch("/mitra-pengolah/:id/verify", handlers.VerifyMitraPengolahHandler)
 	admin.Get("/help-tickets", handlers.GetTicketsHandler)
 	admin.Patch("/help-tickets/:id/status", handlers.UpdateTicketStatusHandler)
 }

@@ -1,16 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Badge from '../../../components/atoms/Badge';
-import { getToken } from '@/lib/auth';
+import { getToken, isAdmin } from '@/lib/auth';
 
 // Base API URL dengan fallback (sama seperti lib/api.js)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
 export default function ModerasiListingPage() {
+  const router = useRouter();
   // State
   const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);

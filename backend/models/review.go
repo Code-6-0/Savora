@@ -34,5 +34,5 @@ type KeywordScore struct {
 	UpdatedAt        time.Time `json:"updated_at"`        // rolling window 30 hari
 
 	// Relations
-	Umkm UmkmProfile `json:"umkm,omitempty" gorm:"foreignKey:UmkmID"`
+	Umkm UMKMProfile `json:"umkm,omitempty" gorm:"foreignKey:UmkmID"`
 }

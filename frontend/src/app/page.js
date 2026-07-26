@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { fetchMarketplaceProducts, computeProductScore, filterMarketplaceProducts } from "@/lib/marketplace";
 import { useCart } from "@/lib/CartContext";
+import SavoraNavbar from "@/components/navbar/SavoraNavbar";
 
 export default function BerandaPage() {
   const { count } = useCart();
