@@ -7,7 +7,7 @@ import Badge from '../../../components/atoms/Badge';
 import { getToken, isAdmin } from '@/lib/auth';
 
 // Base API URL dengan fallback (sama seperti lib/api.js)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 export default function ModerasiListingPage() {
   const router = useRouter();

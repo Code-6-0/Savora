@@ -37,10 +37,10 @@ export default function AdminSidebar({ onClose }) {
 
   async function fetchBadgeCounts() {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const token = getToken();
 
-      const response = await fetch(`${API_BASE}/admin/reports/summary`, {
+      const response = await fetch(`${API_BASE}/api/admin/reports/summary`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
