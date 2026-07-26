@@ -210,6 +210,6 @@ export async function deleteProduct(productId) {
     return true;
   } catch (error) {
     console.error(error);
-    return false; // Anggap saja berhasil untuk keperluan demo UI jika backend down
+    throw error;
   }
 }

@@ -188,10 +188,14 @@ export default function ProdukPage() {
 
   const handleDeleteProduct = async (id) => {
     if (confirm("Yakin ingin menghapus produk ini?")) {
-      await deleteProduct(id);
-      // Refetch from API to ensure data consistency
-      const data = await fetchUMKMProducts(1, true);
-      setProducts(data);
+      try {
+        await deleteProduct(id);
+        // Refetch from API to ensure data consistency
+        const data = await fetchUMKMProducts(1, true);
+        setProducts(data);
+      } catch (error) {
+        alert(`Gagal menghapus produk: ${error.message}`);
+      }
     }
   };
 
