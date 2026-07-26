@@ -162,33 +162,39 @@ export function normalizeUMKMOrder(raw) {
  */
 export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-  
+
   try {
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-    const response = await fetch(`${API_BASE}/api/orders/umkm/${umkmId}`);
-    
+    // Backend hanya punya GET /api/orders (mengembalikan semua orders)
+    const response = await fetch(`${API_BASE}/api/orders`);
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: Gagal mengambil pesanan`);
     }
-    
+
     const contentType = response.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
       throw new Error("Response bukan JSON");
     }
-    
+
     let data = await response.json();
-    
+
     // Handle response format: array langsung atau { data: [...] }
     if (data && typeof data === 'object' && Array.isArray(data.data)) {
       data = data.data;
     }
-    
+
     if (!Array.isArray(data)) {
       throw new Error("Respons orders tidak valid");
     }
-    
+
+    // Filter orders by UMKM ID (client-side filtering karena backend belum support)
+    const filteredData = data.filter(order =>
+      order.product && order.product.umkm_id === umkmId
+    );
+
     // Array kosong adalah hasil VALID, bukan error
-    return data.map(normalizeUMKMOrder);
+    return filteredData.map(normalizeUMKMOrder);
   } catch (error) {
     // Hanya gunakan fallback jika NEXT_PUBLIC_USE_MOCK=true
     if (useMock) {
