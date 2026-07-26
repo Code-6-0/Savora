@@ -75,7 +75,7 @@ export default function ModerasiListingPage() {
         note: note,
       });
       if (response.success) {
-        const actionText = action === 'Active' ? 'diaktifkan' : 'disuspend';
+        const actionText = action === 'Aktif' ? 'diaktifkan' : 'disuspend';
         alert(`Listing berhasil ${actionText}`);
         setShowDialog(false);
         fetchProductList();
@@ -88,10 +88,10 @@ export default function ModerasiListingPage() {
   }
 
   function getActionButtons(product) {
-    if (product.status === 'Active') {
+    if (product.status === 'Aktif') {
       return <Button variant="danger" onClick={() => openDialog(product, 'Suspended')}>Suspend</Button>;
     } else if (product.status === 'Suspended') {
-      return <Button variant="primary" onClick={() => openDialog(product, 'Active')}>Aktifkan</Button>;
+      return <Button variant="primary" onClick={() => openDialog(product, 'Aktif')}>Aktifkan</Button>;
     }
     return <span style={{ color: 'var(--text-muted)' }}>-</span>;
   }
@@ -131,7 +131,7 @@ export default function ModerasiListingPage() {
               <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
                 style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '14px' }}>
                 <option value="">Semua</option>
-                <option value="Active">Active</option>
+                <option value="Aktif">Aktif</option>
                 <option value="Suspended">Suspended</option>
               </select>
             </div>
@@ -190,7 +190,7 @@ export default function ModerasiListingPage() {
                     label: 'Status',
                     render: (row) => (
                       <Badge
-                        variant={row.status === 'Active' ? 'success' : 'danger'}
+                        variant={row.status === 'Aktif' ? 'success' : 'danger'}
                         text={row.status}
                       />
                     )

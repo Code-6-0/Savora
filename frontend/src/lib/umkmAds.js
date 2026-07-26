@@ -13,7 +13,7 @@ const DEFAULT_UMKM_ID = 1;
 export const AD_STATUS = {
   Draft: { key: "Draft", label: "Draft", className: "is-draft" },
   Aktif: { key: "Aktif", label: "Aktif", className: "is-aktif" },
-  Kadaluarsa: { key: "Kadaluarsa", label: "Kadaluarsa", className: "is-kadaluarsa" },
+  Kedaluwarsa: { key: "Kedaluwarsa", label: "Kedaluwarsa", className: "is-kedaluwarsa" },
 };
 
 // Fallback katalog dihapus agar selalu mengambil dari API (Tugas 5).

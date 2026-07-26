@@ -158,7 +158,7 @@ export default function ModerasiListingPage() {
       // Map dialog action to API status
       let status;
       if (dialogAction === 'suspend') status = 'Suspended';
-      else if (dialogAction === 'activate') status = 'Active';
+      else if (dialogAction === 'activate') status = 'Aktif';
       else if (dialogAction === 'warning') status = 'Warning';
 
       const response = await fetch(
@@ -373,7 +373,7 @@ export default function ModerasiListingPage() {
               }}
             >
               <option value="">Semua Status</option>
-              <option value="Active">Aktif</option>
+              <option value="Aktif">Aktif</option>
               <option value="Suspended">Suspended</option>
             </select>
           </div>
@@ -560,17 +560,17 @@ export default function ModerasiListingPage() {
                       {/* Status */}
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <Badge
-                          variant={product.status === 'Active' ? 'success' : 'danger'}
+                          variant={product.status === 'Aktif' ? 'success' : 'danger'}
                           size="sm"
                         >
-                          {product.status === 'Active' ? 'Aktif' : 'Suspended'}
+                          {product.status === 'Aktif' ? 'Aktif' : 'Suspended'}
                         </Badge>
                       </td>
 
                       {/* Aksi */}
                       <td style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                          {product.status === 'Active' ? (
+                          {product.status === 'Aktif' ? (
                             <button
                               onClick={() => openDialog('suspend', product)}
                               style={{

@@ -30,6 +30,8 @@ export function normalizeProduct(raw) {
   if (normalizedStatus === "Active") normalizedStatus = "Aktif";
   else if (normalizedStatus === "Sold Out") normalizedStatus = "Habis";
   else if (normalizedStatus === "Expired") normalizedStatus = "Kedaluwarsa";
+  // Perbaiki typo ejaan (Kadaluwarsa/Kadaluarsa → Kedaluwarsa KBBI)
+  else if (normalizedStatus === "Kadaluwarsa" || normalizedStatus === "Kadaluarsa") normalizedStatus = "Kedaluwarsa";
 
   // Hitung rescue score dan timer dari timestamp
   let rescueScore = 100; // Default jika tidak ada expires_at

@@ -67,8 +67,8 @@ func processExpiredProducts() {
 			}
 		}
 		
-		// Update product status to Expired
-		product.Status = "Expired"
+		// Update product status to Kedaluwarsa
+		product.Status = models.ProductStatusKedaluwarsa
 		if err := db.Save(&product).Error; err != nil {
 			log.Println("❌ Error updating product status:", err)
 		}
