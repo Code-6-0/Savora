@@ -44,7 +44,7 @@ export function normalizeProduct(raw) {
 }
 
 function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 }
 
 /**
@@ -78,6 +78,52 @@ export async function fetchUMKMProducts(umkmId = DEFAULT_UMKM_ID, allowFallback 
     }
     console.error("Gagal mengambil data produk real:", error.message);
     return [];
+  }
+}
+
+/**
+ * Buat produk baru via API.
+ */
+export async function createProduct(productData) {
+  try {
+    const response = await fetch(`${baseUrl()}/api/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    if (!response.ok) {
+      throw new Error("Gagal membuat produk");
+    }
+    const data = await response.json();
+    return normalizeProduct(data);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+/**
+ * Update produk via API.
+ */
+export async function updateProduct(productId, productData) {
+  try {
+    const response = await fetch(`${baseUrl()}/api/products/${productId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    if (!response.ok) {
+      throw new Error("Gagal mengupdate produk");
+    }
+    const data = await response.json();
+    return normalizeProduct(data);
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }
 

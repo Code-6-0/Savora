@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,7 +20,7 @@ import { fetchAds, AD_TYPES } from "@/lib/ads";
 import { deriveRestaurantSafety } from "@/lib/reviews";
 import { useCart } from "@/lib/CartContext";
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const { count } = useCart();
   const [allProducts, setAllProducts] = useState([]);
@@ -185,8 +185,8 @@ export default function MarketplacePage() {
   // Pilih produk rekomendasi dengan logika adaptif untuk katalog kecil
   const now = Date.now();
   const recommendedBase = selectRecommendedProducts(products, { now, elapsedSeconds: elapsed });
-  // Inject ads hanya jika: mode fallback ATAU (mode api DAN ada iklan)
-  const shouldShowAds = adsSource === 'fallback' || (adsSource === 'api' && ads.length > 0);
+  // Inject ads hanya jika: mode api DAN ada iklan (fallback tidak pernah dirender)
+  const shouldShowAds = adsSource === 'api' && ads.length > 0;
   const recommendedProducts = shouldShowAds
     ? [...ads.slice(0, 2), ...recommendedBase].slice(0, 6)
     : recommendedBase;
@@ -547,7 +547,8 @@ export default function MarketplacePage() {
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
-              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+              const hasReviews = product.reviews && product.reviews.length > 0;
+              const rating = hasReviews ? product.rating : null;
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               // Safety badge (PRD 12.7)
@@ -560,22 +561,34 @@ export default function MarketplacePage() {
                   <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                     <div className="beranda-product-image">
                       <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                        {safetyData && (
+                      {product.hasRealTimer && (
+                        <div className="beranda-product-badges">
                           <span
                             className="beranda-badge-timer"
-                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
+                          </span>
+                          {safetyData && (
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            >
+                              {safetyData.level.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {!product.hasRealTimer && safetyData && (
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff" }}
                           >
                             {safetyData.level.label}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
@@ -589,14 +602,21 @@ export default function MarketplacePage() {
                     <div className="beranda-product-info">
                       <div className="beranda-product-title-row">
                         <h3>{product.name}</h3>
-                        <div className="beranda-product-rating">
-                          <Star size={9} fill="#16a34a" color="#16a34a" />
-                          <span>{rating.toFixed(1)}</span>
-                        </div>
+                        {rating != null && (
+                          <div className="beranda-product-rating">
+                            <Star size={9} fill="#16a34a" color="#16a34a" />
+                            <span>{rating.toFixed(1)}</span>
+                          </div>
+                        )}
                       </div>
-                      <p className="beranda-product-vendor">
-                        <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
-                      </p>
+                      {(product.vendor || product.distanceKm != null) && (
+                        <p className="beranda-product-vendor">
+                          <MapPin size={9} />
+                          {product.vendor && <span> {product.vendor}</span>}
+                          {product.vendor && product.distanceKm != null && <span> •</span>}
+                          {product.distanceKm != null && <span> {product.distanceKm} km</span>}
+                        </p>
+                      )}
                       {Number.isFinite(product.stock) && (
                         <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
                           Sisa {product.stock} porsi
@@ -716,7 +736,8 @@ export default function MarketplacePage() {
               const { score, remainingSeconds } = computeProductScore(product, now, elapsed);
               const badge = getFoodScoreBadge(score);
               const timerColor = remainingSeconds < 3600 ? "#ba1a1a" : remainingSeconds < 10800 ? "#f59e0b" : "#16a34a";
-              const rating = product.rating ?? (4.5 + ((product.id?.length ?? 0) % 5) * 0.1);
+              const hasReviews = product.reviews && product.reviews.length > 0;
+              const rating = hasReviews ? product.rating : null;
               const discountPercent = Math.round(((product.original_price - product.rescue_price) / product.original_price) * 100);
 
               // Safety badge (PRD 12.7)
@@ -729,22 +750,34 @@ export default function MarketplacePage() {
                   <Link href={`/marketplace/${product.id}`} className="beranda-product-link">
                     <div className="beranda-product-image">
                       <img src={product.photo_url} alt={product.name} />
-                      <div className="beranda-product-badges">
-                        <span
-                          className="beranda-badge-timer"
-                          style={{ backgroundColor: timerColor, color: "#fff" }}
-                        >
-                          <Clock size={12} /> {formatTimer(remainingSeconds)}
-                        </span>
-                        {safetyData && (
+                      {product.hasRealTimer && (
+                        <div className="beranda-product-badges">
                           <span
                             className="beranda-badge-timer"
-                            style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            style={{ backgroundColor: timerColor, color: "#fff" }}
+                          >
+                            <Clock size={12} /> {formatTimer(remainingSeconds)}
+                          </span>
+                          {safetyData && (
+                            <span
+                              className="beranda-badge-timer"
+                              style={{ backgroundColor: safetyColor, color: "#fff", marginLeft: "4px" }}
+                            >
+                              {safetyData.level.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {!product.hasRealTimer && safetyData && (
+                        <div className="beranda-product-badges">
+                          <span
+                            className="beranda-badge-timer"
+                            style={{ backgroundColor: safetyColor, color: "#fff" }}
                           >
                             {safetyData.level.label}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {score !== undefined && (
                         <span
                           className="beranda-badge-foodscore"
@@ -758,14 +791,21 @@ export default function MarketplacePage() {
                     <div className="beranda-product-info">
                       <div className="beranda-product-title-row">
                         <h3>{product.name}</h3>
-                        <div className="beranda-product-rating">
-                          <Star size={9} fill="#16a34a" color="#16a34a" />
-                          <span>{rating.toFixed(1)}</span>
-                        </div>
+                        {rating != null && (
+                          <div className="beranda-product-rating">
+                            <Star size={9} fill="#16a34a" color="#16a34a" />
+                            <span>{rating.toFixed(1)}</span>
+                          </div>
+                        )}
                       </div>
-                      <p className="beranda-product-vendor">
-                        <MapPin size={9} /> {product.vendor || "Toko"} • {product.distanceKm || "0.8"} km
-                      </p>
+                      {(product.vendor || product.distanceKm != null) && (
+                        <p className="beranda-product-vendor">
+                          <MapPin size={9} />
+                          {product.vendor && <span> {product.vendor}</span>}
+                          {product.vendor && product.distanceKm != null && <span> •</span>}
+                          {product.distanceKm != null && <span> {product.distanceKm} km</span>}
+                        </p>
+                      )}
                       {Number.isFinite(product.stock) && (
                         <span className={`beranda-product-stock${product.stock <= 3 ? ' is-low' : ''}`}>
                           Sisa {product.stock} porsi
@@ -969,5 +1009,34 @@ export default function MarketplacePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#16a34a',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Memuat marketplace...</p>
+        </div>
+      </div>
+    }>
+      <MarketplaceContent />
+    </Suspense>
   );
 }

@@ -4,21 +4,30 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Calendar, MapPin, Phone, MessageSquare, AlertTriangle, CheckCircle2, ChevronRight, Download, Package } from "lucide-react";
 import TopHeader from "@/components/organisms/TopHeader";
 import Badge from "@/components/atoms/Badge";
-import { fetchUMKMOrders, updateOrderStatus, fallbackOrders } from "@/lib/orders";
+import { fetchUMKMOrders, updateOrderStatus, canTransition } from "@/lib/orders";
 
 export default function PesananPage() {
-  const [orders, setOrders] = useState(fallbackOrders);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   useEffect(() => {
-    async function loadOrders() {
-      setLoading(true);
-      const data = await fetchUMKMOrders(1);
-      setOrders(data);
-      setLoading(false);
-    }
     loadOrders();
   }, []);
+
+  async function loadOrders() {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchUMKMOrders(1);
+      setOrders(data);
+    } catch (err) {
+      setError(err.message || "Gagal memuat pesanan");
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const [activeTab, setActiveTab] = useState("Pesanan Aktif");
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -44,19 +53,24 @@ export default function PesananPage() {
     setIsModalOpen(true);
   };
 
-  const handleUpdateStatus = async (newStatus) => {
+  const handleUpdateStatus = async (newBackendStatus) => {
     if (!selectedOrder) return;
     
-    // Call the API
-    if (selectedOrder.original_id) {
-      await updateOrderStatus(selectedOrder.original_id, newStatus);
+    if (!selectedOrder.original_id) {
+      alert("ID pesanan tidak valid");
+      return;
     }
     
-    setOrders(orders.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o));
-    setSelectedOrder({ ...selectedOrder, status: newStatus });
-    if (newStatus === "Didonasikan" || newStatus === "Dibatalkan") {
-      setIsEmergencyModalOpen(false);
+    const res = await updateOrderStatus(selectedOrder.original_id, newBackendStatus);
+    
+    if (res.ok) {
+      // Refetch dari server untuk konsistensi
+      await loadOrders();
       setIsModalOpen(false);
+      setIsEmergencyModalOpen(false);
+    } else {
+      // Tampilkan error
+      alert(res.error || "Gagal mengubah status pesanan");
     }
   };
 
@@ -115,6 +129,38 @@ export default function PesananPage() {
 
       <div className="content-area">
         
+        {/* Loading State */}
+        {loading && (
+          <div className="card" style={{ padding: '40px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1rem', color: '#6B7280' }}>Memuat pesanan...</div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div className="card" style={{ padding: '40px', textAlign: 'center' }}>
+            <div style={{ width: '60px', height: '60px', backgroundColor: '#FEF2F2', color: '#EF4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+              <AlertTriangle size={30} />
+            </div>
+            <h3 style={{ margin: '0 0 10px 0' }}>Tidak dapat terhubung ke server</h3>
+            <p style={{ color: '#6B7280', fontSize: '0.875rem', marginBottom: '25px' }}>{error}</p>
+            <button className="btn-primary" onClick={loadOrders} style={{ padding: '10px 20px' }}>Coba Lagi</button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && orders.length === 0 && (
+          <div className="card" style={{ padding: '40px', textAlign: 'center' }}>
+            <div style={{ width: '60px', height: '60px', backgroundColor: '#F3F4F6', color: '#9CA3AF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+              <Package size={30} />
+            </div>
+            <h3 style={{ margin: '0 0 10px 0' }}>Belum ada pesanan masuk</h3>
+            <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>Pesanan dari pelanggan akan muncul di sini</p>
+          </div>
+        )}
+        
+        {/* Orders Table */}
+        {!loading && !error && orders.length > 0 && (
         <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
           <div style={{ padding: '15px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', gap: '25px', backgroundColor: '#F9FAFB' }}>
             {['Semua', 'Pesanan Aktif', 'Riwayat Penjualan', 'Riwayat Donasi', 'Dibatalkan'].map(tab => (
@@ -177,6 +223,7 @@ export default function PesananPage() {
             </table>
           </div>
         </div>
+        )}
 
       </div>
 
@@ -282,19 +329,24 @@ export default function PesananPage() {
               {/* Action Buttons */}
               {selectedOrder.status !== "Selesai" && selectedOrder.status !== "Dibatalkan" && (
                 <div style={{ display: 'flex', gap: '15px' }}>
-                  {selectedOrder.status === "Menunggu" && (
-                    <button className="btn-primary" onClick={() => handleUpdateStatus("Diproses")} style={{ flex: 1, padding: '12px' }}>Konfirmasi & Proses Pesanan</button>
+                  {/* Tombol hanya muncul sesuai state machine backend */}
+                  {selectedOrder.backend_status === "PAID" && (
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("READY_FOR_PICKUP")} style={{ flex: 1, padding: '12px' }}>
+                      Siapkan Pesanan
+                    </button>
                   )}
-                  {selectedOrder.status === "Diproses" && (
-                    <button className="btn-primary" onClick={() => handleUpdateStatus("Siap Diambil")} style={{ flex: 1, padding: '12px' }}>Pesanan Siap Diambil</button>
-                  )}
-                  {selectedOrder.status === "Siap Diambil" && (
-                    <button className="btn-primary" onClick={() => handleUpdateStatus("Selesai")} style={{ flex: 1, padding: '12px' }}>Selesaikan Pesanan</button>
+                  {selectedOrder.backend_status === "READY_FOR_PICKUP" && (
+                    <button className="btn-primary" onClick={() => handleUpdateStatus("COMPLETED")} style={{ flex: 1, padding: '12px' }}>
+                      Selesaikan Pesanan
+                    </button>
                   )}
                   
-                  <button onClick={() => setIsEmergencyModalOpen(true)} style={{ padding: '12px 20px', border: '1px solid #EF4444', color: '#EF4444', backgroundColor: 'white', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <AlertTriangle size={18} /> Darurat (No-Show)
-                  </button>
+                  {/* Tombol emergency hanya untuk status aktif */}
+                  {["PAID", "READY_FOR_PICKUP"].includes(selectedOrder.backend_status) && (
+                    <button onClick={() => setIsEmergencyModalOpen(true)} style={{ padding: '12px 20px', border: '1px solid #EF4444', color: '#EF4444', backgroundColor: 'white', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <AlertTriangle size={18} /> Darurat (No-Show)
+                    </button>
+                  )}
                 </div>
               )}
               {selectedOrder.status === "Selesai" && (

@@ -33,7 +33,8 @@ test("filterMarketplaceProducts sorts nearby rescue deals first", () => {
 test("normalizeMarketplaceProduct keeps API data and supplies display-safe defaults", () => {
   const product = normalizeMarketplaceProduct({ id: 9, name: "Nasi Hemat", rescue_price: 10000, original_price: 20000, stock: 2 });
   assert.equal(product.food_trust_status, "Layak Dijual");
-  assert.equal(product.vendor, "UMKM Savora");
+  assert.equal(product.vendor, null);
+  assert.equal(product.distanceKm, null);
   assert.equal(product.discountPercent, 50);
 });
 

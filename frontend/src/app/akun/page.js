@@ -83,7 +83,7 @@ async function fetchOrders() {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
-    const response = await fetch(`${baseUrl}/orders`);
+    const response = await fetch(`${baseUrl}/api/orders`);
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json"))
       throw new Error("API orders tidak tersedia");
