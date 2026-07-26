@@ -104,16 +104,17 @@ func main() {
 	database.DB.Create(&umkmProfile)
 	log.Printf("✓ UMKM created (ID: %d, email: %s, password: umkm123)", umkmUser.ID, umkmUser.Email)
 
-	// 4. Mitra Donasi
+	// 4. Mitra Donasi (APPROVED untuk testing)
 	mitraUser := models.User{
 		Name:   "Yayasan Berbagi",
 		Email:  "mitra@savora.com",
 		Role:   models.RoleMitraDonasi,
-		Status: models.StatusPending,
+		Status: models.StatusActive, // ACTIVE agar bisa login
 	}
 	mitraUser.SetPassword("mitra123")
 	database.DB.Create(&mitraUser)
 
+	mitraNow := time.Now()
 	mitraProfile := models.MitraDonasiProfile{
 		UserID:             mitraUser.ID,
 		OrgName:            "Yayasan Berbagi",
@@ -121,10 +122,12 @@ func main() {
 		Address:            "Jl. Pahlawan No. 10, Jakarta Timur",
 		Description:        "Yayasan sosial yang berfokus pada penyaluran makanan surplus kepada masyarakat yang membutuhkan",
 		DocumentURL:        "https://drive.google.com/file/d/example-doc-mitra",
-		VerificationStatus: "PENDING",
+		Category:           "donasi", // Kategori mitra donasi
+		VerificationStatus: "APPROVED", // APPROVED agar bisa akses dashboard
+		VerifiedAt:         &mitraNow,
 	}
 	database.DB.Create(&mitraProfile)
-	log.Printf("✓ Mitra Donasi created (ID: %d, email: %s, password: mitra123, profile_id: %d)", mitraUser.ID, mitraUser.Email, mitraProfile.ID)
+	log.Printf("✓ Mitra Donasi created (ID: %d, email: %s, password: mitra123, profile_id: %d, status: APPROVED)", mitraUser.ID, mitraUser.Email, mitraProfile.ID)
 
 	// Create products
 	log.Println("Creating products...")
