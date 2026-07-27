@@ -3,7 +3,12 @@
  * Semua fungsi pure, tidak ada side effect kecuali persist ke localStorage.
  *
  * Item minimal: { id, name, photo_url, rescue_price, stock, qty }
+ *
+ * NOTE: Data keranjang disimpan per-akun menggunakan namespace otomatis dari userStorage.
+ * Setiap user punya keranjang sendiri; guest punya keranjang terpisah.
  */
+
+import { readUserData, writeUserData, migrateOldData } from "./userStorage.js";
 
 const STORAGE_KEY = "savora_cart";
 
@@ -84,14 +89,20 @@ export function clearCart() {
 }
 
 /**
- * Load keranjang dari localStorage.
+ * Load keranjang dari localStorage dengan namespace per-akun.
  * Guard SSR dan JSON rusak.
+ *
+ * Migrasi otomatis: data lama di kunci global dipindahkan ke namespace akun saat ini.
  */
 export function loadCart() {
   if (typeof window === "undefined") return [];
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    // Migrasi data lama sekali jalan (dari kunci global ke namespace per-akun)
+    migrateOldData(STORAGE_KEY);
+
+    // Baca dari kunci dengan namespace
+    const raw = readUserData(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -101,14 +112,14 @@ export function loadCart() {
 }
 
 /**
- * Save keranjang ke localStorage.
+ * Save keranjang ke localStorage dengan namespace per-akun.
  * Guard SSR.
  */
 export function saveCart(items) {
   if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    writeUserData(STORAGE_KEY, JSON.stringify(items));
   } catch (err) {
     // Silent fail untuk quota exceeded, dll.
   }
