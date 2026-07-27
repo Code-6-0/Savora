@@ -1,6 +1,6 @@
 # Savora — Agent Instructions
 
-Food rescue marketplace. Competition project for CODE 6.0, deadline Jul 25 2026.
+Food rescue marketplace. Competition project for CODE 6.0.
 
 ## Critical path quirks
 
@@ -17,27 +17,29 @@ Food rescue marketplace. Competition project for CODE 6.0, deadline Jul 25 2026.
 Run from Savora/ directory:
 
 ```bash
-# Frontend (127 tests, includes mandatory Food Score Decay test cases)
+# Frontend (12 test files, 155 tests)
 npm test
 npm run build
 
 # Backend (60 Go files)
 go build -o savora-backend
 
-# Lint (70+ pre-existing warnings OK, don't add new ones)
+# Lint (90 pre-existing problems OK, don't add new ones)
 npm run lint
 ```
+
+All commands run from `Savora/` directory with `workdir` parameter.
 
 ## Dev servers
 
 ```bash
-# Frontend :3000
+# Frontend :3000 (from Savora/frontend/)
 npm run dev
 
-# Backend :8000
+# Backend :8000 (from Savora/backend/)
 go run main.go
 
-# Seeder (run from backend/)
+# Seeder (from Savora/backend/)
 go run cmd/seed/main.go
 ```
 
@@ -92,15 +94,16 @@ Do NOT change to "1 bad keyword = instant red badge".
 | Frontend | Next.js 16.2.11, React 19.2.4, Tailwind v4 | JavaScript `.js`, NOT TypeScript |
 | Backend | Go 1.26.2, Fiber v2.52.14, GORM 1.31.2 | Flat structure (no clean architecture) |
 | Database | PostgreSQL via Supabase | GORM + `DATABASE_URL` only, NO Supabase SDK |
-| Payment | Midtrans Snap Sandbox | Legacy Xendit service exists (main.go:36) |
+| Payment | Midtrans Snap Sandbox | PRD says Midtrans; code has legacy Xendit service (main.go:36) |
 | Auth | JWT + bcrypt | `golang.org/x/crypto`, `github.com/golang-jwt/jwt/v5` |
 
 ## Architecture quirks
 
 **Backend dual routing:**
-- Inline routes in `main.go` setupRoutes(): `/api/products/*`, `/orders`, `/payments`, `/reviews` (legacy, other team members)
-- Centralized routes in `routes/routes.go`: `/api/auth/*`, `/api/admin/*`, `/api/me` (newer, auth/admin modules)
-- All new routes MUST go through `routes/routes.go` with `/api` prefix
+- Inline routes in `main.go` setupRoutes(): `/api/orders`, `/api/orders/*`, `/payments/xendit-webhook`, `/reviews`, `/help-tickets`, `/api/analytics/insight/:umkm_id` (owned by other team members)
+- Centralized routes in `routes/routes.go`: `/api/auth/*`, `/api/admin/*`, `/api/me`, `/api/products/*`, `/api/notifications/*`, `/api/waste-logs/*`, `/api/discount/*`, `/api/upload/*` (newer pattern, auth/admin/shared services)
+- Both call the same handlers in `handlers/` — routes are just wired in two places
+- New routes should go through `routes/routes.go` with `/api` prefix unless coordinating with team members
 - DO NOT restructure or move files owned by other team members
 
 **Frontend atomic design:**
@@ -110,6 +113,10 @@ Do NOT change to "1 bad keyword = instant red badge".
 
 **Design tokens:** Single source = `frontend/src/app/globals.css` (1417 lines).
 - Primary: `--primary: #1D6840` (Tailwind v4), legacy: `--primary-color: #0d8a4d`
+- Danger: `--destructive: #DC3545` (Tailwind v4), legacy: `--danger-color: #ef4444`
+- Warning: `--warning-color: #f59e0b`
+- Success: `--success-color: #10b981`
+- Font: `'Plus Jakarta Sans'` (Tailwind v4), legacy: `'Inter'` (both available)
 - Always use CSS variables, never hardcode hex
 - Don't install new UI libraries
 
@@ -146,13 +153,13 @@ Do NOT change to "1 bad keyword = instant red badge".
 
 ## Platform quirk
 
-Linux system, but `playwright.config.js:32` expects `./savora-backend.exe`. Edit or symlink before E2E tests.
+Linux system, but `playwright.config.js:32` expects `cd backend && ./savora-backend.exe`. Build binary or symlink before E2E tests.
 
 ## Test locations
 
 - Frontend: `frontend/tests/*.test.js` (12 files, Node test runner)
-- Backend: `backend/handlers/*_test.go`
-- E2E: `tests/e2e/*.spec.js` (9 spec files)
+- Backend: `backend/handlers/*_test.go` (10 test files)
+- E2E: `tests/e2e/*.spec.js` (8 spec files + test-helpers.js)
 
 ## Environment setup
 
@@ -160,7 +167,7 @@ Copy `.env.example` files:
 - `backend/.env.example` → `backend/.env` (DB_*, JWT_SECRET, Midtrans keys, Supabase storage)
 - `frontend/.env.example` → `frontend/.env.local` (NEXT_PUBLIC_API_URL)
 
-**Database access:** `main.go` requires individual `DB_*` variables. Seeder supports both `DATABASE_URL` and `DB_*` with `DATABASE_URL` as priority.
+**Database access:** `main.go` requires individual `DB_*` variables (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME). Seeder supports both `DATABASE_URL` and individual `DB_*` vars with `DATABASE_URL` as priority.
 
 ## Response format
 
