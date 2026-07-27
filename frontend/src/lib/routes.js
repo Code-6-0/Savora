@@ -21,6 +21,8 @@ export function isCustomerRoute(pathname) {
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/help-center" ||
-    pathname.startsWith("/help-center/")
+    pathname.startsWith("/help-center/") ||
+    pathname === "/tentang" ||
+    pathname.startsWith("/tentang/")
   );
 }

@@ -175,7 +175,7 @@ export default function SavoraNavbar() {
             <Link href="/">Home</Link>
             <Link href="/marketplace">Marketplace</Link>
             <Link href="/mitra">Mitra</Link>
-            <a href="#tentang">Tentang</a>
+            <Link href="/tentang">Tentang</Link>
             <Link href="/akun">Impact</Link>
           </nav>
           <button className="beranda-location">
@@ -229,8 +229,8 @@ export default function SavoraNavbar() {
             <Link href="/marketplace" className={isActiveLink("/marketplace") ? "nav-active" : ""}>
               Marketplace
             </Link>
-            <Link href="/mitra">Mitra</Link>
-            <a href="#tentang">Tentang</a>
+            <Link href="/mitra" className={isActiveLink("/mitra") ? "nav-active" : ""}>Mitra</Link>
+            <Link href="/tentang" className={isActiveLink("/tentang") ? "nav-active" : ""}>Tentang</Link>
             <Link href="/akun" className={isActiveLink("/akun") ? "nav-active" : ""}>
               Impact
             </Link>
@@ -554,8 +554,8 @@ export default function SavoraNavbar() {
           <Link href="/marketplace" className={isActiveLink("/marketplace") ? "nav-active" : ""}>
             Marketplace
           </Link>
-          <Link href="/mitra">Mitra</Link>
-          <a href="#tentang">Tentang</a>
+          <Link href="/mitra" className={isActiveLink("/mitra") ? "nav-active" : ""}>Mitra</Link>
+          <Link href="/tentang" className={isActiveLink("/tentang") ? "nav-active" : ""}>Tentang</Link>
           <Link href="/akun" className={isActiveLink("/akun") ? "nav-active" : ""}>
             Impact
           </Link>
