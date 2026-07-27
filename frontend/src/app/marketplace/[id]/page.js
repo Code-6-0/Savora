@@ -36,6 +36,7 @@ import {
   computeProductScore,
   fallbackMarketplaceProducts,
   fetchMarketplaceProduct,
+  fetchMarketplaceProducts,
   normalizeMarketplaceProduct,
 } from "@/lib/marketplace";
 import { foodScoreBand, rescueTimeColor, rescueTimeParts } from "@/lib/foodScore";
@@ -267,7 +268,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="savora-marketplace savora-detail-page" style={{ background: '#ffffff', fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-      <BerandaNavbar count={count} />
+      <SavoraNavbar />
 
       <main style={{ maxWidth: '1151px', margin: '0 auto', padding: '24px 32px' }}>
         {/* Breadcrumb */}
