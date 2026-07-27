@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import {
   LayoutDashboard,
   Package,
@@ -2130,12 +2131,17 @@ const DEFAULT_ASSESSMENT = {
 };
 
 export default function App() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [assessment, setAssessment] = useState(DEFAULT_ASSESSMENT);
   const [published, setPublished] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   async function handlePublish() {
     setIsSubmitting(true);

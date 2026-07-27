@@ -5,13 +5,20 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import { getToken } from "@/lib/auth";
+import { getToken, isAdmin } from "@/lib/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function KelolaUMKMPage() {
   const router = useRouter();
   const [umkmList, setUmkmList] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -43,7 +50,7 @@ export default function KelolaUMKMPage() {
       if (filterStatus) params.append("status", filterStatus);
       if (filterVerification) params.append("verification_status", filterVerification);
 
-      const response = await fetch(`${API_BASE}/admin/umkm?${params}`, {
+      const response = await fetch(`${API_BASE}/api/admin/umkm?${params}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();

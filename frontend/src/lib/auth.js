@@ -67,39 +67,82 @@ export function isAuthenticated() {
 export function logout() {
   removeToken();
   if (typeof window !== 'undefined') {
-    window.location.href = '/login';
+    window.location.href = '/'; // F3a: redirect home (bukan /login)
+  }
+}
+
+/**
+ * F3b: Logout dengan konfirmasi dialog
+ */
+export function confirmLogout() {
+  if (typeof window !== 'undefined') {
+    const confirmed = window.confirm('Yakin ingin keluar?');
+    if (confirmed) {
+      logout();
+    }
   }
 }
 
 /**
  * Get redirect URL based on user role after login
- * @param {string} role - User role (CUSTOMER, UMKM, ADMIN, MITRA_DONASI)
+ * @param {string|Object} roleOrData - User role string (old signature) or login response data (new signature)
+ * @param {string} [verificationStatus] - Optional verification status (for old signature with UMKM/MITRA)
  * @returns {string} Redirect URL
+ *
+ * Supports both signatures for backward compatibility:
+ * - getRedirectAfterLogin('CUSTOMER') // old way
+ * - getRedirectAfterLogin(responseData) // new way with verification_status from login
  */
-export function getRedirectAfterLogin(role) {
-  switch (role) {
-    case 'ADMIN':
+export function getRedirectAfterLogin(roleOrData, verificationStatus = null) {
+  let role, status;
+
+  // Handle both old signature (role string) and new signature (data object)
+  if (typeof roleOrData === 'string') {
+    role = roleOrData;
+    status = verificationStatus;
+  } else {
+    // New signature: extract role and verification_status from login response data
+    role = roleOrData.user?.role || roleOrData.role;
+    status = roleOrData.verification_status;
+  }
+
+  // Normalisasi case defensif: lowercase untuk role, uppercase untuk status
+  const normalizedRole = String(role || '').toLowerCase();
+  const normalizedStatus = String(status || '').toUpperCase();
+
+  switch (normalizedRole) {
+    case 'admin':
       return '/admin/dashboard';
-    case 'UMKM':
-      return '/dashboard';
-    case 'CUSTOMER':
-      return '/marketplace';
-    case 'MITRA_DONASI':
-      return '/mitra-donasi/dashboard';
+    case 'umkm':
+      // Cek verification_status untuk UMKM (K3: PENDING/APPROVED/REJECTED)
+      if (normalizedStatus === 'APPROVED') {
+        return '/dashboard'; // UMKM dashboard existing
+      }
+      return '/verifikasi-umkm'; // PENDING atau REJECTED → halaman menunggu verifikasi
+    case 'customer':
+      return '/'; // F2: customer → home (bukan /marketplace)
+    case 'mitra_donasi':
+    case 'mitra':
+      return '/mitra-donasi/dashboard'; // Halaman status mitra dengan badge
     default:
-      return '/';
+      // Fail-closed: role tak dikenal → logout dan redirect ke /login
+      removeToken();
+      return '/login';
   }
 }
 
 /**
  * Check if user has specific role
- * @param {string} requiredRole - Required role
+ * @param {string} requiredRole - Required role (case-insensitive)
  * @returns {boolean} True if user has required role
  */
 export function hasRole(requiredRole) {
   const user = getUser();
   if (!user) return false;
-  return user.role === requiredRole;
+  // Normalisasi case defensif: lowercase untuk role
+  const normalizedRole = String(user.role || '').toLowerCase();
+  const normalizedRequired = String(requiredRole || '').toLowerCase();
+  return normalizedRole === normalizedRequired;
 }
 
 /**

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import Link from "next/link";
 import { ArrowLeft, Clock, CheckCircle2, Package, XCircle, Search } from "lucide-react";
 
 export default function DashboardOrdersPage() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("ALL");
@@ -16,9 +18,13 @@ export default function DashboardOrdersPage() {
     fetchOrders();
   }, []);
 
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
+
   const fetchOrders = async () => {
     setIsLoading(true);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
       const response = await fetch(`${baseUrl}/api/orders`);
       if (!response.ok) throw new Error("Gagal mengambil data pesanan");
@@ -36,7 +42,7 @@ export default function DashboardOrdersPage() {
 
   const updateOrderStatus = async (id, status) => {
     setProcessingId(id);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
       const response = await fetch(`${baseUrl}/api/orders/${id}/status`, {
         method: "PATCH",
@@ -62,7 +68,7 @@ export default function DashboardOrdersPage() {
       return;
     }
     setProcessingId(id);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
       const response = await fetch(`${baseUrl}/api/orders/${id}/validate-pickup`, {
         method: "POST",

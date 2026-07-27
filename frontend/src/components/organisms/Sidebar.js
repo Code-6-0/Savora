@@ -8,6 +8,7 @@ import {
   Store, Building, Leaf, Globe, Shield, CreditCard, FileText, LifeBuoy, AlertTriangle, ArrowLeft, Megaphone, LogOut
 } from "lucide-react";
 import { useUmkm } from '@/context/UmkmContext';
+import { logout, confirmLogout } from '@/lib/auth';
 
 function SidebarContent({ onClose }) {
   const pathname = usePathname();
@@ -131,12 +132,25 @@ function SidebarContent({ onClose }) {
             </Link>
           </li>
           <li>
-            <a 
-              href="#" 
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+            <button
+              onClick={confirmLogout}
+              style={{
+                color: '#EF4444',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: 'inherit',
+                fontFamily: 'inherit',
+                width: '100%'
+              }}
             >
-              <LogOut size={18} /> Logout
-            </a>
+              <span style={{ marginRight: '10px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              </span> Logout
+            </button>
           </li>
         </ul>
       </div>

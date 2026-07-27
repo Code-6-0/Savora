@@ -5,13 +5,20 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import { getToken } from "@/lib/auth";
+import { getToken, isAdmin } from "@/lib/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function KelolaMitraDonasiPage() {
   const router = useRouter();
   const [mitraList, setMitraList] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -39,7 +46,7 @@ export default function KelolaMitraDonasiPage() {
       const params = new URLSearchParams();
       if (filterStatus) params.append("status", filterStatus);
 
-      const response = await fetch(`${API_BASE}/admin/mitra-donasi?${params}`, {
+      const response = await fetch(`${API_BASE}/api/admin/mitra-donasi?${params}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();
@@ -617,34 +624,212 @@ export default function KelolaMitraDonasiPage() {
                   </div>
                 </div>
 
-                {selectedMitra.document_url && (
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Dokumen Legalitas
-                    </div>
-                    <a
-                      href={selectedMitra.document_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: "var(--primary-color)",
-                        textDecoration: "none",
-                        fontSize: "0.875rem",
-                        fontWeight: 600,
-                      }}
-                    >
-                      📄 Lihat Dokumen →
-                    </a>
+                {/* Dokumen Legalitas Yayasan */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      marginBottom: "12px",
+                      paddingBottom: "8px",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    Dokumen Legalitas Yayasan
                   </div>
-                )}
+
+                  {/* Dokumen Wajib */}
+                  <div style={{ marginBottom: "16px" }}>
+                    <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "8px" }}>
+                      Dokumen Wajib
+                    </div>
+
+                    {/* Akta Pendirian */}
+                    {(selectedMitra.nomor_akta_pendirian || selectedMitra.akta_pendirian_url) && (
+                      <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                          Akta Pendirian
+                        </div>
+                        {selectedMitra.nomor_akta_pendirian && (
+                          <div style={{ fontSize: "0.875rem", color: "var(--text-main)", marginBottom: "4px" }}>
+                            No: {selectedMitra.nomor_akta_pendirian}
+                          </div>
+                        )}
+                        {selectedMitra.akta_pendirian_url && (
+                          <a
+                            href={selectedMitra.akta_pendirian_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                          >
+                            📄 Lihat Dokumen →
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SK Kemenkumham */}
+                    {(selectedMitra.nomor_sk_kemenkumham || selectedMitra.sk_kemenkumham_url) && (
+                      <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                          SK Kemenkumham
+                        </div>
+                        {selectedMitra.nomor_sk_kemenkumham && (
+                          <div style={{ fontSize: "0.875rem", color: "var(--text-main)", marginBottom: "4px" }}>
+                            No: {selectedMitra.nomor_sk_kemenkumham}
+                          </div>
+                        )}
+                        {selectedMitra.sk_kemenkumham_url && (
+                          <a
+                            href={selectedMitra.sk_kemenkumham_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                          >
+                            📄 Lihat Dokumen →
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* NPWP Yayasan */}
+                    {(selectedMitra.npwp_yayasan || selectedMitra.npwp_yayasan_url) && (
+                      <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                          NPWP Yayasan
+                        </div>
+                        {selectedMitra.npwp_yayasan && (
+                          <div style={{ fontSize: "0.875rem", color: "var(--text-main)", marginBottom: "4px" }}>
+                            No: {selectedMitra.npwp_yayasan}
+                          </div>
+                        )}
+                        {selectedMitra.npwp_yayasan_url && (
+                          <a
+                            href={selectedMitra.npwp_yayasan_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                          >
+                            📄 Lihat Dokumen →
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* KTP Penanggung Jawab */}
+                    {selectedMitra.ktp_penanggung_jawab_url && (
+                      <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                          KTP Penanggung Jawab
+                        </div>
+                        <a
+                          href={selectedMitra.ktp_penanggung_jawab_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                        >
+                          📄 Lihat Dokumen →
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Selfie dengan KTP */}
+                    {selectedMitra.selfie_ktp_url && (
+                      <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                          Selfie dengan KTP
+                        </div>
+                        <a
+                          href={selectedMitra.selfie_ktp_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                        >
+                          📷 Lihat Foto →
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dokumen Tambahan */}
+                  {(selectedMitra.foto_fasilitas_url || selectedMitra.nib_url || selectedMitra.tanda_daftar_lks_url) && (
+                    <div style={{ marginBottom: "16px" }}>
+                      <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "8px" }}>
+                        Dokumen Tambahan (Opsional)
+                      </div>
+
+                      {/* Foto Fasilitas */}
+                      {selectedMitra.foto_fasilitas_url && (
+                        <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                            Foto Kegiatan/Fasilitas
+                          </div>
+                          <a
+                            href={selectedMitra.foto_fasilitas_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                          >
+                            📷 Lihat Foto →
+                          </a>
+                        </div>
+                      )}
+
+                      {/* NIB */}
+                      {selectedMitra.nib_url && (
+                        <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                            NIB (Nomor Induk Berusaha)
+                          </div>
+                          <a
+                            href={selectedMitra.nib_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                          >
+                            📄 Lihat Dokumen →
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Tanda Daftar LKS */}
+                      {selectedMitra.tanda_daftar_lks_url && (
+                        <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "2px" }}>
+                            Tanda Daftar LKS
+                          </div>
+                          <a
+                            href={selectedMitra.tanda_daftar_lks_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                          >
+                            📄 Lihat Dokumen →
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Old document_url for backward compatibility */}
+                  {selectedMitra.document_url && (
+                    <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed var(--border-color)" }}>
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                        Dokumen Lama (Backward Compat)
+                      </div>
+                      <a
+                        href={selectedMitra.document_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "var(--primary-color)", textDecoration: "none", fontSize: "0.875rem" }}
+                      >
+                        📄 Lihat Dokumen →
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Riwayat Laporan Link */}
