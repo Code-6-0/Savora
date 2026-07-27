@@ -73,6 +73,14 @@ func SetupRoutes(app *fiber.App) {
 	// Upload Image
 	api.Post("/upload/image", handlers.UploadImage)
 
+	// Mitra Donasi Routes (protected - wajib login + role MITRA_DONASI)
+	mitraDonasi := api.Group("/mitra-donasi", middleware.AuthMiddleware, middleware.RequireRole(models.RoleMitraDonasi))
+	mitraDonasi.Get("/dashboard", handlers.GetMitraDashboardStatsHandler)
+	mitraDonasi.Get("/penawaran", handlers.GetMitraDonationOffersHandler)
+	mitraDonasi.Post("/penawaran/:id/accept", handlers.AcceptDonationOfferHandler)
+	mitraDonasi.Post("/penawaran/:id/reject", handlers.RejectDonationOfferHandler)
+	mitraDonasi.Get("/riwayat", handlers.GetMitraDonationHistoryHandler)
+
 	// Mitra Pengolah Routes (protected - wajib login) - Added by Alia (mitra pengolah module)
 	api.Post("/mitra-pengolah/apply", middleware.AuthMiddleware, handlers.ApplyMitraPengolahHandler)
 
