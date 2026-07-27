@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useState } from 'react';
+import { useAuthGuard } from '@/lib/useAuthGuard';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { 
@@ -11,6 +12,7 @@ import {
 import { useUmkm } from '@/context/UmkmContext';
 
 function ProfilContent() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') || 'bantuan';
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
@@ -19,6 +21,10 @@ function ProfilContent() {
 
   // Gunakan data dari global context
   const { umkmData, setUmkmData } = useUmkm();
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const handleCopy = () => {
     navigator.clipboard.writeText("SARI2024");

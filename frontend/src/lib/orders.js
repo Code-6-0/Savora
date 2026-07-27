@@ -3,12 +3,12 @@
  * Handles order creation and retrieval for Savora checkout flow
  */
 
-import { apiFetch } from './api';
+import { apiPost, apiGet } from './api.js';
 
 /**
- * Create order and get Xendit invoice
+ * Create order and get Midtrans payment token
  * @param {Object} orderData - Order data from checkout form
- * @returns {Promise<Object>} Order response with invoice URL
+ * @returns {Promise<Object>} Order response with payment URL
  */
 export async function createOrder(orderData) {
   // Validasi & konversi tipe di boundary API

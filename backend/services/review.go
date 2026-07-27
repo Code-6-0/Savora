@@ -278,7 +278,7 @@ func updateUmkmRating(tx *gorm.DB, umkmID uint) error {
 	}
 
 	// Update rating di umkm_profiles
-	return tx.Model(&models.UmkmProfile{}).
+	return tx.Model(&models.UMKMProfile{}).
 		Where("id = ?", umkmID).
 		Update("rating", avgRating).Error
 }

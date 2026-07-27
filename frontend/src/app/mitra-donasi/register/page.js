@@ -19,6 +19,19 @@ export default function RegisterMitraDonasiPage() {
     address: '',
     description: '',
     document_url: '',
+    // Dokumen Legalitas Yayasan (wajib)
+    nomor_akta_pendirian: '',
+    akta_pendirian_url: '',
+    nomor_sk_kemenkumham: '',
+    sk_kemenkumham_url: '',
+    npwp_yayasan: '',
+    npwp_yayasan_url: '',
+    ktp_penanggung_jawab_url: '',
+    selfie_ktp_url: '',
+    // Dokumen Tambahan (opsional)
+    foto_fasilitas_url: '',
+    nib_url: '',
+    tanda_daftar_lks_url: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,7 +71,20 @@ export default function RegisterMitraDonasiPage() {
         phone: formData.phone,
         address: formData.address,
         description: formData.description,
-        document_url: formData.document_url,
+        document_url: formData.document_url, // Backward compat
+        // Dokumen Legalitas (wajib)
+        nomor_akta_pendirian: formData.nomor_akta_pendirian,
+        akta_pendirian_url: formData.akta_pendirian_url,
+        nomor_sk_kemenkumham: formData.nomor_sk_kemenkumham,
+        sk_kemenkumham_url: formData.sk_kemenkumham_url,
+        npwp_yayasan: formData.npwp_yayasan,
+        npwp_yayasan_url: formData.npwp_yayasan_url,
+        ktp_penanggung_jawab_url: formData.ktp_penanggung_jawab_url,
+        selfie_ktp_url: formData.selfie_ktp_url,
+        // Dokumen Tambahan (opsional)
+        foto_fasilitas_url: formData.foto_fasilitas_url,
+        nib_url: formData.nib_url,
+        tanda_daftar_lks_url: formData.tanda_daftar_lks_url,
       });
 
       if (response.success) {
@@ -343,6 +369,215 @@ export default function RegisterMitraDonasiPage() {
               />
               <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                 Upload dokumen legalitas (akta, SK, dll) ke cloud storage dan paste link-nya di sini
+              </Typography>
+            </div>
+          </div>
+
+          {/* Dokumen Legalitas Yayasan */}
+          <div style={{ marginBottom: '24px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
+            <Typography variant="h3" style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--text-main)' }}>
+              Dokumen Legalitas Yayasan
+            </Typography>
+            <Typography style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: '1.5' }}>
+              Upload semua dokumen ke cloud storage (Google Drive, Dropbox, dll) dan paste link-nya di form ini
+            </Typography>
+
+            {/* Nomor Akta Pendirian */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Nomor Akta Pendirian Yayasan <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="text"
+                name="nomor_akta_pendirian"
+                value={formData.nomor_akta_pendirian}
+                onChange={handleChange}
+                placeholder="Contoh: 123/AHU/2020"
+                required
+              />
+            </div>
+
+            {/* Akta Pendirian URL */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Dokumen Akta Pendirian <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="url"
+                name="akta_pendirian_url"
+                value={formData.akta_pendirian_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload scan/foto akta pendirian yayasan (PDF/gambar)
+              </Typography>
+            </div>
+
+            {/* Nomor SK Kemenkumham */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Nomor SK Kemenkumham <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="text"
+                name="nomor_sk_kemenkumham"
+                value={formData.nomor_sk_kemenkumham}
+                onChange={handleChange}
+                placeholder="Contoh: AHU-0001234.AH.01.04.Tahun 2020"
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Nomor SK pengesahan badan hukum dari Kementerian Hukum dan HAM
+              </Typography>
+            </div>
+
+            {/* SK Kemenkumham URL */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Dokumen SK Kemenkumham <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="url"
+                name="sk_kemenkumham_url"
+                value={formData.sk_kemenkumham_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload scan/foto SK pengesahan dari Kemenkumham (PDF/gambar)
+              </Typography>
+            </div>
+
+            {/* NPWP Yayasan */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Nomor NPWP Yayasan <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="text"
+                name="npwp_yayasan"
+                value={formData.npwp_yayasan}
+                onChange={handleChange}
+                placeholder="Contoh: 12.345.678.9-012.000"
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                NPWP atas nama yayasan (bukan pribadi)
+              </Typography>
+            </div>
+
+            {/* NPWP Yayasan URL */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Foto/Scan NPWP Yayasan <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="url"
+                name="npwp_yayasan_url"
+                value={formData.npwp_yayasan_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload foto/scan kartu NPWP yayasan
+              </Typography>
+            </div>
+
+            {/* KTP Penanggung Jawab */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Foto KTP Penanggung Jawab <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="url"
+                name="ktp_penanggung_jawab_url"
+                value={formData.ktp_penanggung_jawab_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload foto KTP penanggung jawab yang mendaftar
+              </Typography>
+            </div>
+
+            {/* Selfie dengan KTP */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Foto Selfie dengan KTP <span style={{ color: 'var(--danger-color)' }}>*</span>
+              </label>
+              <Input
+                type="url"
+                name="selfie_ktp_url"
+                value={formData.selfie_ktp_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+                required
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload foto selfie Anda memegang KTP (standar verifikasi platform donasi)
+              </Typography>
+            </div>
+
+            {/* Divider untuk Dokumen Opsional */}
+            <div style={{ marginTop: '24px', marginBottom: '16px', paddingTop: '16px', borderTop: '1px dashed var(--border-color)' }}>
+              <Typography variant="h4" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
+                Dokumen Tambahan (Opsional)
+              </Typography>
+            </div>
+
+            {/* Foto Fasilitas */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Foto Kegiatan/Fasilitas Yayasan
+              </label>
+              <Input
+                type="url"
+                name="foto_fasilitas_url"
+                value={formData.foto_fasilitas_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload foto kegiatan atau fasilitas yayasan (opsional, memperkuat aplikasi)
+              </Typography>
+            </div>
+
+            {/* NIB */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                NIB (Nomor Induk Berusaha)
+              </label>
+              <Input
+                type="url"
+                name="nib_url"
+                value={formData.nib_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload NIB jika yayasan memilikinya (opsional)
+              </Typography>
+            </div>
+
+            {/* Tanda Daftar LKS */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Tanda Daftar LKS (Lembaga Kesejahteraan Sosial)
+              </label>
+              <Input
+                type="url"
+                name="tanda_daftar_lks_url"
+                value={formData.tanda_daftar_lks_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/..."
+              />
+              <Typography style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Upload Tanda Daftar LKS dari Kemensos jika ada (opsional)
               </Typography>
             </div>
           </div>

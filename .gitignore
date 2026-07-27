@@ -73,3 +73,11 @@ pembagian_tugas_savora_batch2.md
 pembagian_tugas_savora.pdf
 proposal_savora-2.pdf
 desktop.ini
+
+# Debug/diagnostic scratch files
+*.log
+backend_debug.log
+backend/check_*.sql
+backend/check_*.go
+PROPOSAL AMBA.docx
+Template Proposal CODE 6.0 (2).pdf

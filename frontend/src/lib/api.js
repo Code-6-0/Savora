@@ -10,10 +10,16 @@
  * - Path endpoint selalu diawali "/" (contoh: "/orders", "/products/123")
  */
 
-import { getToken, removeToken } from './auth';
+import { getToken, removeToken } from './auth.js';
 
-// Base URL backend TANPA prefix /api
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+// Base API URL dari environment variable atau default (TANPA /api)
+// Konvensi: env berisi host polos, apiRequest menambahkan /api sendiri
+let API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+
+// Penjagaan: kalau env terlanjur diakhiri /api, jangan dobel jadi /api/api
+if (API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -4);
+}
 
 /**
  * Buat URL lengkap untuk endpoint backend dengan prefix /api

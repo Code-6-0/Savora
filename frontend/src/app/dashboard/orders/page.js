@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import Link from "next/link";
 import { ArrowLeft, Clock, CheckCircle2, Package, XCircle, Search } from "lucide-react";
 import { baseUrl } from "@/lib/apiBase.js";
 
 export default function DashboardOrdersPage() {
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("ALL");
@@ -16,6 +18,10 @@ export default function DashboardOrdersPage() {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const fetchOrders = async () => {
     setIsLoading(true);

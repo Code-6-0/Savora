@@ -63,6 +63,10 @@ export function normalizeUmkmAd(raw) {
   };
 }
 
+function baseUrl() {
+  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+}
+
 /**
  * Ambil katalog paket iklan langsung dari API.
  */

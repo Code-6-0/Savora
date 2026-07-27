@@ -9,7 +9,7 @@ import { NotificationProvider } from '@/context/NotificationContext'
 import { CartProvider } from '@/lib/CartContext'
 
 export const metadata = {
-  title: 'Savora - UMKM Dashboard',
+  title: 'Savora',
   description: 'Kelola produk makanan surplus Anda',
 }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 import { Plus, Search, Filter, ArrowUpDown, Clock, CheckCircle2, AlertTriangle, AlertCircle, BarChart2, Lightbulb, TrendingUp, Sparkles, Image as ImageIcon, Camera, Package, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -12,6 +13,7 @@ import { isoToDatetimeLocal, datetimeLocalToISO, validateProductDates, detectExp
 
 export default function ProdukPage() {
   const router = useRouter();
+  const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
   const [activeTab, setActiveTab] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addMode, setAddMode] = useState(null); // 'manual' or 'ai'
@@ -32,6 +34,12 @@ export default function ProdukPage() {
   const [isProductionTimeEditable, setIsProductionTimeEditable] = useState(false);
   const [originalProductData, setOriginalProductData] = useState(null);
 
+  // Product form state - MUST be declared before any early returns
+  const [newProduct, setNewProduct] = useState({ 
+    name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",
+    production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai"
+  });
+
   useEffect(() => {
     async function loadProducts() {
       setLoading(true);
@@ -42,10 +50,9 @@ export default function ProdukPage() {
     loadProducts();
   }, []);
 
-  const [newProduct, setNewProduct] = useState({ 
-    name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",
-    production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai"
-  });
+  if (authLoading) {
+    return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
+  }
 
   const calculateFoodTrustStatus = (prod) => {
     if (!prod.production_time || !prod.expires_at) return "Menunggu Data";
@@ -109,6 +116,7 @@ export default function ProdukPage() {
     }
     
     // Prepare product data for API
+    // VALIDATION: Status MUST be "Aktif" (Indonesian) for marketplace visibility
     const productData = {
       umkm_id: 1, // TODO: Get from auth context
       name: newProduct.name,

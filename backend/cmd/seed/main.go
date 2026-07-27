@@ -25,24 +25,9 @@ func main() {
 
 	// Clear existing data (idempotent seed)
 	log.Println("Clearing existing data...")
-	database.DB.Exec("DELETE FROM ad_metrics")
-	database.DB.Exec("DELETE FROM advertisements")
-	database.DB.Exec("DELETE FROM platform_revenue")
-	database.DB.Exec("DELETE FROM orders")
-	database.DB.Exec("DELETE FROM products")
-	database.DB.Exec("DELETE FROM umkm_profiles")
-	database.DB.Exec("DELETE FROM customer_profiles")
-	database.DB.Exec("DELETE FROM users")
-
-	// Reset sequences (PostgreSQL)
-	database.DB.Exec("ALTER SEQUENCE users_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE customer_profiles_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE umkm_profiles_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE orders_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE advertisements_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE ad_metrics_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE platform_revenue_id_seq RESTART WITH 1")
+	// Use TRUNCATE CASCADE to forcefully remove all data and reset sequences
+	// This bypasses foreign key constraints
+	database.DB.Exec("TRUNCATE TABLE reviews, notifications, payment_logs, payments, help_tickets, ad_metrics, advertisements, platform_revenue, waste_logs, orders, products, mitra_donasi_profiles, umkm_profiles, customer_profiles, users RESTART IDENTITY CASCADE")
 
 	// Create users
 	log.Println("Creating users...")
@@ -94,26 +79,29 @@ func main() {
 	database.DB.Create(&umkmUser)
 
 	umkmProfile := models.UMKMProfile{
-		UserID:             umkmUser.ID,
-		BusinessName:       "Warung Bu Lestari",
-		Address:            "Jl. Mangga Dua No. 45, Jakarta Utara",
-		GeoLocation:        "-6.1354, 106.8360",
-		VerificationStatus: "APPROVED",
-		Rating:             4.5,
+		UserID:               umkmUser.ID,
+		NamaBisnis:           "Warung Bu Lestari",
+		JenisBisnis:          "restoran",
+		AlamatOperasional:    "Jl. Mangga Dua No. 45, Jakarta Utara",
+		KontakTelepon:        "081234567892",
+		EstimasiVolumeSampah: "40 kg/hari",
+		JamOperasional:       "08:00-20:00",
+		VerificationStatus:   "APPROVED",
 	}
 	database.DB.Create(&umkmProfile)
 	log.Printf("✓ UMKM created (ID: %d, email: %s, password: umkm123)", umkmUser.ID, umkmUser.Email)
 
-	// 4. Mitra Donasi
+	// 4. Mitra Donasi (APPROVED untuk testing)
 	mitraUser := models.User{
 		Name:   "Yayasan Berbagi",
 		Email:  "mitra@savora.com",
 		Role:   models.RoleMitraDonasi,
-		Status: models.StatusPending,
+		Status: models.StatusActive, // ACTIVE agar bisa login
 	}
 	mitraUser.SetPassword("mitra123")
 	database.DB.Create(&mitraUser)
 
+	mitraNow := time.Now()
 	mitraProfile := models.MitraDonasiProfile{
 		UserID:             mitraUser.ID,
 		OrgName:            "Yayasan Berbagi",
@@ -121,10 +109,12 @@ func main() {
 		Address:            "Jl. Pahlawan No. 10, Jakarta Timur",
 		Description:        "Yayasan sosial yang berfokus pada penyaluran makanan surplus kepada masyarakat yang membutuhkan",
 		DocumentURL:        "https://drive.google.com/file/d/example-doc-mitra",
-		VerificationStatus: "PENDING",
+		Category:           "donasi", // Kategori mitra donasi
+		VerificationStatus: "APPROVED", // APPROVED agar bisa akses dashboard
+		VerifiedAt:         &mitraNow,
 	}
 	database.DB.Create(&mitraProfile)
-	log.Printf("✓ Mitra Donasi created (ID: %d, email: %s, password: mitra123, profile_id: %d)", mitraUser.ID, mitraUser.Email, mitraProfile.ID)
+	log.Printf("✓ Mitra Donasi created (ID: %d, email: %s, password: mitra123, profile_id: %d, status: APPROVED)", mitraUser.ID, mitraUser.Email, mitraProfile.ID)
 
 	// Create products
 	log.Println("Creating products...")

@@ -7,7 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/savora/backend/database"
 	"github.com/savora/backend/handlers"
+	"github.com/savora/backend/middleware"
 	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
 )
@@ -22,6 +24,9 @@ func main() {
 	if err := services.InitDB(); err != nil {
 		log.Fatalf("❌ Failed to initialize database: %v", err)
 	}
+
+	// Share connection: auth/admin handlers use database.DB, avoid duplicate connection
+	database.DB = services.GetDB()
 
 	// Start cron jobs (auto-expire products)
 	services.StartCronJobs()
@@ -80,8 +85,8 @@ func setupRoutes(app *fiber.App, xenditService *services.XenditService) {
 
 	// Order routes
 	orderHandler := handlers.NewOrderHandler(xenditService)
-	api.Post("/orders", orderHandler.CreateOrder)
-	api.Get("/orders", orderHandler.GetOrders)
+	api.Post("/orders", middleware.AuthMiddleware, orderHandler.CreateOrder)
+	api.Get("/orders", middleware.AuthMiddleware, orderHandler.GetOrders)
 	api.Get("/orders/:id", orderHandler.GetOrderDetail)
 	api.Patch("/orders/:id/status", orderHandler.UpdateOrderStatus)
 	api.Post("/orders/:id/validate-pickup", orderHandler.ValidatePickupCode)
