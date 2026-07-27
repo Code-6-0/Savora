@@ -163,13 +163,8 @@ export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
     // Handle response format: array langsung atau { data: [...] }
     const orders = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
 
-    // Filter orders by UMKM ID (client-side filtering karena backend belum support)
-    const filteredData = orders.filter(order =>
-      order.product && order.product.umkm_id === umkmId
-    );
-
     // Array kosong adalah hasil VALID, bukan error
-    return filteredData.map(normalizeUMKMOrder);
+    return orders.map(normalizeUMKMOrder);
   } catch (error) {
     // Hanya gunakan fallback jika NEXT_PUBLIC_USE_MOCK=true
     if (useMock) {

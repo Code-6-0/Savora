@@ -100,6 +100,8 @@ func (h *OrderHandler) GetOrders(c *fiber.Ctx) error {
 		query = query.Where("customer_id = ?", userID)
 	} else if roleUpper == "ADMIN" {
 		// Admin lihat semua order (tidak ada filter)
+	} else if roleUpper == "UMKM" {
+		query = query.Joins("JOIN products ON products.id = orders.product_id").Where("products.umkm_id = ?", userID)
 	} else {
 		// Role lain tidak punya akses ke orders
 		return c.Status(403).JSON(fiber.Map{
