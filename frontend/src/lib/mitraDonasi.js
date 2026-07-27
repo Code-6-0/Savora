@@ -1,9 +1,7 @@
 // API client for Mitra Donasi endpoints
 // Connects to backend /api/mitra-donasi/* routes
 
-import { getToken } from '@/lib/auth';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+import { apiFetch } from './api.js';
 
 /**
  * Get dashboard stats and latest offers for mitra donasi
@@ -11,23 +9,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
  * @returns {Promise<Object>} { stats: { pending_offers, scheduled_pickups, total_portions, unique_donors }, latest_offers: [], scheduled_pickups: [] }
  */
 export async function getMitraDashboardStats() {
-  const token = getToken();
-  
   try {
-    const response = await fetch(`${API_BASE_URL}/api/mitra-donasi/dashboard`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Gagal mengambil data dashboard');
-    }
-
+    const data = await apiFetch('/mitra-donasi/dashboard');
     return data.data;
   } catch (error) {
     console.error('Error fetching mitra dashboard stats:', error);
@@ -42,28 +25,12 @@ export async function getMitraDashboardStats() {
  * @returns {Promise<Object>} { offers: [], total: number }
  */
 export async function getMitraDonationOffers(status = '') {
-  const token = getToken();
-  
   try {
-    const url = new URL(`${API_BASE_URL}/api/mitra-donasi/penawaran`);
+    let path = '/mitra-donasi/penawaran';
     if (status) {
-      url.searchParams.append('status', status);
+      path += `?status=${encodeURIComponent(status)}`;
     }
-
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Gagal mengambil data penawaran');
-    }
-
+    const data = await apiFetch(path);
     return data.data;
   } catch (error) {
     console.error('Error fetching mitra donation offers:', error);
@@ -79,24 +46,11 @@ export async function getMitraDonationOffers(status = '') {
  * @returns {Promise<Object>} { message: string, offer: Object }
  */
 export async function acceptDonationOffer(offerId, notes = '') {
-  const token = getToken();
-  
   try {
-    const response = await fetch(`${API_BASE_URL}/api/mitra-donasi/penawaran/${offerId}/accept`, {
+    const data = await apiFetch(`/mitra-donasi/penawaran/${offerId}/accept`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ notes }),
+      body: { notes }
     });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Gagal menerima penawaran');
-    }
-
     return data.data;
   } catch (error) {
     console.error('Error accepting donation offer:', error);
@@ -112,28 +66,15 @@ export async function acceptDonationOffer(offerId, notes = '') {
  * @returns {Promise<Object>} { message: string, offer: Object }
  */
 export async function rejectDonationOffer(offerId, reason) {
-  const token = getToken();
-  
   if (!reason || reason.trim() === '') {
     throw new Error('Alasan penolakan wajib diisi');
   }
-  
+
   try {
-    const response = await fetch(`${API_BASE_URL}/api/mitra-donasi/penawaran/${offerId}/reject`, {
+    const data = await apiFetch(`/mitra-donasi/penawaran/${offerId}/reject`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ reason }),
+      body: { reason }
     });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Gagal menolak penawaran');
-    }
-
     return data.data;
   } catch (error) {
     console.error('Error rejecting donation offer:', error);
@@ -149,31 +90,19 @@ export async function rejectDonationOffer(offerId, reason) {
  * @returns {Promise<Object>} { history: [], total: number, total_portions: number, total_weight: number }
  */
 export async function getMitraDonationHistory(dateFrom = '', dateTo = '') {
-  const token = getToken();
-  
   try {
-    const url = new URL(`${API_BASE_URL}/api/mitra-donasi/riwayat`);
+    let path = '/mitra-donasi/riwayat';
+    const params = [];
     if (dateFrom) {
-      url.searchParams.append('date_from', dateFrom);
+      params.push(`date_from=${encodeURIComponent(dateFrom)}`);
     }
     if (dateTo) {
-      url.searchParams.append('date_to', dateTo);
+      params.push(`date_to=${encodeURIComponent(dateTo)}`);
     }
-
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Gagal mengambil data riwayat');
+    if (params.length > 0) {
+      path += `?${params.join('&')}`;
     }
-
+    const data = await apiFetch(path);
     return data.data;
   } catch (error) {
     console.error('Error fetching mitra donation history:', error);
@@ -234,23 +163,8 @@ export function getOfferStatusColor(status) {
  * @returns {Promise<Object>} { user: Object, mitra_profile: Object }
  */
 export async function getMitraProfile() {
-  const token = getToken();
-  
   try {
-    const response = await fetch(`${API_BASE_URL}/api/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Gagal mengambil data profil');
-    }
-
+    const data = await apiFetch('/me');
     return data.data;
   } catch (error) {
     console.error('Error fetching mitra profile:', error);

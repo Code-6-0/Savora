@@ -230,17 +230,17 @@ export default function ProdukPage() {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory ? p.category === filterCategory : true;
     // Tab "Semua": Exclude Kedaluwarsa & Limbah (waste products only in "Kedaluwarsa" tab)
-    // Map Indonesian UI tab names to database status (supports both old Indonesian and new English)
+    // Map Indonesian UI tab names to database status
     const statusMap = {
-      "Aktif": ["Active", "Aktif"],
-      "Habis": ["Sold Out", "Habis"],
+      "Aktif": ["Aktif"],
+      "Habis": ["Habis"],
       "Draft": ["Draft"]
     };
-    
-    const matchesTab = activeTab === "Semua" 
-      ? (p.status !== "Kedaluwarsa" && p.status !== "Limbah" && p.status !== "Expired") 
-      : (activeTab === "Mystery Box" 
-        ? p.name.includes("Mystery Box") 
+
+    const matchesTab = activeTab === "Semua"
+      ? (p.status !== "Kedaluwarsa" && p.status !== "Limbah")
+      : (activeTab === "Mystery Box"
+        ? p.name.includes("Mystery Box")
         : (statusMap[activeTab] ? statusMap[activeTab].includes(p.status) : p.status === activeTab));
     return matchesSearch && matchesCategory && matchesTab;
   }).sort((a, b) => {
@@ -256,9 +256,9 @@ export default function ProdukPage() {
 
   // Calculate dynamic tab counts
   const tabCounts = {
-    "Semua": products.filter(p => p.status !== "Kedaluwarsa" && p.status !== "Limbah" && p.status !== "Expired").length,
-    "Aktif": products.filter(p => p.status === "Active" || p.status === "Aktif").length,
-    "Habis": products.filter(p => p.status === "Sold Out" || p.status === "Habis").length,
+    "Semua": products.filter(p => p.status !== "Kedaluwarsa" && p.status !== "Limbah").length,
+    "Aktif": products.filter(p => p.status === "Aktif").length,
+    "Habis": products.filter(p => p.status === "Habis").length,
     "Draft": products.filter(p => p.status === "Draft").length,
     "Mystery Box": products.filter(p => p.name.includes("Mystery Box")).length
   };
@@ -473,7 +473,7 @@ export default function ProdukPage() {
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {products.filter(p => p && (p.status === "Active" || p.status === "Aktif") && p.score > 0 && p.score < 40 && p.stock > 0).slice(0, 3).map((p, idx) => (
+            {products.filter(p => p && p.status === "Aktif" && p.score > 0 && p.score < 40 && p.stock > 0).slice(0, 3).map((p, idx) => (
               <div key={idx} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #FEE2E2' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '30%' }}>
                   {p.photo_url && p.photo_url !== 'EMPTY' ? (

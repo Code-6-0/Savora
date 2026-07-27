@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import { getToken, isAdmin } from "@/lib/auth";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+import { apiFetch } from "@/lib/api";
+import { isAdmin } from "@/lib/auth";
 
 export default function KelolaMitraPengolahPage() {
   const router = useRouter();
@@ -35,10 +34,7 @@ export default function KelolaMitraPengolahPage() {
       if (filterStatus) params.append("status", filterStatus);
       if (filterKategori) params.append("kategori", filterKategori);
 
-      const response = await fetch(`${API_BASE}/api/admin/mitra-pengolah?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await response.json();
+      const data = await apiFetch(`/admin/mitra-pengolah?${params}`);
 
       if (data.success) {
         setMitraList(data.data.mitra_list || []);
@@ -71,18 +67,13 @@ export default function KelolaMitraPengolahPage() {
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE}/api/admin/mitra-pengolah/${mitra.id}/verify`,
+      const data = await apiFetch(
+        `/admin/mitra-pengolah/${mitra.id}/verify`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({ status, note, rejection_reason: rejectionReason }),
+          body: { status, note, rejection_reason: rejectionReason }
         }
       );
-      const data = await response.json();
 
       if (data.success) {
         alert(`Mitra pengolah berhasil ${status === "APPROVED" ? "disetujui" : "ditolak"}`);

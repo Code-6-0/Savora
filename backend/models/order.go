@@ -14,18 +14,19 @@ type Order struct {
 	TotalPrice     float64   `json:"total_price"`       // subtotal + service_fee
 	PaymentMethod  string    `json:"payment_method"`    // XENDIT_SANDBOX
 	PaymentStatus  string    `json:"payment_status"`    // UNPAID, PENDING, PAID, FAILED, EXPIRED
-	PickupCode     string    `json:"pickup_code,omitempty" gorm:"uniqueIndex;size:10;default:null"`
-	ReservedUntil  time.Time `json:"reserved_until"`    // batas waktu bayar
-	PickupDeadline time.Time `json:"pickup_deadline"`   // batas ambil setelah Paid
-	Status         string    `json:"status" gorm:"index:idx_orders_customer_status;index:idx_orders_product_status"` // CREATED, PAYMENT_PENDING, PAID, PAYMENT_FAILED, READY_FOR_PICKUP, COMPLETED, NO_SHOW, CANCELLED, EXPIRED, HELP_REQUESTED
-	CancelReason   string    `json:"cancel_reason,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
+	PickupCode     *string    `json:"pickup_code,omitempty" gorm:"uniqueIndex;size:10"`
+	ReservedUntil  time.Time  `json:"reserved_until"`    // batas waktu bayar
+	PickupDeadline *time.Time `json:"pickup_deadline,omitempty"` // batas ambil setelah Paid
+	Status         string     `json:"status" gorm:"index:idx_orders_customer_status;index:idx_orders_product_status"` // CREATED, PAYMENT_PENDING, PAID, PAYMENT_FAILED, READY_FOR_PICKUP, COMPLETED, NO_SHOW, CANCELLED, EXPIRED, HELP_REQUESTED
+	CancelReason   string     `json:"cancel_reason,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
 	PaidAt         *time.Time `json:"paid_at,omitempty"`
 	CompletedAt    *time.Time `json:"completed_at,omitempty"`
 
 	// Relations
-	Product  Product `json:"product,omitempty" gorm:"foreignKey:ProductID"`
-	Customer User    `json:"customer,omitempty" gorm:"foreignKey:CustomerID"`
+	Product  Product  `json:"product,omitempty" gorm:"foreignKey:ProductID"`
+	Customer User     `json:"customer,omitempty" gorm:"foreignKey:CustomerID"`
+	Payment  *Payment `json:"payment,omitempty" gorm:"foreignKey:OrderID"`
 }
 
 type Payment struct {

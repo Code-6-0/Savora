@@ -3,7 +3,7 @@
  * Handles order creation and retrieval for Savora checkout flow
  */
 
-import { apiPost, apiGet } from './api.js';
+import { apiFetch } from './api.js';
 
 /**
  * Create order and get Midtrans payment token
@@ -11,13 +11,31 @@ import { apiPost, apiGet } from './api.js';
  * @returns {Promise<Object>} Order response with payment URL
  */
 export async function createOrder(orderData) {
-  return apiPost('/orders', {
-    product_id: orderData.productId,
-    quantity: orderData.quantity,
-    billing_name: orderData.billingName,
-    billing_email: orderData.billingEmail,
-    billing_phone: orderData.billingPhone,
-    customer_note: orderData.customerNote || '',
+  // Validasi & konversi tipe di boundary API
+  const productId = Number(orderData.productId);
+  const quantity = parseInt(orderData.quantity, 10);
+
+  // Guard: product_id harus integer positif
+  if (!Number.isInteger(productId) || productId <= 0) {
+    throw new Error('Product ID tidak valid');
+  }
+
+  // Guard: quantity harus integer >= 1
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    throw new Error('Jumlah harus minimal 1');
+  }
+
+  // apiFetch otomatis tambah prefix /api, stringify body, dan handle error
+  return apiFetch('/orders', {
+    method: 'POST',
+    body: {
+      product_id: productId,        // number, bukan string
+      quantity: quantity,            // number, sudah divalidasi
+      billing_name: orderData.billingName,
+      billing_email: orderData.billingEmail,
+      billing_phone: orderData.billingPhone,
+      customer_note: orderData.customerNote || '',
+    },
   });
 }
 
@@ -27,19 +45,7 @@ export async function createOrder(orderData) {
  * @returns {Promise<Object>} Order detail with payment status
  */
 export async function getOrderDetail(orderId) {
-  const response = await fetch(`${API_BASE}/api/orders/${orderId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
-  }
-
-  return response.json();
+  return apiFetch(`/orders/${orderId}`);
 }
 
 /**
@@ -52,7 +58,7 @@ export function normalizeOrder(order) {
     id: order.id || order.order_id,
     status: order.status,
     paymentStatus: order.payment_status,
-    paymentUrl: order.payment_url || order.invoice_url,
+    paymentUrl: order.payment?.payment_url || order.payment_url || order.invoice_url,
     pickupCode: order.pickup_code,
     pickupDeadline: order.pickup_deadline,
     reservedUntil: order.reserved_until,
@@ -151,32 +157,14 @@ export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-    // Backend hanya punya GET /api/orders (mengembalikan semua orders)
-    const response = await fetch(`${API_BASE}/api/orders`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: Gagal mengambil pesanan`);
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      throw new Error("Response bukan JSON");
-    }
-
-    let data = await response.json();
+    // apiFetch otomatis tambah prefix /api dan handle error
+    const data = await apiFetch('/orders');
 
     // Handle response format: array langsung atau { data: [...] }
-    if (data && typeof data === 'object' && Array.isArray(data.data)) {
-      data = data.data;
-    }
-
-    if (!Array.isArray(data)) {
-      throw new Error("Respons orders tidak valid");
-    }
+    const orders = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
 
     // Filter orders by UMKM ID (client-side filtering karena backend belum support)
-    const filteredData = data.filter(order =>
+    const filteredData = orders.filter(order =>
       order.product && order.product.umkm_id === umkmId
     );
 
@@ -201,23 +189,10 @@ export async function fetchUMKMOrders(umkmId = DEFAULT_UMKM_ID) {
  */
 export async function updateOrderStatus(orderId, backendStatus) {
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-    const response = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+    await apiFetch(`/orders/${orderId}/status`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ status: backendStatus })
+      body: { status: backendStatus }
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return {
-        ok: false,
-        error: errorData.error || errorData.message || `HTTP ${response.status}: Gagal mengubah status`
-      };
-    }
-    
     return { ok: true };
   } catch (error) {
     return {

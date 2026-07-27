@@ -5,13 +5,15 @@
 // membuat iklan, mengaktifkan, dan menampilkan daftar iklan milik UMKM.
 // Pola fetch + fallback demo mengikuti src/lib/marketplace.js.
 
+import { apiFetch } from './api.js';
+
 const DEFAULT_UMKM_ID = 1;
 
 // Status iklan harus konsisten dengan services/ads.go backend.
 export const AD_STATUS = {
   Draft: { key: "Draft", label: "Draft", className: "is-draft" },
   Aktif: { key: "Aktif", label: "Aktif", className: "is-aktif" },
-  Kadaluarsa: { key: "Kadaluarsa", label: "Kadaluarsa", className: "is-kadaluarsa" },
+  Kedaluwarsa: { key: "Kedaluwarsa", label: "Kedaluwarsa", className: "is-kedaluwarsa" },
 };
 
 // Fallback katalog dihapus agar selalu mengambil dari API (Tugas 5).
@@ -61,18 +63,11 @@ export function normalizeUmkmAd(raw) {
   };
 }
 
-function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-}
-
 /**
  * Ambil katalog paket iklan langsung dari API.
  */
 export async function fetchAdPackages() {
-  const response = await fetch(`${baseUrl()}/api/ads/packages`);
-  const contentType = response.headers.get("content-type") || "";
-  if (!response.ok || !contentType.includes("application/json")) throw new Error("Ads API tidak tersedia");
-  const data = await response.json();
+  const data = await apiFetch('/ads/packages');
   if (!Array.isArray(data) || data.length === 0) throw new Error("Respons paket tidak valid");
   return data.map(normalizeAdPackage);
 }
@@ -83,10 +78,7 @@ export async function fetchAdPackages() {
  */
 export async function fetchUmkmAds(umkmId = DEFAULT_UMKM_ID) {
   try {
-    const response = await fetch(`${baseUrl()}/api/ads/umkm/${umkmId}`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) throw new Error("Ads API tidak tersedia");
-    const data = await response.json();
+    const data = await apiFetch(`/ads/umkm/${umkmId}`);
     if (!Array.isArray(data)) throw new Error("Respons iklan tidak valid");
     return data.map(normalizeUmkmAd);
   } catch {
@@ -106,16 +98,11 @@ export async function createUmkmAd(payload) {
     headline: payload.headline || "",
     cta: payload.cta || "",
   };
-  const response = await fetch(`${baseUrl()}/api/ads`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+  const data = await apiFetch('/ads', {
+    method: 'POST',
+    body
   });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error || "Gagal membuat iklan");
-  }
-  return normalizeUmkmAd(await response.json());
+  return normalizeUmkmAd(data);
 }
 
 /**
@@ -124,14 +111,9 @@ export async function createUmkmAd(payload) {
  * @param {string} status
  */
 export async function updateAdStatus(id, status) {
-  const response = await fetch(`${baseUrl()}/api/ads/${id}/status`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
+  const data = await apiFetch(`/ads/${id}/status`, {
+    method: 'PUT',
+    body: { status }
   });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error || "Gagal mengubah status iklan");
-  }
-  return normalizeUmkmAd(await response.json());
+  return normalizeUmkmAd(data);
 }

@@ -23,7 +23,16 @@ type Product struct {
 	ExpiresAt          *time.Time `json:"expires_at"`
 	PackagingCondition string     `json:"packaging_condition"` // Baik, Standar, Rusak
 	StorageMethod      string     `json:"storage_method"`      // Sesuai, Tidak Sesuai
-	Status             string     `json:"status"`              // Active, Draft, Expired
+	Status             string     `json:"status"`              // Aktif, Habis, Kedaluwarsa, Limbah, Suspended
 	CreatedAt          time.Time  `json:"created_at"`
 	UpdatedAt          time.Time  `json:"updated_at"`
 }
+
+// Konstanta status produk (nilai kanonik dalam Bahasa Indonesia)
+const (
+	ProductStatusAktif       = "Aktif"
+	ProductStatusHabis       = "Habis"
+	ProductStatusKedaluwarsa = "Kedaluwarsa"
+	ProductStatusLimbah      = "Limbah"
+	ProductStatusSuspended   = "Suspended" // dari admin moderation
+)

@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import { getToken, isAdmin } from "@/lib/auth";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+import { apiFetch } from "@/lib/api";
+import { isAdmin } from "@/lib/auth";
 
 export default function KelolaUMKMPage() {
   const router = useRouter();
@@ -50,10 +49,7 @@ export default function KelolaUMKMPage() {
       if (filterStatus) params.append("status", filterStatus);
       if (filterVerification) params.append("verification_status", filterVerification);
 
-      const response = await fetch(`${API_BASE}/api/admin/umkm?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await response.json();
+      const data = await apiFetch(`/admin/umkm?${params}`);
 
       if (data.success) {
         setUmkmList(data.data.umkm_list || []);
@@ -111,27 +107,21 @@ export default function KelolaUMKMPage() {
 
     try {
       setSubmitting(true);
-      let endpoint, method, body;
+      let endpoint, body;
 
       if (actionType === "revoke_verification") {
         // Revoke verification
-        endpoint = `${API_BASE}/admin/umkm/${selectedUMKM.id}/verification`;
-        method = "PATCH";
+        endpoint = `/admin/umkm/${selectedUMKM.id}/verification`;
         body = { status: "REJECTED", note };
       } else {
         // Status change (suspend/activate)
-        endpoint = `${API_BASE}/admin/users/${selectedUMKM.user_id}/status`;
-        method = "PATCH";
+        endpoint = `/admin/users/${selectedUMKM.user_id}/status`;
         body = { action: actionType, note };
       }
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify(body),
+      const data = await apiFetch(endpoint, {
+        method: 'PATCH',
+        body
       });
       const data = await response.json();
 

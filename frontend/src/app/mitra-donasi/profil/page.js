@@ -2,7 +2,8 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { isAuthenticated, getUser, getToken } from '@/lib/auth';
+import { isAuthenticated, getUser } from '@/lib/auth';
+import { apiFetch } from '@/lib/api';
 import TopHeader from '@/components/organisms/TopHeader';
 import Badge from '@/components/atoms/Badge';
 import Input from '@/components/atoms/Input';
@@ -116,18 +117,12 @@ function ProfilMitraContent() {
     setMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/me`, {
+      const data = await apiFetch('/me', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
+        body: {
           mitra_profile: formData,
-        }),
+        }
       });
-
-      const data = await response.json();
 
       if (data.success) {
         setMessage({ type: 'success', text: 'Profil berhasil diperbarui' });
@@ -161,19 +156,13 @@ function ProfilMitraContent() {
     setMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/me/password`, {
+      const data = await apiFetch('/me/password', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
+        body: {
           old_password: passwordData.old_password,
           new_password: passwordData.new_password,
-        }),
+        }
       });
-
-      const data = await response.json();
 
       if (data.success) {
         setMessage({ type: 'success', text: 'Password berhasil diubah' });

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthGuard } from "@/lib/useAuthGuard";
-import { getToken } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 
 export default function GabungMitraPengolahPage() {
   const router = useRouter();
@@ -42,29 +42,12 @@ export default function GabungMitraPengolahPage() {
     setError("");
 
     try {
-      const token = getToken();
-      if (!token) {
-        setError("Sesi Anda telah berakhir. Silakan login kembali.");
-        setLoading(false);
-        return;
-      }
+      const data = await apiFetch('/mitra-pengolah/apply', {
+        method: 'POST',
+        body: formData
+      });
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-      const response = await fetch(
-        `${baseUrl}/api/mitra-pengolah/apply`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error?.message || "Gagal mengirim pendaftaran");
       }
 

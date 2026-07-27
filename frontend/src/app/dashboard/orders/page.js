@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import Link from "next/link";
 import { ArrowLeft, Clock, CheckCircle2, Package, XCircle, Search } from "lucide-react";
+import { baseUrl } from "@/lib/apiBase.js";
 
 export default function DashboardOrdersPage() {
   const { loading: authLoading } = useAuthGuard(['UMKM'], { checkVerification: true });
@@ -24,9 +25,8 @@ export default function DashboardOrdersPage() {
 
   const fetchOrders = async () => {
     setIsLoading(true);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
-      const response = await fetch(`${baseUrl}/api/orders`);
+      const response = await fetch(`${baseUrl()}/api/orders`);
       if (!response.ok) throw new Error("Gagal mengambil data pesanan");
       const data = await response.json();
       // Asumsikan data adalah array of orders
@@ -42,9 +42,8 @@ export default function DashboardOrdersPage() {
 
   const updateOrderStatus = async (id, status) => {
     setProcessingId(id);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
-      const response = await fetch(`${baseUrl}/api/orders/${id}/status`, {
+      const response = await fetch(`${baseUrl()}/api/orders/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -68,9 +67,8 @@ export default function DashboardOrdersPage() {
       return;
     }
     setProcessingId(id);
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
     try {
-      const response = await fetch(`${baseUrl}/api/orders/${id}/validate-pickup`, {
+      const response = await fetch(`${baseUrl()}/api/orders/${id}/validate-pickup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pickup_code: pickupCodeInput }),

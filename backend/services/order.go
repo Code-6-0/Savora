@@ -96,12 +96,12 @@ func CreateOrder(db *gorm.DB, customerID uint, req CreateOrderRequest, paymentSe
 		}
 
 		// Validasi status produk
-		if product.Status != "Aktif" {
+		if product.Status != models.ProductStatusAktif {
 			return errors.New("produk tidak aktif")
 		}
 
 		if product.ExpiresAt != nil && product.ExpiresAt.Before(time.Now()) {
-			return errors.New("produk sudah expired")
+			return errors.New("produk sudah kedaluwarsa")
 		}
 
 		if product.Stock < req.Quantity {
@@ -110,7 +110,7 @@ func CreateOrder(db *gorm.DB, customerID uint, req CreateOrderRequest, paymentSe
 
 		// Validasi food trust status (guardrail 13.3)
 		if product.FoodTrustStatus == "Tidak Disarankan Dijual" || product.FoodTrustStatus == "Tidak Layak Konsumsi" {
-			return errors.New("produk tidak layak dijual")
+			return errors.New("produk tidak memenuhi standar keamanan pangan")
 		}
 
 		// 2. Hitung harga server-side

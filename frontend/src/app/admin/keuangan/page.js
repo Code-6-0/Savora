@@ -7,6 +7,7 @@ import SummaryCard from '@/components/molecules/SummaryCard';
 import Button from '@/components/atoms/Button';
 import { apiGet } from '@/lib/api';
 import { isAdmin, getToken } from '@/lib/auth';
+import { baseUrl } from '@/lib/apiBase.js';
 
 export default function KeuanganPage() {
   const [summary, setSummary] = useState(null);
@@ -71,8 +72,7 @@ export default function KeuanganPage() {
 
   function handleExport(format) {
     const token = getToken();
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    let url = `${baseUrl}/api/admin/revenue/export?format=${format}`;
+    let url = `${baseUrl()}/api/admin/revenue/export?format=${format}`;
 
     if (startDate) url += `&start=${startDate}`;
     if (endDate) url += `&end=${endDate}`;

@@ -1,5 +1,14 @@
-// frontend/src/lib/api.js
-// API client untuk komunikasi dengan backend
+/**
+ * API Helper — satu sumber kebenaran untuk semua pemanggilan backend
+ *
+ * Backend: Go + Fiber v2 di port 8000
+ * Semua route backend berada di bawah prefix /api
+ *
+ * Konvensi:
+ * - Base URL TANPA suffix /api (contoh: http://localhost:8000)
+ * - Helper menambahkan prefix /api otomatis
+ * - Path endpoint selalu diawali "/" (contoh: "/orders", "/products/123")
+ */
 
 import { getToken, removeToken } from './auth.js';
 
@@ -13,19 +22,51 @@ if (API_BASE_URL.endsWith('/api')) {
 }
 
 /**
- * Make API request with automatic JWT token attachment
- * @param {string} endpoint - API endpoint (e.g., '/auth/login')
- * @param {Object} options - Fetch options (method, body, etc.)
- * @returns {Promise<Object>} Response data or throws error
+ * Buat URL lengkap untuk endpoint backend dengan prefix /api
+ * @param {string} path - Path endpoint TANPA prefix /api (contoh: "/orders", "/products/123")
+ * @returns {string} URL lengkap dengan prefix /api
+ *
+ * @example
+ * apiUrl('/orders') → 'http://localhost:8000/api/orders'
+ * apiUrl('/products/123') → 'http://localhost:8000/api/products/123'
  */
-export async function apiRequest(endpoint, options = {}) {
+export function apiUrl(path) {
+  // Pastikan path diawali "/"
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}/api${cleanPath}`;
+}
+
+/**
+ * Fetch wrapper dengan error handling standar dan JWT token otomatis
+ * @param {string} path - Path endpoint TANPA prefix /api
+ * @param {object} options - Fetch options (method, headers, body, dll.)
+ * @returns {Promise<object>} Parsed JSON response
+ * @throws {Error} Jika response tidak OK atau network error
+ *
+ * @example
+ * // GET request
+ * const orders = await apiFetch('/orders');
+ *
+ * // POST request
+ * const newOrder = await apiFetch('/orders', {
+ *   method: 'POST',
+ *   body: { product_id: 1, quantity: 2 }
+ * });
+ *
+ * // PATCH request
+ * await apiFetch('/orders/123/status', {
+ *   method: 'PATCH',
+ *   body: { status: 'READY_FOR_PICKUP' }
+ * });
+ */
+export async function apiFetch(path, options = {}) {
   const token = getToken();
   const headers = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers || {}),
   };
 
-  // Attach JWT token if available
+  // Attach JWT token jika tersedia
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -35,21 +76,25 @@ export async function apiRequest(endpoint, options = {}) {
     headers,
   };
 
-  // Add body as JSON string if present
+  // Convert body object ke JSON string
   if (options.body && typeof options.body === 'object') {
     config.body = JSON.stringify(options.body);
   }
 
   try {
-    // Tambahkan /api di sini (kecuali endpoint sudah dimulai dengan /api)
-    const url = endpoint.startsWith('/api')
-      ? `${API_BASE_URL}${endpoint}`
-      : `${API_BASE_URL}/api${endpoint}`;
-    const response = await fetch(url, config);
-    const data = await response.json();
+    const response = await fetch(apiUrl(path), config);
 
-    // Handle API response format: { success, data, error }
+    // Handle non-JSON response (untuk kasus khusus seperti file download)
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+
     if (!response.ok) {
+      // Coba parse error sebagai JSON
+      let errorData = {};
+      if (isJson) {
+        errorData = await response.json().catch(() => ({}));
+      }
+
       // Handle 401 Unauthorized - auto logout
       if (response.status === 401) {
         removeToken();
@@ -58,14 +103,15 @@ export async function apiRequest(endpoint, options = {}) {
         }
       }
 
-      // Throw error with proper message
-      throw new Error(data.error?.message || 'Terjadi kesalahan pada server');
+      // Throw error dengan pesan dari backend atau fallback
+      throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
     }
 
-    return data;
+    // Return parsed JSON jika response JSON, atau response object untuk non-JSON
+    return isJson ? response.json() : response;
   } catch (error) {
-    // Network error or other issues
-    if (error.message.includes('Failed to fetch')) {
+    // Network error atau fetch gagal
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       throw new Error('Tidak dapat terhubung ke server. Pastikan backend berjalan.');
     }
     throw error;
@@ -73,32 +119,42 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 /**
- * Shorthand for GET request
+ * Shorthand untuk GET request
+ * @param {string} path - Path endpoint TANPA prefix /api
+ * @returns {Promise<object>} Response JSON
  */
-export function apiGet(endpoint) {
-  return apiRequest(endpoint, { method: 'GET' });
+export function apiGet(path) {
+  return apiFetch(path, { method: 'GET' });
 }
 
 /**
- * Shorthand for POST request
+ * Shorthand untuk POST request
+ * @param {string} path - Path endpoint TANPA prefix /api
+ * @param {object} body - Request body (akan di-stringify otomatis)
+ * @returns {Promise<object>} Response JSON
  */
-export function apiPost(endpoint, body) {
-  return apiRequest(endpoint, { method: 'POST', body });
+export function apiPost(path, body) {
+  return apiFetch(path, { method: 'POST', body });
 }
 
 /**
- * Shorthand for PATCH request
+ * Shorthand untuk PATCH request
+ * @param {string} path - Path endpoint TANPA prefix /api
+ * @param {object} body - Request body (akan di-stringify otomatis)
+ * @returns {Promise<object>} Response JSON
  */
-export function apiPatch(endpoint, body) {
-  return apiRequest(endpoint, { method: 'PATCH', body });
+export function apiPatch(path, body) {
+  return apiFetch(path, { method: 'PATCH', body });
 }
 
 /**
- * Shorthand for DELETE request
+ * Shorthand untuk DELETE request
+ * @param {string} path - Path endpoint TANPA prefix /api
+ * @returns {Promise<object>} Response JSON
  */
-export function apiDelete(endpoint) {
-  return apiRequest(endpoint, { method: 'DELETE' });
+export function apiDelete(path) {
+  return apiFetch(path, { method: 'DELETE' });
 }
 
-// Export base URL for direct access if needed
+// Export API_BASE untuk kasus khusus yang butuh base URL tanpa helper
 export { API_BASE_URL };

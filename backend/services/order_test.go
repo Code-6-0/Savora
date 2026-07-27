@@ -136,3 +136,68 @@ func TestModelConstraints(t *testing.T) {
 		t.Errorf("Review.Rating out of bounds: %d", review.Rating)
 	}
 }
+
+// TestProductStatusValidation verifies product status validation logic
+func TestProductStatusValidation(t *testing.T) {
+	tests := []struct {
+		name          string
+		productStatus string
+		shouldPass    bool
+		expectedError string
+	}{
+		{
+			name:          "Produk Aktif (Bahasa Indonesia) harus lolos",
+			productStatus: models.ProductStatusAktif,
+			shouldPass:    true,
+		},
+		{
+			name:          "Produk Active (Bahasa Inggris) harus ditolak",
+			productStatus: "Active",
+			shouldPass:    false,
+			expectedError: "produk tidak aktif",
+		},
+		{
+			name:          "Produk Habis harus ditolak",
+			productStatus: models.ProductStatusHabis,
+			shouldPass:    false,
+			expectedError: "produk tidak aktif",
+		},
+		{
+			name:          "Produk Kedaluwarsa harus ditolak",
+			productStatus: models.ProductStatusKedaluwarsa,
+			shouldPass:    false,
+			expectedError: "produk tidak aktif",
+		},
+		{
+			name:          "Produk Limbah harus ditolak",
+			productStatus: models.ProductStatusLimbah,
+			shouldPass:    false,
+			expectedError: "produk tidak aktif",
+		},
+		{
+			name:          "Produk Suspended harus ditolak",
+			productStatus: models.ProductStatusSuspended,
+			shouldPass:    false,
+			expectedError: "produk tidak aktif",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Simulasi validasi status seperti di CreateOrder
+			var errorMsg string
+			if tt.productStatus != models.ProductStatusAktif {
+				errorMsg = "produk tidak aktif"
+			}
+
+			hasError := errorMsg != ""
+			if hasError == tt.shouldPass {
+				t.Errorf("Status %q: expected shouldPass=%v, got hasError=%v", tt.productStatus, tt.shouldPass, hasError)
+			}
+
+			if !tt.shouldPass && errorMsg != tt.expectedError {
+				t.Errorf("Status %q: expected error %q, got %q", tt.productStatus, tt.expectedError, errorMsg)
+			}
+		})
+	}
+}

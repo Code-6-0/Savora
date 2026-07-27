@@ -133,7 +133,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Layak Dijual",
 			ExpiresAt:        timePtr(time.Now().Add(4 * time.Hour)),
-			Status:           "Aktif",
+			Status:           models.ProductStatusAktif,
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -148,7 +148,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Fresh",
 			ExpiresAt:        timePtr(time.Now().Add(6 * time.Hour)),
-			Status:           "Aktif",
+			Status:           models.ProductStatusAktif,
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -163,7 +163,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Layak Dijual",
 			ExpiresAt:        timePtr(time.Now().Add(2 * time.Hour)),
-			Status:           "Aktif",
+			Status:           models.ProductStatusAktif,
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -178,7 +178,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Fresh",
 			ExpiresAt:        timePtr(time.Now().Add(3 * time.Hour)),
-			Status:           "Sold Out",
+			Status:           models.ProductStatusHabis,
 		},
 	}
 
@@ -315,7 +315,7 @@ func main() {
 	log.Println("\n📊 Summary:")
 	log.Printf("   Users: 5 (1 Admin, 1 Customer, 1 UMKM, 1 Mitra Donasi, 1 External Advertiser)")
 	log.Printf("   UMKM Profiles: 1 (APPROVED)")
-	log.Printf("   Products: %d (Active: 3, Sold Out: 1)", len(products))
+	log.Printf("   Products: %d (Aktif: 3, Habis: 1)", len(products))
 	log.Printf("   Orders: 0 (seed data removed - awaiting structure alignment with PRD)")
 	log.Printf("   Advertisements: 6 (Pending: 3, Approved: 1, Rejected: 1, Expired: 1)")
 	log.Println("   Platform Revenue (Ads): akan dicatat otomatis saat iklan Approved menjadi Active")

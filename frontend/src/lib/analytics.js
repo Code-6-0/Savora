@@ -4,6 +4,8 @@
 // fetch + fallback demo lokal yang sama seperti src/lib/marketplace.js dan
 // src/lib/ads.js, agar UI tetap jalan saat backend belum tersedia.
 
+import { baseUrl } from './apiBase.js';
+
 const DEFAULT_UMKM_ID = 1;
 
 // Fallback demo (dipakai bila API belum tersedia).
@@ -64,10 +66,6 @@ export function normalizeInsight(raw) {
     top_products: top,
     keyword_safety: base.keyword_safety || { badge: "Belum Cukup Data", top_positive: [], top_negative: [] },
   };
-}
-
-function baseUrl() {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 }
 
 async function fetchJson(path) {
