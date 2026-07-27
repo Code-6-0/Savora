@@ -99,5 +99,5 @@ type DonationHistory struct {
 
 // TableName specifies custom table name
 func (DonationHistory) TableName() string {
-	return "donation_histories"
+	return "donation_history"
 }

@@ -59,6 +59,10 @@ func InitDB() error {
 			&models.WasteLog{},
 			&models.HelpTicket{},
 			&models.Notification{},
+
+			// Mitra Donasi: donation offers & history (REVISI #40)
+			&models.DonationOffer{},
+			&models.DonationHistory{},
 		)
 
 		if err != nil {
