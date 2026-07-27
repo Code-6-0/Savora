@@ -24,7 +24,7 @@ func processExpiredProducts() {
 	var expiredProducts []models.Product
 	now := time.Now()
 
-	if err := db.Where("status = ? AND expires_at < ?", "Active", now).Find(&expiredProducts).Error; err != nil {
+	if err := db.Where("status = ? AND expires_at < ?", "Aktif", now).Find(&expiredProducts).Error; err != nil {
 		log.Println("❌ Error fetching expired products:", err)
 		return
 	}

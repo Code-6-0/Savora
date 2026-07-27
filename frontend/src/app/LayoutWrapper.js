@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/templates/DashboardLayout'
 import { isCustomerRoute } from '@/lib/routes'
 import { getUser } from '@/lib/auth'
@@ -15,7 +16,15 @@ import { getUser } from '@/lib/auth'
  */
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname()
-  const user = getUser()
+  const [isUserUmkm, setIsUserUmkm] = useState(true) // Default true untuk hydration match
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Check user role AFTER hydration to prevent mismatch
+  useEffect(() => {
+    const user = getUser()
+    setIsUserUmkm(String(user?.role || '').toUpperCase() === 'UMKM')
+    setIsHydrated(true)
+  }, [])
 
   // Daftar path yang TIDAK menggunakan DashboardLayout (standalone pages)
   const isAuthPage = pathname?.startsWith('/login') ||
@@ -23,21 +32,23 @@ export default function LayoutWrapper({ children }) {
   const isAdminPage = pathname?.startsWith('/admin')
   const isStandalonePage = isCustomerRoute(pathname)
 
-  // SECURITY CHECK: DashboardLayout hanya untuk UMKM
-  // Customer dan role lain (atau tidak login) tidak boleh dapat sidebar UMKM
-  // Normalisasi case defensif: lowercase untuk role
-  const normalizedRole = String(user?.role || '').toLowerCase();
-  const shouldUseDashboardLayout = normalizedRole === 'umkm'
 
   // Render children langsung untuk:
   // 1. Auth pages (login/register)
   // 2. Admin pages (punya layout sendiri AdminSidebar dari app/admin/layout.js)
   // 3. Standalone pages (marketplace, mitra, gabung-mitra-pengolah)
-  // 4. User bukan UMKM (CUSTOMER/MITRA_DONASI/MITRA_PENGOLAH atau tidak login)
-  if (isAuthPage || isAdminPage || isStandalonePage || !shouldUseDashboardLayout) {
+  if (isAuthPage || isAdminPage || isStandalonePage) {
     return children
   }
 
-  // Hanya UMKM yang sampai sini → render dengan DashboardLayout (sidebar UMKM)
+  // SECURITY CHECK moved to useEffect - after hydration only
+  // During hydration: render DashboardLayout (will be correct for UMKM users)
+  // After hydration: client-side check validates user role
+  if (isHydrated && !isUserUmkm) {
+    return children
+  }
+
+  // Render with DashboardLayout for UMKM paths
   return <DashboardLayout>{children}</DashboardLayout>
 }
+
