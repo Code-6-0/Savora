@@ -11,7 +11,6 @@ import {
   Weight,
 } from "lucide-react";
 import { computeImpactSummary } from "@/lib/impact";
-import { baseUrl } from "@/lib/apiBase.js";
 import { useCart } from "@/lib/CartContext";
 import { apiGet } from "@/lib/api";
 import { getUser, logout } from "@/lib/auth";
@@ -83,11 +82,7 @@ const DEMO_ORDERS = [
 
 async function fetchOrders() {
   try {
-    const response = await fetch(`${baseUrl()}/api/orders`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json"))
-      throw new Error("API orders tidak tersedia");
-    const data = await response.json();
+    const data = await apiGet('/orders');
 
     if (data === null) {
       return { orders: [], source: "api" };
