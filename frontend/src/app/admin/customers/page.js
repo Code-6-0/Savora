@@ -7,7 +7,7 @@ import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import { getToken, isAdmin } from "@/lib/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function KelolaCustomerPage() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function KelolaCustomerPage() {
       const params = new URLSearchParams({ role: "CUSTOMER" });
       if (filterStatus) params.append("status", filterStatus);
 
-      const response = await fetch(`${API_BASE}/admin/users?${params}`, {
+      const response = await fetch(`${API_BASE}/api/admin/users?${params}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await response.json();

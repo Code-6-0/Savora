@@ -38,10 +38,23 @@ export default function PesananPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [dateFilter, setDateFilter] = useState("Hari Ini");
+  const [dateFilter, setDateFilter] = useState("");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
 
+  // Map backend English status to frontend Indonesian display
+  const mapOrderStatus = (backendStatus) => {
+    const statusMap = {
+      'CREATED': 'Menunggu',
+      'PAYMENT_PENDING': 'Menunggu',
+      'PAID': 'Diproses',
+      'READY_FOR_PICKUP': 'Siap Diambil',
+      'COMPLETED': 'Selesai',
+      'NO_SHOW': 'Didonasikan',
+      'CANCELLED': 'Dibatalkan',
+    };
+    return statusMap[backendStatus] || backendStatus;
+  };
   useEffect(() => {
     async function loadOrders() {
       setLoading(true);
@@ -90,12 +103,22 @@ export default function PesananPage() {
     }
   };
 
+  // Calculate tab counts dynamically based on mapped status
+  const tabCounts = {
+    'Semua': orders.length,
+    'Pesanan Aktif': orders.filter(o => ['Menunggu', 'Diproses', 'Siap Diambil'].includes(mapOrderStatus(o.status))).length,
+    'Riwayat Penjualan': orders.filter(o => mapOrderStatus(o.status) === 'Selesai').length,
+    'Riwayat Donasi': orders.filter(o => mapOrderStatus(o.status) === 'Didonasikan').length,
+    'Dibatalkan': orders.filter(o => mapOrderStatus(o.status) === 'Dibatalkan').length,
+  };
+
   const filteredOrders = orders.filter(o => {
+    const mappedStatus = mapOrderStatus(o.status); // Convert backend status to Indonesian
     let matchesTab = true;
-    if (activeTab === "Pesanan Aktif") matchesTab = ["Menunggu", "Diproses", "Siap Diambil"].includes(o.status);
-    if (activeTab === "Riwayat Penjualan") matchesTab = o.status === "Selesai";
-    if (activeTab === "Riwayat Donasi") matchesTab = o.status === "Didonasikan";
-    if (activeTab === "Dibatalkan") matchesTab = o.status === "Dibatalkan";
+    if (activeTab === "Pesanan Aktif") matchesTab = ["Menunggu", "Diproses", "Siap Diambil"].includes(mappedStatus);
+    if (activeTab === "Riwayat Penjualan") matchesTab = mappedStatus === "Selesai";
+    if (activeTab === "Riwayat Donasi") matchesTab = mappedStatus === "Didonasikan";
+    if (activeTab === "Dibatalkan") matchesTab = mappedStatus === "Dibatalkan";
 
     const matchesSearch = o.id.toLowerCase().includes(searchQuery.toLowerCase()) || o.customer.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterStatus ? o.status === filterStatus : true;
@@ -193,7 +216,7 @@ export default function PesananPage() {
               }}>
                 {tab}
                 <span style={{ fontSize: '0.75rem', backgroundColor: activeTab === tab ? '#ECFDF5' : '#E5E7EB', color: activeTab === tab ? '#10B981' : '#4B5563', padding: '2px 8px', borderRadius: '12px' }}>
-                  {tab === 'Semua' ? orders.length : (tab === 'Pesanan Aktif' ? 3 : (tab === 'Riwayat Penjualan' ? 1 : 0))}
+                  {tabCounts[tab] || 0}
                 </span>
               </div>
             ))}

@@ -6,15 +6,15 @@ import { useAuthGuard } from "@/lib/useAuthGuard";
 import {
   Clock3,
   Leaf,
-  MapPin,
-  ChevronDown,
   Package,
   PiggyBank,
-  ShoppingCart,
   Weight,
 } from "lucide-react";
 import { computeImpactSummary } from "@/lib/impact";
 import { useCart } from "@/lib/CartContext";
+import { apiGet } from "@/lib/api";
+import { getUser, logout } from "@/lib/auth";
+import SavoraNavbar from "@/components/navbar/SavoraNavbar";
 
 // ── Data demo lokal (fallback tanpa backend) ──────────────────────────────
 // 3-4 order contoh: campuran Completed & Paid, termasuk service fee 5%.
@@ -81,14 +81,8 @@ const DEMO_ORDERS = [
 // ── Fetch helper ──────────────────────────────────────────────────────────
 
 async function fetchOrders() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   try {
-    const response = await fetch(`${baseUrl}/api/orders`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json"))
-      throw new Error("API orders tidak tersedia");
-    const data = await response.json();
+    const data = await apiGet('/orders');
 
     if (data === null) {
       return { orders: [], source: "api" };
@@ -155,81 +149,6 @@ function statusBadge(status) {
 }
 
 // ── Komponen halaman ──────────────────────────────────────────────────────
-
-function BerandaNavbar({ count }) {
-  return (
-    <header className="beranda-navbar">
-      <div className="beranda-navbar-container">
-        <div className="beranda-brand">
-          <img
-            src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png"
-            alt="Savora Logo"
-            className="beranda-logo-img"
-          />
-          <span className="beranda-brand-text">Savora</span>
-        </div>
-        <nav className="beranda-nav">
-          <Link href="/">Home</Link>
-          <Link href="/marketplace">Marketplace</Link>
-          <a href="#mitra">Mitra</a>
-          <a href="#tentang">Tentang</a>
-          <Link href="/akun" className="nav-active">Impact</Link>
-        </nav>
-        <button className="beranda-location">
-          <MapPin size={14} />
-          <span>Masukkan Alamat Kamu</span>
-          <ChevronDown size={13} />
-        </button>
-        <div className="beranda-actions">
-          <Link
-            href="/cart"
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              backgroundColor: count > 0 ? "#eaf8ec" : "transparent",
-              transition: "background-color 0.2s",
-            }}
-          >
-            <ShoppingCart size={20} color={count > 0 ? "#16a34a" : "#6b7280"} />
-            {count > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "0",
-                  right: "0",
-                  backgroundColor: "#16a34a",
-                  color: "white",
-                  fontSize: "10px",
-                  fontWeight: "700",
-                  width: "18px",
-                  height: "18px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "2px solid white",
-                }}
-              >
-                {count}
-              </span>
-            )}
-          </Link>
-          <Link href="/dashboard" className="beranda-btn-secondary" style={{ color: "#1d1d1d" }}>
-            Masuk
-          </Link>
-          <Link href="/marketplace" className="beranda-btn-primary">
-            Daftar Sekarang
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function ImpactCards({ impact }) {
   return (
@@ -354,7 +273,7 @@ export default function AkunPage() {
 
   return (
     <div style={{ background: "#ffffff", fontFamily: '"Plus Jakarta Sans", sans-serif', minHeight: "100vh" }}>
-      <BerandaNavbar count={count} />
+      <SavoraNavbar />
 
       <main className="beranda-akun-main">
         <h1 className="beranda-akun-title">Riwayat &amp; Impact</h1>

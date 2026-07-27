@@ -471,7 +471,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 
 	// Count products
 	database.DB.Model(&models.Product{}).Count(&summary.TotalProducts)
-	database.DB.Model(&models.Product{}).Where("status = ?", "Active").Count(&summary.ActiveProducts)
+	database.DB.Model(&models.Product{}).Where("status = ?", "Aktif").Count(&summary.ActiveProducts)
 
 	// Count orders per status (status existing: Bahasa Indonesia)
 	database.DB.Model(&models.Order{}).Count(&summary.TotalOrders)
@@ -571,7 +571,7 @@ func GetAdminSummaryHandler(c *fiber.Ctx) error {
 	// Listing perlu moderasi (expired tapi masih aktif OR food_trust warning)
 	database.DB.Model(&models.Product{}).
 		Where("status = ? AND (expires_at < ? OR food_trust_status IN (?))",
-			"Active", now, []string{"Tidak Disarankan Dijual", "Tidak Layak Konsumsi"}).
+			"Aktif", now, []string{"Tidak Disarankan Dijual", "Tidak Layak Konsumsi"}).
 		Count(&summary.ListingModerasiCount)
 
 	// Tiket help baru (status OPEN)

@@ -5,9 +5,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ChevronDown,
-  Home,
-  MapPin,
   Minus,
   Plus,
   ShoppingCart,
@@ -15,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useCart } from "@/lib/CartContext";
+import SavoraNavbar from "@/components/navbar/SavoraNavbar";
 
 function formatRupiah(value) {
   return new Intl.NumberFormat("id-ID", {
@@ -56,78 +54,7 @@ export default function CartPage() {
 
   return (
     <div style={{ background: "#ffffff", fontFamily: '"Plus Jakarta Sans", sans-serif', minHeight: "100vh" }}>
-      {/* Navbar from beranda */}
-      <header className="beranda-navbar">
-        <div className="beranda-navbar-container">
-          <div className="beranda-brand">
-            <img
-              src="https://dbbjtxjfytgfqkwqwokm.supabase.co/storage/v1/object/public/savora_img/logo_1784833935441.png"
-              alt="Savora Logo"
-              className="beranda-logo-img"
-            />
-            <span className="beranda-brand-text">Savora</span>
-          </div>
-          <nav className="beranda-nav">
-            <Link href="/">Home</Link>
-            <Link href="/marketplace">Marketplace</Link>
-            <a href="#mitra">Mitra</a>
-            <a href="#tentang">Tentang</a>
-            <Link href="/akun">Impact</Link>
-          </nav>
-          <button className="beranda-location">
-            <MapPin size={14} />
-            <span>Masukkan Alamat Kamu</span>
-            <ChevronDown size={13} />
-          </button>
-          <div className="beranda-actions">
-            <Link
-              href="/cart"
-              style={{
-                position: "relative",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                backgroundColor: count > 0 ? "#eaf8ec" : "transparent",
-                transition: "background-color 0.2s",
-              }}
-              className="nav-active"
-            >
-              <ShoppingCart size={20} color={count > 0 ? "#16a34a" : "#6b7280"} />
-              {count > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "0",
-                    right: "0",
-                    backgroundColor: "#16a34a",
-                    color: "white",
-                    fontSize: "10px",
-                    fontWeight: "700",
-                    width: "18px",
-                    height: "18px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "2px solid white",
-                  }}
-                >
-                  {count}
-                </span>
-              )}
-            </Link>
-            <Link href="/login" className="beranda-btn-secondary" style={{ color: "#1d1d1d" }}>
-              Masuk
-            </Link>
-            <Link href="/register" className="beranda-btn-primary">
-              Daftar Sekarang
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SavoraNavbar />
 
       <main style={{ maxWidth: "1151px", margin: "0 auto", padding: "40px 32px", minHeight: "calc(100vh - 200px)" }}>
         {/* Page title */}

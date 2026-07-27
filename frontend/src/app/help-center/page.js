@@ -65,7 +65,8 @@ export default function HelpCenterPage() {
       }
 
       // Submit
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/help-tickets`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/api/help-tickets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

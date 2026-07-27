@@ -116,7 +116,7 @@ function ProfilMitraContent() {
     setMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/me`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/me`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ function ProfilMitraContent() {
     setMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/me/password`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/me/password`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

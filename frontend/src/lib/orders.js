@@ -3,35 +3,22 @@
  * Handles order creation and retrieval for Savora checkout flow
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+import { apiPost, apiGet } from './api.js';
 
 /**
- * Create order and get Xendit invoice
+ * Create order and get Midtrans payment token
  * @param {Object} orderData - Order data from checkout form
- * @returns {Promise<Object>} Order response with invoice URL
+ * @returns {Promise<Object>} Order response with payment URL
  */
 export async function createOrder(orderData) {
-  const response = await fetch(`${API_BASE}/api/orders`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      product_id: orderData.productId,
-      quantity: orderData.quantity,
-      billing_name: orderData.billingName,
-      billing_email: orderData.billingEmail,
-      billing_phone: orderData.billingPhone,
-      customer_note: orderData.customerNote || '',
-    }),
+  return apiPost('/orders', {
+    product_id: orderData.productId,
+    quantity: orderData.quantity,
+    billing_name: orderData.billingName,
+    billing_email: orderData.billingEmail,
+    billing_phone: orderData.billingPhone,
+    customer_note: orderData.customerNote || '',
   });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
-  }
-
-  return response.json();
 }
 
 /**

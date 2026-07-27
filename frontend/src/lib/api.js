@@ -1,10 +1,16 @@
 // frontend/src/lib/api.js
 // API client untuk komunikasi dengan backend
 
-import { getToken, removeToken } from './auth';
+import { getToken, removeToken } from './auth.js';
 
-// Base API URL dari environment variable atau default
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+// Base API URL dari environment variable atau default (TANPA /api)
+// Konvensi: env berisi host polos, apiRequest menambahkan /api sendiri
+let API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+
+// Penjagaan: kalau env terlanjur diakhiri /api, jangan dobel jadi /api/api
+if (API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -4);
+}
 
 /**
  * Make API request with automatic JWT token attachment
@@ -35,7 +41,11 @@ export async function apiRequest(endpoint, options = {}) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    // Tambahkan /api di sini (kecuali endpoint sudah dimulai dengan /api)
+    const url = endpoint.startsWith('/api')
+      ? `${API_BASE_URL}${endpoint}`
+      : `${API_BASE_URL}/api${endpoint}`;
+    const response = await fetch(url, config);
     const data = await response.json();
 
     // Handle API response format: { success, data, error }

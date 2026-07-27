@@ -93,11 +93,14 @@ func TestVerifyUMKMHandler_Approve(t *testing.T) {
 
 	// Create test UMKM profile
 	umkmProfile := models.UMKMProfile{
-		UserID:             umkmUser.ID,
-		BusinessName:       "Test Warung",
-		Address:            "Test Address",
-		GeoLocation:        "Test Location",
-		VerificationStatus: models.VerificationPending,
+		UserID:               umkmUser.ID,
+		NamaBisnis:           "Test Warung",
+		JenisBisnis:          "restoran",
+		AlamatOperasional:    "Test Address",
+		KontakTelepon:        "081234567890",
+		EstimasiVolumeSampah: "50 kg/hari",
+		JamOperasional:       "08:00-22:00",
+		VerificationStatus:   models.VerificationPending,
 	}
 	if err := database.DB.Create(&umkmProfile).Error; err != nil {
 		t.Fatalf("Failed to create UMKM profile: %v", err)
@@ -207,11 +210,14 @@ func TestVerifyUMKMHandler_Reject(t *testing.T) {
 
 	// Create test UMKM profile
 	umkmProfile := models.UMKMProfile{
-		UserID:             umkmUser.ID,
-		BusinessName:       "Test Warung Reject",
-		Address:            "Test Address Reject",
-		GeoLocation:        "Test Location",
-		VerificationStatus: models.VerificationPending,
+		UserID:               umkmUser.ID,
+		NamaBisnis:           "Test Warung Reject",
+		JenisBisnis:          "restoran",
+		AlamatOperasional:    "Test Address Reject",
+		KontakTelepon:        "081234567891",
+		EstimasiVolumeSampah: "30 kg/hari",
+		JamOperasional:       "09:00-21:00",
+		VerificationStatus:   models.VerificationPending,
 	}
 	if err := database.DB.Create(&umkmProfile).Error; err != nil {
 		t.Fatalf("Failed to create UMKM profile: %v", err)
