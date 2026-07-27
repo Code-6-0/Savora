@@ -298,7 +298,7 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const productId = parseInt(searchParams?.get("product_id"));
+  const productId = searchParams?.get("product_id") || "";
   const initialQty = parseInt(searchParams?.get("qty")) || 1;
 
   // Auth guard: redirect to login if not authenticated
@@ -311,7 +311,7 @@ function CheckoutContent() {
   }, [router]);
 
   useEffect(() => {
-    if (!productId) {
+    if (!productId || productId === "") {
       setError("Product ID tidak valid");
       setLoading(false);
       return;
