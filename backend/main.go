@@ -10,6 +10,7 @@ import (
 	"github.com/savora/backend/database"
 	"github.com/savora/backend/handlers"
 	"github.com/savora/backend/middleware"
+	"github.com/savora/backend/models"
 	"github.com/savora/backend/routes"
 	"github.com/savora/backend/services"
 )
@@ -27,6 +28,28 @@ func main() {
 
 	// Share connection: auth/admin handlers use database.DB, avoid duplicate connection
 	database.DB = services.GetDB()
+
+	// Auto-migrate models (sync schema dengan struct Go)
+	log.Println("🔄 Running database migrations...")
+	if err := database.DB.AutoMigrate(
+		&models.Order{},
+		&models.Payment{},
+		&models.PaymentLog{},
+		&models.PlatformRevenue{},
+		&models.Product{},
+		&models.User{},
+		&models.CustomerProfile{},
+		&models.UMKMProfile{},
+		&models.MitraDonasiProfile{},
+		&models.Review{},
+		&models.ReviewKeyword{},
+		&models.KeywordScore{},
+		&models.HelpTicket{},
+		&models.WasteLog{},
+	); err != nil {
+		log.Fatalf("❌ Failed to migrate database: %v", err)
+	}
+	log.Println("✅ Database migrations completed")
 
 	// Start cron jobs (auto-expire products)
 	services.StartCronJobs()
