@@ -22,7 +22,9 @@ export default function VerifikasiUmkmPage() {
       }
 
       const user = getUser();
-      if (!user || user.role !== 'umkm') {
+      // Normalisasi case defensif: lowercase untuk role
+      const normalizedRole = String(user?.role || '').toLowerCase();
+      if (!user || normalizedRole !== 'umkm') {
         // Bukan UMKM, redirect sesuai role
         router.replace('/');
         return;

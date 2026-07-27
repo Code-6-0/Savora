@@ -20,7 +20,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { createOrder, normalizeOrder } from "@/lib/orders";
-import { fetchMarketplaceProduct, normalizeMarketplaceProduct } from "@/lib/marketplace";
+import { fetchMarketplaceProduct } from "@/lib/marketplace";
+import { isAuthenticated } from "@/lib/auth";
 
 function formatRupiah(value) {
   if (!value && value !== 0) return "Rp 0";
@@ -300,6 +301,15 @@ function CheckoutContent() {
   const productId = parseInt(searchParams?.get("product_id"));
   const initialQty = parseInt(searchParams?.get("qty")) || 1;
 
+  // Auth guard: redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      // Save current URL to redirect back after login
+      const currentUrl = window.location.pathname + window.location.search;
+      router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+    }
+  }, [router]);
+
   useEffect(() => {
     if (!productId) {
       setError("Product ID tidak valid");
@@ -310,9 +320,9 @@ function CheckoutContent() {
     const loadProduct = async () => {
       try {
         setLoading(true);
-        const data = await fetchMarketplaceProduct(productId);
-        const normalized = normalizeMarketplaceProduct(data);
-        setProduct(normalized);
+        const result = await fetchMarketplaceProduct(productId);
+        // fetchMarketplaceProduct returns { product, source }, not just the product
+        setProduct(result.product);
         setQuantity(Math.max(1, initialQty));
       } catch (err) {
         console.error("Failed to load product:", err);

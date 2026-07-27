@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/savora/backend/models"
 	"github.com/savora/backend/services"
@@ -19,10 +21,18 @@ func NewOrderHandler(xendit *services.XenditService) *OrderHandler {
 // CreateOrder - POST /orders (Customer checkout)
 func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	db := services.GetDB()
-	
-	// TODO: Extract customerID dari JWT middleware (Wa Ode)
-	customerID := uint(1) // mock untuk development
-	
+
+	// Extract customerID dari JWT middleware
+	userLocal := c.Locals("user")
+	if userLocal == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized: token tidak valid",
+		})
+	}
+
+	claims := userLocal.(*JWTClaims)
+	customerID := claims.UserID
+
 	var req services.CreateOrderRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -43,10 +53,37 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 // GetOrders - GET /orders (list order by role)
 func (h *OrderHandler) GetOrders(c *fiber.Ctx) error {
 	db := services.GetDB()
-	
-	// TODO: Extract user dari JWT (role-based filtering)
+
+	// Extract user dari JWT (role-based filtering)
+	userLocal := c.Locals("user")
+	if userLocal == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized: token tidak valid",
+		})
+	}
+
+	claims := userLocal.(*JWTClaims)
+	userID := claims.UserID
+	role := claims.Role
+
 	var orders []models.Order
-	if err := db.Preload("Product").Preload("Customer").Order("created_at desc").Find(&orders).Error; err != nil {
+	query := db.Preload("Product").Preload("Customer").Order("created_at desc")
+
+	// Role-based filtering (case-insensitive)
+	roleUpper := strings.ToUpper(role)
+	if roleUpper == "CUSTOMER" {
+		// Customer hanya lihat order miliknya sendiri
+		query = query.Where("customer_id = ?", userID)
+	} else if roleUpper == "ADMIN" {
+		// Admin lihat semua order (tidak ada filter)
+	} else {
+		// Role lain tidak punya akses ke orders
+		return c.Status(403).JSON(fiber.Map{
+			"error": "Forbidden: role tidak memiliki akses ke orders",
+		})
+	}
+
+	if err := query.Find(&orders).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})

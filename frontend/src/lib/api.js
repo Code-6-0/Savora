@@ -1,7 +1,7 @@
 // frontend/src/lib/api.js
 // API client untuk komunikasi dengan backend
 
-import { getToken, removeToken } from './auth';
+import { getToken, removeToken } from './auth.js';
 
 // Base API URL dari environment variable atau default (TANPA /api)
 // Konvensi: env berisi host polos, apiRequest menambahkan /api sendiri

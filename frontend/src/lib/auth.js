@@ -133,13 +133,16 @@ export function getRedirectAfterLogin(roleOrData, verificationStatus = null) {
 
 /**
  * Check if user has specific role
- * @param {string} requiredRole - Required role
+ * @param {string} requiredRole - Required role (case-insensitive)
  * @returns {boolean} True if user has required role
  */
 export function hasRole(requiredRole) {
   const user = getUser();
   if (!user) return false;
-  return user.role === requiredRole;
+  // Normalisasi case defensif: lowercase untuk role
+  const normalizedRole = String(user.role || '').toLowerCase();
+  const normalizedRequired = String(requiredRole || '').toLowerCase();
+  return normalizedRole === normalizedRequired;
 }
 
 /**

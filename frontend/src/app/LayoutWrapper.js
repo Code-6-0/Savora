@@ -22,7 +22,7 @@ export default function LayoutWrapper({ children }) {
   // Check user role AFTER hydration to prevent mismatch
   useEffect(() => {
     const user = getUser()
-    setIsUserUmkm(user?.role === 'UMKM')
+    setIsUserUmkm(String(user?.role || '').toUpperCase() === 'UMKM')
     setIsHydrated(true)
   }, [])
 
@@ -31,6 +31,7 @@ export default function LayoutWrapper({ children }) {
                      pathname?.startsWith('/register')
   const isAdminPage = pathname?.startsWith('/admin')
   const isStandalonePage = isCustomerRoute(pathname)
+
 
   // Render children langsung untuk:
   // 1. Auth pages (login/register)
