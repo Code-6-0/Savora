@@ -96,7 +96,7 @@ func CreateOrder(db *gorm.DB, customerID uint, req CreateOrderRequest, paymentSe
 		}
 
 		// Validasi status produk
-		if product.Status != "Active" {
+		if product.Status != "Aktif" {
 			return errors.New("produk tidak aktif")
 		}
 

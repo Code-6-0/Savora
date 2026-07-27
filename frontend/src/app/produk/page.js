@@ -34,6 +34,12 @@ export default function ProdukPage() {
   const [isProductionTimeEditable, setIsProductionTimeEditable] = useState(false);
   const [originalProductData, setOriginalProductData] = useState(null);
 
+  // Product form state - MUST be declared before any early returns
+  const [newProduct, setNewProduct] = useState({ 
+    name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",
+    production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai"
+  });
+
   useEffect(() => {
     async function loadProducts() {
       setLoading(true);
@@ -47,11 +53,6 @@ export default function ProdukPage() {
   if (authLoading) {
     return <div style={{ padding: '40px', color: '#6B7280' }}>Memuat...</div>;
   }
-
-  const [newProduct, setNewProduct] = useState({ 
-    name: "", category: "Makanan Siap Saji", original_price: "", rescue_price: "", stock: "",
-    production_time: "", expires_at: "", packaging_condition: "Standar", storage_method: "Sesuai"
-  });
 
   const calculateFoodTrustStatus = (prod) => {
     if (!prod.production_time || !prod.expires_at) return "Menunggu Data";
@@ -115,6 +116,7 @@ export default function ProdukPage() {
     }
     
     // Prepare product data for API
+    // VALIDATION: Status MUST be "Aktif" (Indonesian) for marketplace visibility
     const productData = {
       umkm_id: 1, // TODO: Get from auth context
       name: newProduct.name,
@@ -126,7 +128,7 @@ export default function ProdukPage() {
       expires_at: expiresAtISO,
       packaging_condition: newProduct.packaging_condition || "Standar",
       storage_method: newProduct.storage_method || "Sesuai",
-      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Active",
+      status: currentFtiStatus === "Tidak Layak Konsumsi" ? "Limbah" : "Aktif",
     };
     
     try {

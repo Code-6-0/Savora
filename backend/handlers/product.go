@@ -50,8 +50,11 @@ func CreateProduct(c *fiber.Ctx) error {
 
 	product.FoodTrustStatus = CalculateFoodTrustStatus(product)
 
+	// Set status: "Limbah" jika tidak layak, "Aktif" untuk normal products
 	if product.FoodTrustStatus == "Tidak Layak Konsumsi" {
 		product.Status = "Limbah"
+	} else {
+		product.Status = "Aktif"
 	}
 
 	if err := services.GetDB().Create(&product).Error; err != nil {
@@ -98,8 +101,12 @@ func UpdateProduct(c *fiber.Ctx) error {
 
 	updateData.FoodTrustStatus = CalculateFoodTrustStatus(&updateData)
 
+	// Ensure status is always "Aktif" or "Limbah" (Indonesian)
 	if updateData.FoodTrustStatus == "Tidak Layak Konsumsi" && product.Status != "Limbah" {
 		updateData.Status = "Limbah"
+	} else if updateData.Status == "" || updateData.Status == "Active" {
+		// Default to "Aktif" if empty or using old English status
+		updateData.Status = "Aktif"
 	}
 
 	services.GetDB().Model(&product).Updates(updateData)

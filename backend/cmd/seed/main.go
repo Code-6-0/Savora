@@ -25,24 +25,9 @@ func main() {
 
 	// Clear existing data (idempotent seed)
 	log.Println("Clearing existing data...")
-	database.DB.Exec("DELETE FROM ad_metrics")
-	database.DB.Exec("DELETE FROM advertisements")
-	database.DB.Exec("DELETE FROM platform_revenue")
-	database.DB.Exec("DELETE FROM orders")
-	database.DB.Exec("DELETE FROM products")
-	database.DB.Exec("DELETE FROM umkm_profiles")
-	database.DB.Exec("DELETE FROM customer_profiles")
-	database.DB.Exec("DELETE FROM users")
-
-	// Reset sequences (PostgreSQL)
-	database.DB.Exec("ALTER SEQUENCE users_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE customer_profiles_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE umkm_profiles_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE orders_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE advertisements_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE ad_metrics_id_seq RESTART WITH 1")
-	database.DB.Exec("ALTER SEQUENCE platform_revenue_id_seq RESTART WITH 1")
+	// Use TRUNCATE CASCADE to forcefully remove all data and reset sequences
+	// This bypasses foreign key constraints
+	database.DB.Exec("TRUNCATE TABLE reviews, notifications, payment_logs, payments, help_tickets, ad_metrics, advertisements, platform_revenue, waste_logs, orders, products, mitra_donasi_profiles, umkm_profiles, customer_profiles, users RESTART IDENTITY CASCADE")
 
 	// Create users
 	log.Println("Creating users...")
@@ -148,7 +133,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Layak Dijual",
 			ExpiresAt:        timePtr(time.Now().Add(4 * time.Hour)),
-			Status:           "Active",
+			Status:           "Aktif",
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -163,7 +148,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Fresh",
 			ExpiresAt:        timePtr(time.Now().Add(6 * time.Hour)),
-			Status:           "Active",
+			Status:           "Aktif",
 		},
 		{
 			UmkmID:           umkmProfile.ID,
@@ -178,7 +163,7 @@ func main() {
 			PickupAddress:    "Jl. Mangga Dua No. 45, Jakarta Utara",
 			FoodTrustStatus:  "Layak Dijual",
 			ExpiresAt:        timePtr(time.Now().Add(2 * time.Hour)),
-			Status:           "Active",
+			Status:           "Aktif",
 		},
 		{
 			UmkmID:           umkmProfile.ID,
