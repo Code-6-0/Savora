@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { getUser, isAuthenticated, logout, confirmLogout, getRedirectAfterLogin } from "@/lib/auth";
 import { useCart } from "@/lib/CartContext";
+import { readUserData, writeUserData, migrateOldData } from "@/lib/userStorage.js";
 import NotificationBell from "@/components/organisms/NotificationBell";
 
 // Konstanta demo mode (gampang disembunyikan)
@@ -57,10 +58,13 @@ export default function SavoraNavbar() {
     }
   }, []);
 
-  // Load address dari localStorage setelah mounted
+  // Load address dari localStorage dengan namespace per-akun setelah mounted
   useEffect(() => {
     if (mounted) {
-      const savedAddress = localStorage.getItem("savora_address");
+      // Migrasi data lama sekali jalan (dari kunci global ke namespace per-akun)
+      migrateOldData("savora_address");
+
+      const savedAddress = readUserData("savora_address");
       if (savedAddress) {
         setAddress(savedAddress);
       }
@@ -139,13 +143,13 @@ export default function SavoraNavbar() {
     setAddressDropdownOpen((prev) => !prev);
   }
 
-  // Handler: simpan alamat ke localStorage
+  // Handler: simpan alamat ke localStorage dengan namespace per-akun
   function handleAddressSave(e) {
     e.preventDefault();
     const input = e.target.elements.addressInput;
     if (input && input.value.trim()) {
       const newAddress = input.value.trim();
-      localStorage.setItem("savora_address", newAddress);
+      writeUserData("savora_address", newAddress);
       setAddress(newAddress);
       setAddressDropdownOpen(false);
     }
