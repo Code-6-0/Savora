@@ -123,7 +123,6 @@ export default function KelolaUMKMPage() {
         method: 'PATCH',
         body
       });
-      const data = await response.json();
 
       if (data.success) {
         if (actionType === "revoke_verification") {
