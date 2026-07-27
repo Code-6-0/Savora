@@ -24,6 +24,7 @@ import {
 import { createOrder, normalizeOrder } from "@/lib/orders";
 import { fetchMarketplaceProduct } from "@/lib/marketplace";
 import SavoraNavbar from "@/components/navbar/SavoraNavbar";
+import { getToken, isAuthenticated } from "@/lib/auth";
 
 function formatRupiah(value) {
   if (!value && value !== 0) return "Rp 0";
@@ -179,7 +180,7 @@ function CheckoutSkeleton() {
   );
 }
 
-function CheckoutForm({ product, quantity, onSubmit }) {
+function CheckoutForm({ product, quantity, onSubmit, initialData }) {
   const [formData, setFormData] = useState({
     billingName: "",
     billingEmail: "",
@@ -188,6 +189,18 @@ function CheckoutForm({ product, quantity, onSubmit }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Auto-fill form dengan data profil user
+  useEffect(() => {
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        billingName: initialData.name || prev.billingName,
+        billingEmail: initialData.email || prev.billingEmail,
+        billingPhone: initialData.phone || prev.billingPhone,
+      }));
+    }
+  }, [initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -373,6 +386,7 @@ export default function CheckoutPage() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
 
   const productId = searchParams?.get("product_id");
   const initialQty = parseInt(searchParams?.get("qty")) || 1;
@@ -404,6 +418,35 @@ export default function CheckoutPage() {
 
     loadProduct();
   }, [productId, initialQty]);
+
+  // Fetch user profile untuk auto-fill form
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!isAuthenticated()) return;
+
+      try {
+        const token = getToken();
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) return; // Silently fail jika tidak bisa fetch profile
+
+        const result = await response.json();
+        if (result.success && result.data) {
+          setUserProfile(result.data);
+        }
+      } catch (err) {
+        console.log('Could not load user profile for auto-fill:', err);
+        // Silently fail - form tetap bisa diisi manual
+      }
+    };
+
+    loadUserProfile();
+  }, []); // Hanya run sekali saat mount
 
   const handleCheckoutSubmit = async (orderData) => {
     try {
@@ -540,7 +583,16 @@ export default function CheckoutPage() {
 
           {/* Right Column: Form & Timer */}
           <div style={{ position: "sticky", top: "100px" }}>
-            <CheckoutForm product={product} quantity={quantity} onSubmit={handleCheckoutSubmit} />
+            <CheckoutForm
+              product={product}
+              quantity={quantity}
+              onSubmit={handleCheckoutSubmit}
+              initialData={{
+                name: userProfile?.user?.name || "",
+                email: userProfile?.user?.email || "",
+                phone: userProfile?.customer_profile?.phone || "",
+              }}
+            />
             <CountdownTimer targetDate={new Date(Date.now() + 15 * 60 * 1000)} />
           </div>
         </div>
