@@ -14,7 +14,7 @@ import { computeImpactSummary } from "@/lib/impact";
 import { baseUrl } from "@/lib/apiBase.js";
 import { useCart } from "@/lib/CartContext";
 import { apiGet } from "@/lib/api";
-import { getUser, logout } from "@/lib/auth";
+import { getUser, logout, getToken } from "@/lib/auth";
 import SavoraNavbar from "@/components/navbar/SavoraNavbar";
 
 // ── Data demo lokal (fallback tanpa backend) ──────────────────────────────
@@ -83,7 +83,17 @@ const DEMO_ORDERS = [
 
 async function fetchOrders() {
   try {
-    const response = await fetch(`${baseUrl()}/api/orders`);
+    const token = getToken();
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Tambahkan Authorization header jika user sudah login
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${baseUrl()}/api/orders`, { headers });
     const contentType = response.headers.get("content-type") || "";
     if (!response.ok || !contentType.includes("application/json"))
       throw new Error("API orders tidak tersedia");
