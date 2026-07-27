@@ -3,7 +3,7 @@
 // Membaca data produk dari backend Go (services/product.go) dengan pola
 // fetch + fallback demo lokal agar UI tetap jalan saat backend belum tersedia (aturan AGENTS.md).
 
-import { baseUrl } from './apiBase.js';
+import { apiFetch } from './api.js';
 import { computeFoodScoreFromDates, initialFoodScore } from './foodScore.js';
 
 const DEFAULT_UMKM_ID = 1;
@@ -86,18 +86,13 @@ export function normalizeProduct(raw) {
  */
 export async function fetchUMKMProducts(umkmId = DEFAULT_UMKM_ID) {
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-  
+
   try {
-    const response = await fetch(`${baseUrl()}/api/products/umkm/${umkmId}`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) {
-      throw new Error("Products API tidak tersedia");
-    }
-    const data = await response.json();
+    const data = await apiFetch(`/products/umkm/${umkmId}`);
     if (!Array.isArray(data)) {
       throw new Error("Respons products tidak valid");
     }
-    
+
     // Array kosong adalah hasil VALID, bukan error
     return data.map(normalizeProduct);
   } catch (error) {
@@ -118,14 +113,14 @@ export async function fetchUMKMProducts(umkmId = DEFAULT_UMKM_ID) {
 export async function createProduct(productData) {
   try {
     const payload = { ...productData };
-    
+
     // Hitung expires_at jika belum ada tapi ada production_time & shelf_life_hours
     if (!payload.expires_at && payload.production_time && payload.shelf_life_hours) {
       const productionMs = new Date(payload.production_time).getTime();
       const shelfLifeMs = Number(payload.shelf_life_hours) * 60 * 60 * 1000;
       payload.expires_at = new Date(productionMs + shelfLifeMs).toISOString();
     }
-    
+
     // Validasi: expires_at tidak boleh di masa lalu
     if (payload.expires_at) {
       const expiresMs = new Date(payload.expires_at).getTime();
@@ -133,19 +128,11 @@ export async function createProduct(productData) {
         throw new Error("Waktu kedaluwarsa tidak boleh di masa lalu");
       }
     }
-    
-    const response = await fetch(`${baseUrl()}/api/products`, {
+
+    const data = await apiFetch('/products', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+      body: payload
     });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Gagal membuat produk");
-    }
-    const data = await response.json();
     return normalizeProduct(data);
   } catch (error) {
     console.error(error);
@@ -160,14 +147,14 @@ export async function createProduct(productData) {
 export async function updateProduct(productId, productData) {
   try {
     const payload = { ...productData };
-    
+
     // Hitung expires_at jika belum ada tapi ada production_time & shelf_life_hours
     if (!payload.expires_at && payload.production_time && payload.shelf_life_hours) {
       const productionMs = new Date(payload.production_time).getTime();
       const shelfLifeMs = Number(payload.shelf_life_hours) * 60 * 60 * 1000;
       payload.expires_at = new Date(productionMs + shelfLifeMs).toISOString();
     }
-    
+
     // Validasi: expires_at tidak boleh di masa lalu
     if (payload.expires_at) {
       const expiresMs = new Date(payload.expires_at).getTime();
@@ -175,19 +162,11 @@ export async function updateProduct(productId, productData) {
         throw new Error("Waktu kedaluwarsa tidak boleh di masa lalu");
       }
     }
-    
-    const response = await fetch(`${baseUrl()}/api/products/${productId}`, {
+
+    const data = await apiFetch(`/products/${productId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+      body: payload
     });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Gagal mengupdate produk");
-    }
-    const data = await response.json();
     return normalizeProduct(data);
   } catch (error) {
     console.error(error);

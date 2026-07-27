@@ -33,7 +33,7 @@ if (API_BASE_URL.endsWith('/api')) {
 export function apiUrl(path) {
   // Pastikan path diawali "/"
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${API_BASE}/api${cleanPath}`;
+  return `${API_BASE_URL}/api${cleanPath}`;
 }
 
 /**
@@ -157,4 +157,4 @@ export function apiDelete(path) {
 }
 
 // Export API_BASE untuk kasus khusus yang butuh base URL tanpa helper
-export { API_BASE };
+export { API_BASE_URL };

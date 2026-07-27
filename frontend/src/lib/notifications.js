@@ -1,9 +1,8 @@
 /**
  * API helpers untuk notifikasi in-app.
- * Base URL dari env; fallback ke localhost:3000.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+import { apiFetch } from './api.js';
 
 // Data demo untuk fallback tanpa backend
 const DEMO_NOTIFICATIONS = [
@@ -44,9 +43,7 @@ const DEMO_NOTIFICATIONS = [
  */
 export async function fetchNotifications(userId, role = 'umkm') {
   try {
-    const res = await fetch(`${API_BASE}/api/notifications/user/${userId}?role=${role}`);
-    if (!res.ok) throw new Error('API error');
-    return await res.json();
+    return await apiFetch(`/notifications/user/${userId}?role=${encodeURIComponent(role)}`);
   } catch {
     // Fallback demo data
     return DEMO_NOTIFICATIONS.filter(n => n.user_role === role);
@@ -61,9 +58,7 @@ export async function fetchNotifications(userId, role = 'umkm') {
  */
 export async function fetchUnreadCount(userId, role = 'umkm') {
   try {
-    const res = await fetch(`${API_BASE}/api/notifications/unread/${userId}?role=${role}`);
-    if (!res.ok) throw new Error('API error');
-    const data = await res.json();
+    const data = await apiFetch(`/notifications/unread/${userId}?role=${encodeURIComponent(role)}`);
     return data.count || 0;
   } catch {
     // Fallback: hitung dari demo
@@ -77,8 +72,8 @@ export async function fetchUnreadCount(userId, role = 'umkm') {
  */
 export async function markAsRead(notificationId) {
   try {
-    await fetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
-      method: 'PUT',
+    await apiFetch(`/notifications/${notificationId}/read`, {
+      method: 'PUT'
     });
   } catch {
     // Silent fail untuk demo
@@ -92,8 +87,8 @@ export async function markAsRead(notificationId) {
  */
 export async function markAllAsRead(userId, role = 'umkm') {
   try {
-    await fetch(`${API_BASE}/api/notifications/read-all/${userId}?role=${role}`, {
-      method: 'PUT',
+    await apiFetch(`/notifications/read-all/${userId}?role=${encodeURIComponent(role)}`, {
+      method: 'PUT'
     });
   } catch {
     // Silent fail untuk demo

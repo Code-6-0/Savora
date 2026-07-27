@@ -3,7 +3,7 @@
  * Handles order creation and retrieval for Savora checkout flow
  */
 
-import { apiPost, apiGet } from './api.js';
+import { apiFetch } from './api.js';
 
 /**
  * Create order and get Midtrans payment token

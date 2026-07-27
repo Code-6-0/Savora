@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Badge from '../../../components/atoms/Badge';
-import { getToken, isAdmin } from '@/lib/auth';
-
-// Base API URL dengan fallback (sama seperti lib/api.js)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+import { apiFetch } from '@/lib/api';
+import { isAdmin } from '@/lib/auth';
 
 export default function ModerasiListingPage() {
   const router = useRouter();
@@ -95,8 +93,6 @@ export default function ModerasiListingPage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const token = getToken();
-
       // Build query params
       const params = new URLSearchParams();
       if (searchQuery.trim()) params.append('search', searchQuery.trim());
@@ -106,19 +102,9 @@ export default function ModerasiListingPage() {
       if (expiredOnly) params.append('expired', 'true');
 
       const queryString = params.toString();
-      const url = `${API_BASE_URL}/admin/products${queryString ? '?' + queryString : ''}`;
+      const url = `/admin/products${queryString ? '?' + queryString : ''}`;
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Gagal mengambil data produk');
-      }
-
-      const result = await response.json();
+      const result = await apiFetch(url);
       if (result.success) {
         setProducts(result.data.products || []);
       }
@@ -162,30 +148,19 @@ export default function ModerasiListingPage() {
 
     setSubmitting(true);
     try {
-      const token = getToken();
-
       // Map dialog action to API status
       let status;
       if (dialogAction === 'suspend') status = 'Suspended';
       else if (dialogAction === 'activate') status = 'Aktif';
       else if (dialogAction === 'warning') status = 'Warning';
 
-      const response = await fetch(
-        `${API_BASE_URL}/admin/products/${selectedProduct.id}/status`,
+      await apiFetch(
+        `/admin/products/${selectedProduct.id}/status`,
         {
           method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status, note: note.trim() })
+          body: { status, note: note.trim() }
         }
       );
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error?.message || 'Gagal memproses moderasi');
-      }
 
       // Success - refresh data
       await fetchProducts();

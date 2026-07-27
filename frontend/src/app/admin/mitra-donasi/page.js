@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import DataTable from "@/components/organisms/DataTable";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import { getToken, isAdmin } from "@/lib/auth";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+import { apiFetch } from "@/lib/api";
+import { isAdmin } from "@/lib/auth";
 
 export default function KelolaMitraDonasiPage() {
   const router = useRouter();
@@ -46,10 +45,7 @@ export default function KelolaMitraDonasiPage() {
       const params = new URLSearchParams();
       if (filterStatus) params.append("status", filterStatus);
 
-      const response = await fetch(`${API_BASE}/api/admin/mitra-donasi?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await response.json();
+      const data = await apiFetch(`/admin/mitra-donasi?${params}`);
 
       if (data.success) {
         setMitraList(data.data.mitra_list || []);
@@ -106,18 +102,13 @@ export default function KelolaMitraDonasiPage() {
     try {
       setSubmitting(true);
       // Use /admin/users/:id/status for status changes (mitra links to users table)
-      const response = await fetch(
-        `${API_BASE}/admin/users/${selectedMitra.user_id}/status`,
+      const data = await apiFetch(
+        `/admin/users/${selectedMitra.user_id}/status`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({ action: actionType, note }),
+          body: { action: actionType, note }
         }
       );
-      const data = await response.json();
 
       if (data.success) {
         alert(
