@@ -144,8 +144,8 @@ export default function BerandaPage() {
           <nav className="beranda-nav">
             <Link href="/" className="nav-active">Home</Link>
             <Link href="/marketplace">Marketplace</Link>
-            <a href="#mitra">Mitra</a>
-            <a href="#tentang">Tentang</a>
+            <Link href="/mitra">Mitra</Link>
+            <Link href="/tentang">Tentang</Link>
             <Link href="/akun">Impact</Link>
           </nav>
           <button className="beranda-location">

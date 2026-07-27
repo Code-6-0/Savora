@@ -131,7 +131,7 @@ export default function SavoraNavbar() {
             <Link href="/">Home</Link>
             <Link href="/marketplace">Marketplace</Link>
             <Link href="/mitra">Mitra</Link>
-            <a href="#tentang">Tentang</a>
+            <Link href="/tentang">Tentang</Link>
           </nav>
           <button className="beranda-location">
             <MapPin size={14} />
@@ -183,8 +183,8 @@ export default function SavoraNavbar() {
             <Link href="/marketplace" className={isActiveLink("/marketplace") ? "nav-active" : ""}>
               Marketplace
             </Link>
-            <Link href="/mitra">Mitra</Link>
-            <a href="#tentang">Tentang</a>
+            <Link href="/mitra" className={isActiveLink("/mitra") ? "nav-active" : ""}>Mitra</Link>
+            <Link href="/tentang" className={isActiveLink("/tentang") ? "nav-active" : ""}>Tentang</Link>
           </nav>
 
           {/* Actions — State Logged-In: [Lokasi demo] [Keranjang] [Notifikasi] [Avatar] */}
@@ -428,8 +428,8 @@ export default function SavoraNavbar() {
           <Link href="/marketplace" className={isActiveLink("/marketplace") ? "nav-active" : ""}>
             Marketplace
           </Link>
-          <Link href="/mitra">Mitra</Link>
-          <a href="#tentang">Tentang</a>
+          <Link href="/mitra" className={isActiveLink("/mitra") ? "nav-active" : ""}>Mitra</Link>
+          <Link href="/tentang" className={isActiveLink("/tentang") ? "nav-active" : ""}>Tentang</Link>
         </nav>
 
         {/* Lokasi button (guest) */}

@@ -1045,6 +1045,8 @@
   color: #16a34a;
   opacity: 1;
   font-weight: 700;
+  border-bottom: 2px solid #16a34a;
+  padding-bottom: 2px;
 }
 
 .beranda-location {
