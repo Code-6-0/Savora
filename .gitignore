@@ -82,3 +82,4 @@ backend/check_*.go
 PROPOSAL AMBA.docx
 Template Proposal CODE 6.0 (2).pdf
 .claude
+.gitignore
